@@ -1,58 +1,112 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { visualStyleLabels, visualStyles, type VisualStyle } from "@campusnav/tokens";
 import { lt, type Permission } from "@campusnav/core";
-import { AdminProvider, adminMode, getAdminSource, useAdmin } from "@/lib/admin";
+import { AdminProvider, adminMode, getAdminSource, useAdmin, useTable } from "@/lib/admin";
 import { Badge, Button, Notice, Spinner, cx } from "./ui";
 import { Logo } from "./Logo";
 
-const NAV: { group: string; items: { href: string; label: string; perm?: Permission }[] }[] = [
-  { group: "Overview", items: [{ href: "/", label: "Dashboard" }] },
+const IC = {
+  dash: "M4 13h7V4H4zM13 20h7v-9h-7zM13 4v5h7V4zM4 20h7v-5H4z",
+  uni: "M3 10 12 4l9 6M5 10v9M19 10v9M9 10v9M15 10v9M3 21h18",
+  campus: "M3 20h18M5 20V9l7-5 7 5v11",
+  building: "M4 21V5l8-3 8 3v16M9 21v-5h6v5M8 8h2M14 8h2M8 12h2M14 12h2",
+  map: "M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15",
+  layers: "M12 3 2 8l10 5 10-5zM2 13l10 5 10-5M2 17.5l10 5 10-5",
+  pen: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4",
+  door: "M6 21V3h12v18M3 21h18M14 12v.5",
+  qr: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2z",
+  dept: "M12 3 3 8h18zM5 10v8M10 10v8M14 10v8M19 10v8M3 21h18",
+  person: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0",
+  book: "M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-6M20 4v14h-6",
+  group: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM17 11a3 3 0 1 0 0-6M3 20a6 6 0 0 1 12 0M15 14a6 6 0 0 1 6 6",
+  cal: "M4 5h16v15H4zM4 9h16M9 3v4M15 3v4",
+  change: "M4 7h13l-3-3M20 17H7l3 3",
+  megaphone: "M3 11v2l13 5V6zM16 9a3 3 0 0 1 0 6M7 14l1 5h3l-1-4",
+  flag: "M5 21V4h11l-1.5 4L16 12H5",
+  block: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM5.6 5.6l12.8 12.8",
+  users: "M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0zM4 21a8 8 0 0 1 16 0",
+  shield: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z",
+  swap: "M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4",
+  list: "M8 6h13M8 12h13M8 18h13M3 6h.5M3 12h.5M3 18h.5",
+  gear: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12l2-1-1-3-2 .2-1.3-1.3L17 5l-3-1-1 2h-2L10 4 7 5l.3 2L6 8.2 4 8 3 11l2 1-2 1 1 3 2-.2 1.3 1.3L7 19l3 1 1-2h2l1 2 3-1-.3-2 1.3-1.3 2 .3 1-3z",
+  search: "M10 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12zM15 15l5 5",
+  menu: "M4 6h16M4 12h16M4 18h16",
+  plus: "M12 5v14M5 12h14",
+} as const;
+
+export function Ico({ d, className }: { d: string; className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={cx("size-[18px] shrink-0", className)} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d={d} />
+    </svg>
+  );
+}
+
+type NavItem = { href: string; label: string; icon: string; perm?: Permission; count?: "reports" };
+const NAV: { group: string; items: NavItem[] }[] = [
   {
-    group: "Campus",
+    group: "Overview",
     items: [
-      { href: "/university", label: "University", perm: "university.update" },
-      { href: "/campuses", label: "Campuses", perm: "campus.manage" },
-      { href: "/buildings", label: "Buildings", perm: "building.manage" },
-      { href: "/campus-map", label: "Campus map", perm: "building.manage" },
-      { href: "/floors", label: "Floors", perm: "floor.manage" },
-      { href: "/map-editor", label: "Map editor", perm: "map.edit" },
-      { href: "/rooms", label: "Rooms", perm: "room.manage" },
-      { href: "/checkpoints", label: "QR checkpoints", perm: "checkpoint.manage" },
+      { href: "/", label: "Dashboard", icon: IC.dash },
+      { href: "/reports", label: "Problem reports", icon: IC.flag, perm: "report.manage", count: "reports" },
+      { href: "/closures", label: "Closures", icon: IC.block, perm: "map.edit" },
+    ],
+  },
+  {
+    group: "Campus & maps",
+    items: [
+      { href: "/university", label: "University", icon: IC.uni, perm: "university.update" },
+      { href: "/campuses", label: "Campuses", icon: IC.campus, perm: "campus.manage" },
+      { href: "/campus-map", label: "Campus map", icon: IC.map, perm: "building.manage" },
+      { href: "/buildings", label: "Buildings", icon: IC.building, perm: "building.manage" },
+      { href: "/floors", label: "Floors", icon: IC.layers, perm: "floor.manage" },
+      { href: "/map-editor", label: "Map editor", icon: IC.pen, perm: "map.edit" },
+      { href: "/rooms", label: "Rooms", icon: IC.door, perm: "room.manage" },
+      { href: "/checkpoints", label: "QR checkpoints", icon: IC.qr, perm: "checkpoint.manage" },
     ],
   },
   {
     group: "Academic",
     items: [
-      { href: "/departments", label: "Departments", perm: "department.manage" },
-      { href: "/lecturers", label: "Lecturers", perm: "lecturer.manage" },
-      { href: "/courses", label: "Courses", perm: "course.manage" },
-      { href: "/groups", label: "Student groups", perm: "group.manage" },
-      { href: "/semesters", label: "Semesters", perm: "timetable.manage" },
-      { href: "/timetable", label: "Timetable", perm: "timetable.department_manage" },
-      { href: "/schedule-changes", label: "Schedule changes", perm: "timetable.department_manage" },
-      { href: "/announcements", label: "Announcements", perm: "announcement.manage" },
+      { href: "/departments", label: "Departments", icon: IC.dept, perm: "department.manage" },
+      { href: "/lecturers", label: "Lecturers", icon: IC.person, perm: "lecturer.manage" },
+      { href: "/courses", label: "Courses", icon: IC.book, perm: "course.manage" },
+      { href: "/groups", label: "Student groups", icon: IC.group, perm: "group.manage" },
+      { href: "/semesters", label: "Semesters", icon: IC.cal, perm: "timetable.manage" },
+      { href: "/timetable", label: "Timetable", icon: IC.cal, perm: "timetable.department_manage" },
+      { href: "/schedule-changes", label: "Schedule changes", icon: IC.change, perm: "timetable.department_manage" },
+      { href: "/announcements", label: "Announcements", icon: IC.megaphone, perm: "announcement.manage" },
     ],
   },
   {
     group: "Administration",
     items: [
-      { href: "/users", label: "Users", perm: "member.invite" },
-      { href: "/roles", label: "Roles & permissions" },
-      { href: "/import-export", label: "Import / export", perm: "data.export" },
-      { href: "/audit", label: "Audit log", perm: "audit.read" },
-      { href: "/settings", label: "Settings", perm: "university.settings" },
+      { href: "/users", label: "Users", icon: IC.users, perm: "member.invite" },
+      { href: "/roles", label: "Roles & permissions", icon: IC.shield },
+      { href: "/import-export", label: "Import / export", icon: IC.swap, perm: "data.export" },
+      { href: "/audit", label: "Audit log", icon: IC.list, perm: "audit.read" },
+      { href: "/settings", label: "Settings", icon: IC.gear, perm: "university.settings" },
     ],
   },
+];
+
+const QUICK: { href: string; label: string; perm: Permission }[] = [
+  { href: "/rooms", label: "Add a room", perm: "room.manage" },
+  { href: "/closures", label: "Close a path or room", perm: "map.edit" },
+  { href: "/map-editor", label: "Edit a floor map", perm: "map.edit" },
+  { href: "/campus-map", label: "Place buildings on the campus map", perm: "building.manage" },
+  { href: "/checkpoints", label: "Create a QR checkpoint", perm: "checkpoint.manage" },
+  { href: "/announcements", label: "Post an announcement", perm: "announcement.manage" },
 ];
 
 const STYLE_KEY = "campusnav.admin.style";
 
 /** UI-only visual style preference for the admin dashboard (browser-local). */
 function useVisualStyle(): [VisualStyle, (s: VisualStyle) => void] {
-  const [style, setStyle] = useState<VisualStyle>("editorial");
+  const [style, setStyle] = useState<VisualStyle>("minimal");
   useEffect(() => {
     try {
       const v = window.localStorage.getItem(STYLE_KEY) as VisualStyle | null;
@@ -160,7 +214,27 @@ function Login() {
 function Frame({ children }: { children: ReactNode }) {
   const { ready, session, universities, universityId, setUniversityId, role, can, signOut } = useAdmin();
   const path = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [quick, setQuick] = useState(false);
+  const [jump, setJump] = useState("");
+  const jumpRef = useRef<HTMLInputElement>(null);
+  const reports = useTable<{ status: string }>("problem_reports");
+  const openReports = can("report.manage") ? (reports.rows ?? []).filter((r) => r.status === "open").length : 0;
+  useEffect(() => {
+    setOpen(false);
+    setQuick(false);
+  }, [path]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key === "k" || e.key === "K") && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        jumpRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   if (!ready) return <Spinner label="Loading…" />;
   if (adminMode === "misconfigured")
     return (
@@ -184,62 +258,139 @@ function Frame({ children }: { children: ReactNode }) {
     );
   }
   const uni = universities.find((u) => u.id === universityId);
-  return (
-    <div className="min-h-dvh md:grid md:grid-cols-[248px_1fr]">
-      <aside className={cx("cn-sidebar no-print md:block md:sticky md:top-0 md:h-dvh overflow-y-auto", open ? "block" : "hidden")}>
-        <div className="flex items-center gap-2 px-4 h-16 border-b border-line">
-          <Logo />
-          <span className="mono font-semibold tracking-wider text-sm">CAMPUS NAV</span>
-          <Badge className="ms-auto">ADMIN</Badge>
+  const visible = NAV.map((g) => ({ ...g, items: g.items.filter((i) => !i.perm || can(i.perm)) })).filter((g) => g.items.length);
+  const isActive = (href: string) => (href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`));
+  const current = visible.flatMap((g) => g.items.map((i) => ({ ...i, group: g.group }))).filter((i) => isActive(i.href)).sort((x, y) => y.href.length - x.href.length)[0];
+  const sidebar = (
+    <>
+      <div className="flex items-center gap-2 px-4 h-16 border-b border-line shrink-0">
+        <Logo />
+        <span className="mono font-semibold tracking-wider text-sm">CAMPUS NAV</span>
+        <Badge className="ms-auto">ADMIN</Badge>
+      </div>
+      <div className="p-3 border-b border-line">
+        <label className="label-caps" htmlFor="uni">University</label>
+        <select id="uni" value={universityId} onChange={(e) => setUniversityId(e.target.value)} className="cn-input w-full mt-1 !min-h-10 text-sm">
+          {universities.map((u) => (
+            <option key={u.id} value={u.id}>{lt(u.name, "en")}</option>
+          ))}
+        </select>
+        <div className="mt-2 flex items-center gap-2 text-xs">
+          <Badge tone="info">{role?.replace("_", " ")}</Badge>
+          {uni?.dataStatus === "demo" ? <Badge tone="warn">DEMO DATA</Badge> : null}
         </div>
-        <div className="p-4 border-b border-line">
-          <label className="label-caps" htmlFor="uni">University</label>
-          <select id="uni" value={universityId} onChange={(e) => setUniversityId(e.target.value)} className="cn-input w-full mt-1 !min-h-10 text-sm">
-            {universities.map((u) => (
-              <option key={u.id} value={u.id}>{lt(u.name, "en")}</option>
-            ))}
-          </select>
-          <div className="mt-2 flex items-center gap-2 text-xs">
-            <Badge tone="info">{role?.replace("_", " ")}</Badge>
-            {uni?.dataStatus === "demo" ? <Badge tone="warn">DEMO DATA</Badge> : null}
+      </div>
+      <nav className="flex-1" aria-label="Admin">
+        {visible.map((g) => (
+          <div key={g.group} className="cn-side-group">
+            <div className="cn-side-label">{g.group}</div>
+            <ul className="space-y-0.5">
+              {g.items.map((i) => (
+                <li key={i.href}>
+                  <Link href={i.href} onClick={() => setOpen(false)} aria-current={isActive(i.href) ? "page" : undefined} className="cn-navitem !min-h-9">
+                    <Ico d={i.icon} />
+                    <span className="truncate">{i.label}</span>
+                    {i.count === "reports" && openReports ? <span className="cn-count" aria-label={`${openReports} open`}>{openReports}</span> : null}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-        <nav className="p-2" aria-label="Admin">
-          {NAV.map((g) => {
-            const items = g.items.filter((i) => !i.perm || can(i.perm));
-            if (!items.length) return null;
-            return (
-              <div key={g.group} className="mb-3">
-                <div className="label-caps px-2 py-1">{g.group}</div>
-                {items.map((i) => {
-                  const active = i.href === "/" ? path === "/" : path.startsWith(i.href);
-                  return (
-                    <Link key={i.href} href={i.href} onClick={() => setOpen(false)} aria-current={active ? "page" : undefined} className="cn-sidelink block px-3 py-2 text-sm">
-                      {i.label}
-                    </Link>
-                  );
-                })}
+        ))}
+      </nav>
+      <div className="p-4 border-t border-line">
+        <StylePicker />
+      </div>
+      <div className="p-4 border-t border-line text-xs text-muted">
+        <div className="truncate mono">{session.email}</div>
+        <button className="underline mt-2" onClick={() => void signOut()}>Sign out</button>
+      </div>
+    </>
+  );
+  const jumpHits = jump.trim() ? visible.flatMap((g) => g.items).filter((i) => i.label.toLowerCase().includes(jump.trim().toLowerCase())).slice(0, 8) : [];
+  return (
+    <div className="cn-app">
+      <aside className="cn-rail no-print hidden lg:flex">{sidebar}</aside>
+      {open ? (
+        <>
+          <div className="cn-overlay lg:hidden" onClick={() => setOpen(false)} aria-hidden />
+          <aside className="cn-drawer lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">{sidebar}</aside>
+        </>
+      ) : null}
+      <div className="min-w-0 flex flex-col">
+        <header className="cn-topbar no-print">
+          <div className="flex items-center gap-3 px-4 md:px-8 h-16">
+            <button className="lg:hidden p-2 -ms-2 text-muted hover:text-fg" onClick={() => setOpen(true)} aria-label="Menu" aria-expanded={open}>
+              <Ico d={IC.menu} className="size-5" />
+            </button>
+            <nav aria-label="Breadcrumb" className="min-w-0 hidden sm:block">
+              <ol className="flex items-center gap-2 text-sm">
+                <li className="text-muted truncate">{uni ? lt(uni.name, "en") : ""}</li>
+                {current ? (
+                  <>
+                    <li aria-hidden className="text-faint">/</li>
+                    <li className="text-muted hidden md:block">{current.group}</li>
+                    <li aria-hidden className="text-faint hidden md:block">/</li>
+                    <li className="font-semibold truncate" aria-current="page">{current.label}</li>
+                  </>
+                ) : null}
+              </ol>
+            </nav>
+            <div className="relative ms-auto w-full max-w-xs">
+              <label htmlFor="jump" className="sr-only">Jump to page</label>
+              <div className="cn-searchtrigger !min-h-10">
+                <Ico d={IC.search} />
+                <input
+                  id="jump"
+                  ref={jumpRef}
+                  value={jump}
+                  onChange={(e) => setJump(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && jumpHits[0]) {
+                      router.push(jumpHits[0].href);
+                      setJump("");
+                    } else if (e.key === "Escape") setJump("");
+                  }}
+                  placeholder="Jump to…"
+                  className="bg-transparent outline-none flex-1 min-w-0 text-sm"
+                  autoComplete="off"
+                />
+                <span className="cn-kbd hidden md:inline">Ctrl K</span>
               </div>
-            );
-          })}
-        </nav>
-        <div className="p-4 border-t border-line">
-          <StylePicker />
-        </div>
-        <div className="p-4 border-t border-line text-xs text-muted">
-          <div className="truncate mono">{session.email}</div>
-          <button className="underline mt-2" onClick={() => void signOut()}>Sign out</button>
-        </div>
-      </aside>
-      <div className="min-w-0">
-        <header className="cn-header no-print md:hidden flex items-center h-14 px-4">
-          <button className="min-h-11 px-2 border border-line-strong" onClick={() => setOpen(!open)} aria-expanded={open}>Menu</button>
-          <span className="ms-3 mono text-sm">{uni ? lt(uni.name, "en") : ""}</span>
+              {jumpHits.length ? (
+                <ul className="absolute z-40 mt-1 w-full cn-panel overflow-hidden py-1" role="listbox" aria-label="Pages">
+                  {jumpHits.map((h) => (
+                    <li key={h.href} role="option" aria-selected={false}>
+                      <Link href={h.href} onClick={() => setJump("")} className="cn-option !min-h-10 text-sm hover:bg-[var(--cn-surface-raised)]">
+                        <Ico d={h.icon} className="text-muted" /> {h.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+            <div className="relative">
+              <Button variant="primary" className="!min-h-10" onClick={() => setQuick(!quick)} aria-expanded={quick} aria-haspopup="menu">
+                <Ico d={IC.plus} /> <span className="hidden sm:inline">Quick action</span>
+              </Button>
+              {quick ? (
+                <ul role="menu" className="absolute end-0 z-40 mt-1 w-72 cn-panel overflow-hidden py-1">
+                  {QUICK.filter((q) => can(q.perm)).map((q) => (
+                    <li key={q.href + q.label} role="none">
+                      <Link role="menuitem" href={q.href} onClick={() => setQuick(false)} className="cn-option !min-h-10 text-sm hover:bg-[var(--cn-surface-raised)]">
+                        {q.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </div>
+          {adminMode === "sandbox" ? (
+            <div className="cn-strip px-4 md:px-8 py-1.5 text-xs text-warn mono">LOCAL SANDBOX — browser-only demo data, no authentication, nothing leaves this device.</div>
+          ) : null}
         </header>
-        {adminMode === "sandbox" ? (
-          <div className="cn-strip no-print px-6 md:px-10 py-1.5 text-xs text-warn mono">LOCAL SANDBOX — browser-only demo data, no authentication, nothing leaves this device.</div>
-        ) : null}
-        <main className="cn-sections p-4 md:p-10 max-w-7xl">{children}</main>
+        <main className="cn-sections p-4 md:p-8 lg:p-10 w-full max-w-7xl">{children}</main>
       </div>
     </div>
   );

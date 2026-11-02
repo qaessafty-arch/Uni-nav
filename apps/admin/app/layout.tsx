@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" dir="ltr" data-theme="dark" data-style="editorial" suppressHydrationWarning>
+    <html lang="en" dir="ltr" data-theme="dark" data-style="minimal" suppressHydrationWarning>
       <head>
         {/* Apply the saved visual style before first paint (presentation only). */}
         <script dangerouslySetInnerHTML={{ __html: `try{var s=localStorage.getItem("campusnav.admin.style");if(["minimal","editorial","brutal"].indexOf(s)>-1)document.documentElement.dataset.style=s}catch(e){}` }} />

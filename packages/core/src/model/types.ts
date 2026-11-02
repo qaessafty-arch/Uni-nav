@@ -317,6 +317,52 @@ export interface ScheduleChange {
   note?: LocalizedText | null;
 }
 
+/**
+ * A temporary closure set by staff (construction, exams, elevator out of service).
+ * - edge: one corridor/stairs/elevator segment is closed
+ * - node: everything touching that point is closed (e.g. an elevator shaft stop)
+ * - room: the room itself is closed (navigation still works but users are warned)
+ * Routes avoid active edge/node closures automatically.
+ */
+export interface Closure {
+  id: string;
+  universityId: string;
+  targetType: "edge" | "node" | "room";
+  targetId: string;
+  reason: LocalizedText;
+  startsAt: string; // ISO timestamp
+  endsAt?: string | null; // ISO timestamp; null = until reopened
+}
+
+export type ProblemCategory = "wrong_location" | "blocked_path" | "wrong_directions" | "wrong_info" | "accessibility" | "other";
+export const PROBLEM_CATEGORIES: readonly ProblemCategory[] = ["wrong_location", "blocked_path", "wrong_directions", "wrong_info", "accessibility", "other"];
+export type ProblemStatus = "open" | "in_progress" | "resolved" | "rejected";
+
+/** A user report about wrong campus data or a bad route. Contains no personal data. */
+export interface ProblemReport {
+  id: string;
+  universityId: string;
+  category: ProblemCategory;
+  message: string;
+  roomId?: string | null;
+  nodeId?: string | null;
+  routeFromNodeId?: string | null;
+  routeToNodeId?: string | null;
+  status: ProblemStatus;
+  adminNote?: string | null;
+  createdAt: string;
+}
+
+export interface ProblemReportInput {
+  universityId: string;
+  category: ProblemCategory;
+  message: string;
+  roomId?: string | null;
+  nodeId?: string | null;
+  routeFromNodeId?: string | null;
+  routeToNodeId?: string | null;
+}
+
 export interface Announcement {
   id: string;
   universityId: string;
@@ -353,6 +399,8 @@ export interface CampusBundle {
   timetable: TimetableEntry[];
   scheduleChanges: ScheduleChange[];
   announcements: Announcement[];
+  /** Active and upcoming closures (optional for compatibility with older cached bundles). */
+  closures?: Closure[];
 }
 
 export interface UniversitySummary {

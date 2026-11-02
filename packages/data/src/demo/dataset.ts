@@ -10,6 +10,7 @@ import type {
   Building,
   Campus,
   CampusBundle,
+  Closure,
   Course,
   Department,
   Floor,
@@ -495,6 +496,22 @@ export const demoAnnouncements: Announcement[] = [
   },
 ];
 
+/** Demo closure: the Science stairs (ground ↔ floor 1) close for repainting, starting 2 days after `now`. */
+export function demoClosures(now = new Date()): Closure[] {
+  const day = 86_400_000;
+  return [
+    {
+      id: did("closure-sci-stairs"),
+      universityId: U,
+      targetType: "edge",
+      targetId: did(`edge:${sciG.stairs.id}:${sci1.stairs.id}`),
+      reason: T("Demo: Science stairs closed for repainting — use the elevator", "نموونە: پەیژەی زانست بۆ بۆیەکردن داخراوە — بەرزکەرەوە بەکاربهێنە", "تجريبي: درج العلوم مغلق للطلاء — استخدم المصعد"),
+      startsAt: new Date(now.getTime() + 2 * day).toISOString(),
+      endsAt: new Date(now.getTime() + 9 * day).toISOString(),
+    },
+  ];
+}
+
 export function demoBundle(now = new Date()): CampusBundle {
   return {
     schemaVersion: 1,
@@ -517,6 +534,7 @@ export function demoBundle(now = new Date()): CampusBundle {
     timetable: demoTimetable,
     scheduleChanges: demoScheduleChanges,
     announcements: demoAnnouncements,
+    closures: demoClosures(now),
   };
 }
 

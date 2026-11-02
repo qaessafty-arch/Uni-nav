@@ -53,8 +53,9 @@ test("admin draws on the map editor, connects nodes, validates and saves", async
   await page.getByRole("button", { name: "Validate" }).click();
   await expect(page.getByText("No issues found.")).toBeVisible();
   const svg = page.locator('svg[role="application"]');
-  const box = (await svg.boundingBox())!;
   await page.getByRole("button", { name: "Add node" }).click();
+  await svg.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  const box = (await svg.boundingBox())!;
   await page.mouse.click(box.x + box.width * 0.2, box.y + box.height * 0.15);
   await page.mouse.click(box.x + box.width * 0.4, box.y + box.height * 0.15);
   await expect(page.getByText("unsaved")).toBeVisible();
@@ -190,4 +191,58 @@ test("admin adds a campus picture and places buildings by drawing on the map", a
 
   await page.goto(`${ADMIN}/campus-map`);
   await expect(page.getByText("3 / 3 buildings placed")).toBeVisible();
+});
+
+test("admin bars: grouped sidebar with report count, breadcrumb and jump-to search", async ({ page }) => {
+  await openSandbox(page);
+  const nav = page.getByRole("navigation", { name: "Admin" });
+  await expect(nav.getByRole("link", { name: /Problem reports/ })).toContainText("1");
+  await nav.getByRole("link", { name: "Rooms" }).click();
+  await expect(page.getByRole("navigation", { name: "Breadcrumb" })).toContainText("Rooms");
+  await page.keyboard.press("Control+k");
+  await page.keyboard.type("closures");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/closures/);
+  await page.getByRole("button", { name: "Quick action" }).click();
+  await expect(page.getByRole("menuitem", { name: "Edit a floor map" })).toBeVisible();
+});
+
+test("admin triages a problem report and creates a closure", async ({ page }) => {
+  await openSandbox(page);
+  await page.goto(`${ADMIN}/reports`);
+  await expect(page.getByText(/corridor door next to room 204/)).toBeVisible();
+  await page.getByLabel("Staff note").first().fill("Facilities unlocked it");
+  await page.getByRole("button", { name: "Resolved" }).first().click();
+  await expect(page.getByText("Report marked resolved")).toBeVisible();
+  await expect(page.getByText("No open reports. Nice.")).toBeVisible();
+
+  await page.goto(`${ADMIN}/closures`);
+  await expect(page.getByText(/Science stairs closed for repainting/)).toBeVisible();
+  await page.getByRole("radio", { name: "Point" }).click();
+  await page.locator("#cl-floor").selectOption({ index: 1 });
+  await page.locator("#cl-target").selectOption({ index: 1 });
+  await page.locator("#cl-reason").fill("Elevator out of service");
+  await page.getByRole("button", { name: "Save closure" }).click();
+  await expect(page.getByText(/routes avoid it while it is active/)).toBeVisible();
+  await expect(page.getByText("Closed now")).toBeVisible();
+  await page.getByRole("button", { name: "Reopen now" }).first().click();
+  await expect(page.getByText("Reopened", { exact: true })).toBeVisible();
+});
+
+test("map editor calibrates the floor scale from a measured distance", async ({ page }) => {
+  await openSandbox(page);
+  await page.goto(`${ADMIN}/map-editor`);
+  await expect(page.getByText("1 unit = 0.05 m")).toBeVisible();
+  await page.getByRole("button", { name: "Calibrate scale" }).click();
+  const svg = page.locator('svg[role="application"]');
+  await svg.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  const box = (await svg.boundingBox())!;
+  await page.mouse.click(box.x + box.width * 0.2, box.y + box.height * 0.5);
+  await page.mouse.click(box.x + box.width * 0.6, box.y + box.height * 0.5);
+  await page.getByLabel("Measured real length (metres)").fill("30");
+  await page.getByRole("button", { name: "Apply scale" }).click();
+  await expect(page.getByText("unsaved")).toBeVisible();
+  await expect(page.getByText("1 unit = 0.05 m")).not.toBeVisible();
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Map saved")).toBeVisible();
 });

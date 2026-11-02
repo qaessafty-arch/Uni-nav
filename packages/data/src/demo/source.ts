@@ -1,4 +1,4 @@
-import { evaluateCheckpoint, parseCheckpointPayload, type CampusBundle, type CheckpointResolution, type UniversitySummary } from "@campusnav/core";
+import { evaluateCheckpoint, parseCheckpointPayload, problemReportInputSchema, type CampusBundle, type CheckpointResolution, type ProblemReportInput, type UniversitySummary } from "@campusnav/core";
 import type { CampusDataSource } from "../types";
 import { demoBundle, demoCheckpoints, demoUniversity } from "./dataset";
 
@@ -27,5 +27,11 @@ export class DemoDataSource implements CampusDataSource {
     if (!parsed.ok) return { status: "unknown" };
     const record = demoCheckpoints.find((c) => c.token === parsed.token) ?? null;
     return evaluateCheckpoint(record, new Date(), activeUniversityId);
+  }
+
+  async submitReport(input: ProblemReportInput): Promise<{ status: "demo" }> {
+    const parsed = problemReportInputSchema.safeParse(input);
+    if (!parsed.success) throw new Error("INVALID_REPORT");
+    return { status: "demo" };
   }
 }

@@ -20,6 +20,8 @@
 - Lecturer `availability` is displayed only when set by an authorised source; there is no lecturer self-service UI yet (the database permits it).
 - Web reminders fire only while the app/tab is open (no Web Push server).
 - Campus overview: admins can upload a campus picture (aerial screenshot or official plan) and draw building footprints on it; it is not a geo-referenced map (no live map tiles or GPS coordinates).
+- Positioning is still QR checkpoint or manual pick (plus "nearest" lists computed from that start); there is no GPS or live tracking.
+- Problem reports in demo mode are validated but not sent anywhere (no backend); with Supabase they go to `problem_reports` via `submit_problem_report()`. The `closures` and `problem_reports` migration has only been tested on plain PostgreSQL.
 - Translations need native-speaker review.
 
 **Security/operations** — see [SECURITY.md › residual risks](SECURITY.md#residual-risks-and-required-actions-before-production).

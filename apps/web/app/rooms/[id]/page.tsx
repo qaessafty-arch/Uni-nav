@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { lt, occurrencesOn, zonedNow } from "@campusnav/core";
+import { isClosureActive, lt, occurrencesOn, zonedNow } from "@campusnav/core";
 import { FloorMap } from "@campusnav/map-web";
 import { Gate } from "@/components/Gate";
 import { LectureCard } from "@/components/LectureCard";
@@ -27,8 +27,9 @@ export default function RoomPage() {
         const lectures = occurrencesOn(today, bundle.timetable, bundle.scheduleChanges, { roomId: room.id });
         const officeOf = bundle.lecturers.filter((x) => x.officeRoomId === room.id);
         const isSaved = saved.includes(room.id);
+        const closedNow = (bundle.closures ?? []).find((c) => c.targetType === "room" && c.targetId === room.id && isClosureActive(c, new Date()));
         return (
-          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8">
+          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 items-start">
             <div>
               <div className="label-caps">
                 <Link href={`/buildings/${building?.id}`} className="hover:text-fg">
@@ -40,6 +41,11 @@ export default function RoomPage() {
                 </Link>
               </div>
               <h1 className="cn-figure text-7xl md:text-8xl mt-3">{room.code}</h1>
+              {closedNow ? (
+                <div className="mt-3">
+                  <Notice tone="warn">{t("room.closedNow", { reason: lt(closedNow.reason, loc) })}</Notice>
+                </div>
+              ) : null}
               <p className="text-xl mt-3">{lt(room.name, loc)}</p>
               <div className="flex flex-wrap gap-2 mt-3">
                 <Badge>{t(`roomType.${room.type}`)}</Badge>
@@ -76,6 +82,11 @@ export default function RoomPage() {
                   {isSaved ? `★ ${t("common.saved_location")}` : `☆ ${t("common.save_location")}`}
                 </Button>
               </div>
+              <p className="mt-3 text-sm">
+                <Link className="text-muted underline" href={`/report?room=${room.id}`}>
+                  {t("report.link")}
+                </Link>
+              </p>
               {!room.entranceNodeId ? (
                 <div className="mt-4">
                   <Notice tone="warn">{t("room.noEntrance")}</Notice>

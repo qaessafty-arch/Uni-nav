@@ -17,7 +17,7 @@ test("first launch: onboarding → university selection → home", async ({ page
   await expect(page).toHaveURL(/campus/);
   await page.getByRole("button", { name: /Demo University/ }).click();
   await expect(page.getByRole("heading", { name: "Demo University" })).toBeVisible();
-  await expect(page.getByText("DEMO DATA").first()).toBeVisible();
+  await expect(page.getByText("DEMO DATA").filter({ visible: true }).first()).toBeVisible();
 });
 
 test("student searches for Room 204 and opens it", async ({ page }) => {
@@ -40,7 +40,7 @@ test("student navigates to a room from a chosen start and reaches the arrival st
   await expect(page.getByText("Walking time")).toBeVisible();
   await expect(page.getByText(/Arrive at/)).toBeVisible();
   // Accessible routing must use the elevator, not stairs.
-  await page.getByLabel("Accessible route (avoid stairs)").check();
+  await page.getByRole("radio", { name: "Step-free" }).click();
   await expect(page.getByRole("list", { name: "Directions" })).toContainText("elevator");
   await expect(page.getByRole("list", { name: "Directions" })).not.toContainText("stairs");
   for (let i = 0; i < 20; i++) {
@@ -105,12 +105,12 @@ test("language switch to Arabic and Sorani sets RTL and translates the UI", asyn
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   await page.goto(BASE);
-  await expect(page.getByText("الجامعة التجريبية").first()).toBeVisible();
+  await expect(page.getByText("الجامعة التجريبية").filter({ visible: true }).first()).toBeVisible();
   await page.goto(`${BASE}/language`);
   await page.getByRole("radio", { name: "کوردی (سۆرانی)" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "ckb");
   await page.goto(BASE);
-  await expect(page.getByText("زانکۆی نموونە").first()).toBeVisible();
+  await expect(page.getByText("زانکۆی نموونە").filter({ visible: true }).first()).toBeVisible();
 });
 
 test("works offline from the cached bundle after one online visit", async ({ page, context }) => {
@@ -123,4 +123,69 @@ test("works offline from the cached bundle after one online visit", async ({ pag
   await page.evaluate(() => window.dispatchEvent(new Event("offline")));
   await expect(page.getByText("You're offline")).toBeVisible();
   await context.setOffline(false);
+});
+
+test("app bars: sidebar navigation, location bar and Ctrl+K search", async ({ page }) => {
+  await enterDemo(page);
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto(BASE);
+  const nav = page.getByRole("navigation", { name: "Primary" }).first();
+  await nav.getByRole("link", { name: "Timetable" }).click();
+  await expect(page).toHaveURL(/\/timetable/);
+  await expect(nav.getByRole("link", { name: "Timetable" })).toHaveAttribute("aria-current", "page");
+  // Location bar opens the picker; choosing a place sets "You are here"
+  await page.getByRole("button", { name: /Your location/ }).first().click();
+  const dialog = page.getByRole("dialog", { name: "Your location" });
+  await dialog.getByRole("combobox").selectOption({ index: 1 });
+  await dialog.getByRole("button", { name: "Confirm" }).click();
+  await expect(page.getByRole("button", { name: /Your location/ }).first()).not.toContainText("Location not set");
+  // Command palette
+  await page.keyboard.press("Control+k");
+  const palette = page.getByRole("dialog", { name: "Search" });
+  await palette.getByRole("combobox").fill("204");
+  await palette.getByRole("combobox").press("Enter");
+  await expect(page.getByRole("heading", { name: "204" })).toBeVisible();
+});
+
+test("nearest facilities are ordered by walking distance from your location", async ({ page }) => {
+  await enterDemo(page);
+  await page.goto(`${BASE}/nearby?type=toilet`);
+  await expect(page.getByText("Set your location first")).toBeVisible();
+  await page.goto(`${BASE}/q/DEMOengMainEntrance01`);
+  await expect(page.getByText(/Location set/)).toBeVisible();
+  await page.goto(`${BASE}/nearby?type=toilet`);
+  const list = page.getByRole("list", { name: "Nearest places" });
+  await expect(list.getByRole("listitem")).toHaveCount(5);
+  const metres = await list.getByRole("listitem").allTextContents();
+  const nums = metres.map((t) => Number(/(\d+) m walk/.exec(t)?.[1]));
+  expect(nums).toEqual([...nums].sort((a, b) => a - b));
+  await list.getByRole("link", { name: "Navigate" }).first().click();
+  await expect(page.getByText("Walking time")).toBeVisible();
+});
+
+test("route preferences, progress bar and report a problem (demo mode is honest)", async ({ page }) => {
+  await enterDemo(page);
+  await page.goto(`${BASE}/q/DEMOengMainEntrance01`);
+  await expect(page.getByText(/Location set/)).toBeVisible();
+  await page.goto(`${BASE}/navigate?to=${ROOM_204}`);
+  await expect(page.getByRole("progressbar")).toBeVisible();
+  await page.getByRole("radio", { name: "Fewer stairs" }).click();
+  await expect(page.getByRole("list", { name: "Directions" })).not.toContainText("stairs");
+  await page.getByRole("radio", { name: "Shortest" }).click();
+  await page.getByRole("link", { name: "Something wrong? Report it" }).click();
+  await expect(page.getByRole("heading", { name: "Report a problem" })).toBeVisible();
+  await expect(page.getByLabel("Directions were wrong or confusing")).toBeChecked();
+  await page.getByRole("button", { name: "Send report" }).click();
+  await expect(page.getByText("Please write at least 5 characters.")).toBeVisible();
+  await page.getByLabel("Details").fill("The stairs sign on floor 1 points the wrong way.");
+  await page.getByRole("button", { name: "Send report" }).click();
+  await expect(page.getByText(/Demo mode: your report was checked but not sent/)).toBeVisible();
+});
+
+test("planned closures are shown on the home screen", async ({ page }) => {
+  await enterDemo(page);
+  await page.goto(BASE);
+  await expect(page.getByText("Closures & changes")).toBeVisible();
+  await expect(page.getByText(/Science stairs closed for repainting/)).toBeVisible();
+  await expect(page.getByText("Planned closure")).toBeVisible();
 });

@@ -28,7 +28,7 @@ import { useAdminBundle } from "@/lib/bundle";
 import { inputCls } from "@/components/Form";
 import { Badge, Button, ErrorState, Notice, PageTitle, Spinner, cx } from "@/components/ui";
 
-type Tool = "select" | "room" | "area" | "node" | "edge";
+type Tool = "select" | "room" | "area" | "node" | "edge" | "calibrate";
 type Sel = { type: "element" | "node" | "edge"; id: string } | null;
 
 interface Work {
@@ -119,6 +119,8 @@ function Editor({ bundle, building, floorId, setFloorId, checkpoints }: { bundle
   const [preview, setPreview] = useState<{ from: string; to: string }>({ from: "", to: "" });
   const [saving, setSaving] = useState(false);
   const [issues, setIssues] = useState<MapIssue[] | null>(null);
+  const [cal, setCal] = useState<{ a: { x: number; y: number }; b?: { x: number; y: number } } | null>(null);
+  const [calM, setCalM] = useState("");
 
   const floor = work.floors.find((f) => f.id === floorId) ?? work.floors[0]!;
   const base = useMemo(() => fitViewBox(floor.width, floor.height), [floor.width, floor.height]);
@@ -207,6 +209,9 @@ function Editor({ bundle, building, floorId, setFloorId, checkpoints }: { bundle
       setSel({ type: "node", id: n.id });
       // Chain: connect consecutive corridor nodes automatically if one is selected and the shift key is held.
       if (e.shiftKey && sel?.type === "node") addEdge(sel.id, n.id);
+    } else if (tool === "calibrate") {
+      if (!cal || cal.b) setCal({ a: { x: p.x, y: p.y } });
+      else setCal({ a: cal.a, b: { x: p.x, y: p.y } });
     } else if (tool === "edge") {
       if (tk === "node" && tid) {
         if (!edgeStart) setEdgeStart(tid);
@@ -360,6 +365,7 @@ function Editor({ bundle, building, floorId, setFloorId, checkpoints }: { bundle
               ["area", "Draw area"],
               ["node", "Add node"],
               ["edge", "Connect nodes"],
+              ["calibrate", "Calibrate scale"],
             ] as [Tool, string][]
           ).map(([t, label]) => (
             <button key={t} disabled={!editable && t !== "select"} aria-pressed={tool === t} onClick={() => { setTool(t); setEdgeStart(null); }} className={cx("cn-btn !min-h-10 !px-3", tool === t && "cn-btn-primary")}>
@@ -381,7 +387,7 @@ function Editor({ bundle, building, floorId, setFloorId, checkpoints }: { bundle
           <Button onClick={() => setVb(base)}>Reset view</Button>
         </div>
         <p className="text-xs text-muted mb-2">
-          {tool === "edge" ? (edgeStart ? "Click the second node (hold Shift to keep chaining)." : "Click the first node.") : tool === "node" ? "Click to place a node. Shift+click connects it to the selected node." : tool === "select" ? "Drag nodes/rects to move. Drag empty space to pan, wheel to zoom. Delete removes the selection." : "Drag to draw."}
+          {tool === "edge" ? (edgeStart ? "Click the second node (hold Shift to keep chaining)." : "Click the first node.") : tool === "node" ? "Click to place a node. Shift+click connects it to the selected node." : tool === "select" ? "Drag nodes/rects to move. Drag empty space to pan, wheel to zoom. Delete removes the selection." : tool === "calibrate" ? "Click both ends of something you have measured on site (e.g. a corridor wall), then enter its real length on the right." : "Drag to draw."}
         </p>
         <svg
           ref={svgRef}
@@ -440,6 +446,14 @@ function Editor({ bundle, building, floorId, setFloorId, checkpoints }: { bundle
               </g>
             );
           })}
+          {tool === "calibrate" && cal ? (
+            <g pointerEvents="none" data-testid="calibration">
+              {cal.b ? <line x1={cal.a.x} y1={cal.a.y} x2={cal.b.x} y2={cal.b.y} stroke="var(--cn-warning)" strokeWidth={3} strokeDasharray="8 5" vectorEffect="non-scaling-stroke" /> : null}
+              {[cal.a, cal.b].filter(Boolean).map((pt, i) => (
+                <circle key={i} cx={pt!.x} cy={pt!.y} r={7} fill="var(--cn-warning)" stroke="var(--cn-bg)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+              ))}
+            </g>
+          ) : null}
           {draft ? <rect x={Math.min(draft.x0, draft.x1)} y={Math.min(draft.y0, draft.y1)} width={Math.abs(draft.x1 - draft.x0)} height={Math.abs(draft.y1 - draft.y0)} fill="color-mix(in srgb, var(--cn-accent) 15%, transparent)" stroke="var(--cn-accent)" strokeDasharray="4 3" vectorEffect="non-scaling-stroke" /> : null}
         </svg>
         <div className="flex flex-wrap gap-3 text-xs text-muted mt-2">
@@ -458,6 +472,49 @@ function Editor({ bundle, building, floorId, setFloorId, checkpoints }: { bundle
           <Button onClick={() => { setWork(structuredClone(initial)); setSel(null); }} disabled={!dirty}>Discard</Button>
           <Button onClick={validate}>Validate</Button>
           {dirty ? <Badge tone="warn">unsaved</Badge> : <Badge>saved</Badge>}
+        </div>
+
+        <div className="border border-line p-3" aria-labelledby="scale-h">
+          <div id="scale-h" className="label-caps mb-2">Scale</div>
+          <p className="text-sm">
+            1 unit = <span className="mono">{floor.metersPerUnit}</span> m · floor ≈ <span className="mono">{Math.round(floor.width * floor.metersPerUnit)} × {Math.round(floor.height * floor.metersPerUnit)} m</span>
+          </p>
+          {tool !== "calibrate" ? (
+            <button className="text-xs underline mt-1" disabled={!editable} onClick={() => { setTool("calibrate"); setCal(null); setCalM(""); }}>
+              Calibrate from a measured distance
+            </button>
+          ) : cal?.b ? (
+            (() => {
+              const units = Math.hypot(cal.b.x - cal.a.x, cal.b.y - cal.a.y);
+              const m = Number(calM.replace(",", "."));
+              const mpu = m > 0 && units > 0 ? m / units : null;
+              return (
+                <div className="mt-2 space-y-2">
+                  <p className="text-xs text-muted">Line length on the plan: <span className="mono">{units.toFixed(1)}</span> units</p>
+                  <label className="text-xs block" htmlFor="cal-m">Measured real length (metres)</label>
+                  <input id="cal-m" inputMode="decimal" className={inputCls} value={calM} onChange={(e) => setCalM(e.target.value)} placeholder="e.g. 24.5" />
+                  {mpu ? <p className="text-xs">New scale: 1 unit = <span className="mono">{mpu.toFixed(4)}</span> m (floor ≈ {Math.round(floor.width * mpu)} × {Math.round(floor.height * mpu)} m)</p> : null}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="primary"
+                      disabled={!mpu || mpu > 10}
+                      onClick={() => {
+                        update((w) => ({ ...w, floors: w.floors.map((f) => (f.id === floor.id ? { ...f, metersPerUnit: Number(mpu!.toFixed(5)) } : f)) }));
+                        setTool("select");
+                        setCal(null);
+                      }}
+                    >
+                      Apply scale
+                    </Button>
+                    <Button onClick={() => { setTool("select"); setCal(null); }}>Cancel</Button>
+                  </div>
+                  <p className="text-[11px] text-muted">Measure on site with a tape or laser. Check a second distance afterwards: route lengths and walking times depend on this.</p>
+                </div>
+              );
+            })()
+          ) : (
+            <p className="text-xs text-warn mt-1">{cal ? "Now click the other end." : "Click the first end of a measured distance on the plan."}</p>
+          )}
         </div>
 
         <div className="border border-line p-3">

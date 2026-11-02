@@ -1,15 +1,18 @@
 "use client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { lt, planRoute, startCandidates, type CampusBundle, type NavNode, type PlanResult } from "@campusnav/core";
+import { Suspense, useEffect, useState } from "react";
+import { lt, planRoute, relevantClosures, routeOptionsFor, ROUTE_PREFERENCES, type PlanResult, type RoutePreference } from "@campusnav/core";
 import { describeStep, formatDistance, formatDuration, formatNumber } from "@campusnav/i18n";
 import { FloorMap, routeSegmentsForFloor } from "@campusnav/map-web";
 import { Gate } from "@/components/Gate";
 import { mapLabels } from "@/components/MapLabels";
-import { Badge, Button, ButtonLink, ErrorState, Notice, Toggle, cx } from "@/components/ui";
+import { Badge, Button, ButtonLink, ErrorState, Notice, cx } from "@/components/ui";
+import { StartPicker, nodeName } from "@/components/LocationPicker";
+import { Icon } from "@/components/Icon";
+import { I } from "@/components/icons";
 import { useApp } from "@/lib/store";
-import { lookup, type Lookup } from "@/lib/lookup";
+import { lookup } from "@/lib/lookup";
 
 type Target = { kind: "room"; id: string } | { kind: "node"; id: string };
 
@@ -19,68 +22,51 @@ function parseTarget(to: string | null): Target | null {
   return { kind: "room", id: to };
 }
 
-function nodeName(n: NavNode, l: Lookup, loc: Parameters<typeof lt>[1]): string {
-  const room = l.roomByEntrance.get(n.id);
-  if (room) return `${room.code} · ${lt(room.name, loc)}`;
-  return lt(n.label, loc) || `${lt(l.floors.get(n.floorId)?.name, loc)}`;
+const PREF_KEY: Record<RoutePreference, "navigate.prefShortest" | "navigate.prefFewerStairs" | "navigate.prefStepFree"> = {
+  shortest: "navigate.prefShortest",
+  fewer_stairs: "navigate.prefFewerStairs",
+  step_free: "navigate.prefStepFree",
+};
+
+function PreferencePicker({ value, onChange }: { value: RoutePreference; onChange: (p: RoutePreference) => void }) {
+  const { t } = useApp();
+  return (
+    <div>
+      <div className="label-caps mb-2" id="pref-label">
+        {t("navigate.preference")}
+      </div>
+      <div className="cn-segment" role="radiogroup" aria-labelledby="pref-label">
+        {ROUTE_PREFERENCES.map((p) => (
+          <button key={p} type="button" role="radio" aria-checked={value === p} onClick={() => onChange(p)}>
+            {t(PREF_KEY[p])}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-function StartPicker({ bundle, onPick, returnTo }: { bundle: CampusBundle; onPick: (nodeId: string) => void; returnTo: string }) {
-  const { t, prefs } = useApp();
-  const l = lookup(bundle);
-  const loc = prefs.locale;
-  const [value, setValue] = useState("");
-  const groups = useMemo(() => {
-    const cands = startCandidates(bundle);
-    const byBuilding = new Map<string, NavNode[]>();
-    for (const n of cands) {
-      const f = l.floors.get(n.floorId);
-      const key = f?.buildingId ?? "";
-      byBuilding.set(key, [...(byBuilding.get(key) ?? []), n]);
-    }
-    return [...byBuilding.entries()].map(([bid, nodes]) => ({
-      building: l.buildings.get(bid),
-      nodes: nodes.sort((a, z) => (l.floors.get(a.floorId)?.level ?? 0) - (l.floors.get(z.floorId)?.level ?? 0) || nodeName(a, l, loc).localeCompare(nodeName(z, l, loc), undefined, { numeric: true })),
-    }));
-  }, [bundle, l, loc]);
-
+function ShareButton({ path }: { path: string }) {
+  const { t } = useApp();
+  const [copied, setCopied] = useState(false);
   return (
-    <div className="cn-card p-5 md:p-6">
-      <h2 className="text-xl font-semibold">{t("navigate.chooseStart")}</h2>
-      <p className="text-muted text-sm mt-1">{t("navigate.chooseStartHint")}</p>
-      <div className="mt-4 flex flex-col sm:flex-row gap-3">
-        <ButtonLink href={`/scan?then=${encodeURIComponent(returnTo)}`} variant="primary">
-          {t("navigate.scanToStart")}
-        </ButtonLink>
-      </div>
-      <form
-        className="mt-5 flex flex-col sm:flex-row gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (value) onPick(value);
-        }}
-      >
-        <label className="sr-only" htmlFor="start-select">
-          {t("navigate.pickStart")}
-        </label>
-        <select id="start-select" value={value} onChange={(e) => setValue(e.target.value)} className="min-h-11 flex-1 bg-bg border border-line-strong px-3">
-          <option value="">{t("navigate.pickStart")}</option>
-          {groups.map((g) => (
-            <optgroup key={g.building?.id ?? "x"} label={lt(g.building?.name, loc)}>
-              {g.nodes.map((n) => (
-                <option key={n.id} value={n.id}>
-                  {lt(l.floors.get(n.floorId)?.name, loc)} — {nodeName(n, l, loc)}
-                  {l.checkpointNodeIds.has(n.id) ? " ▣" : ""}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-        <Button type="submit" disabled={!value}>
-          {t("common.confirm")}
-        </Button>
-      </form>
-    </div>
+    <Button
+      onClick={async () => {
+        const url = `${window.location.origin}${path}`;
+        try {
+          if (navigator.share) await navigator.share({ url });
+          else {
+            await navigator.clipboard.writeText(url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          }
+        } catch {
+          /* user cancelled */
+        }
+      }}
+    >
+      <Icon d={I.share} className="size-4" /> {copied ? t("navigate.copied") : t("navigate.share")}
+    </Button>
   );
 }
 
@@ -104,7 +90,8 @@ function NavigateInner() {
   const { t, prefs, start, setStart, addHistory, reload } = useApp();
   const target = parseTarget(params.get("to"));
   const fromOverride = params.get("from");
-  const [accessible, setAccessible] = useState(prefs.accessible);
+  const [pref, setPref] = useState<RoutePreference>(prefs.accessible ? "step_free" : "shortest");
+  const accessible = pref === "step_free";
   const [stepIdx, setStepIdx] = useState(0);
   const [arrived, setArrived] = useState(false);
   const [recalcKey, setRecalcKey] = useState(0);
@@ -114,7 +101,7 @@ function NavigateInner() {
   useEffect(() => {
     setStepIdx(0);
     setArrived(false);
-  }, [startId, accessible, recalcKey, params]);
+  }, [startId, pref, recalcKey, params]);
 
   return (
     <Gate>
@@ -151,13 +138,15 @@ function NavigateInner() {
           );
         }
 
-        const res = planRoute(bundle, startId, destNodeId, { accessibleOnly: accessible });
+        const now = new Date();
+        const res = planRoute(bundle, startId, destNodeId, routeOptionsFor(pref), now);
+        const activeClosures = relevantClosures(bundle, now).active.filter((c) => c.targetType !== "room");
         if (!res.ok) {
           return (
             <div className="max-w-2xl space-y-4">
               {header}
               <ErrorState title={errorText(res, accessible, t)} />
-              <Toggle checked={accessible} onChange={setAccessible} label={t("navigate.accessible")} />
+              <PreferencePicker value={pref} onChange={setPref} />
               <div className="flex gap-2">
                 <Button onClick={() => setStart(null)}>{t("navigate.changeStart")}</Button>
                 <Button onClick={() => { reload(); setRecalcKey((k) => k + 1); }}>{t("navigate.recalculate")}</Button>
@@ -195,9 +184,9 @@ function NavigateInner() {
         return (
           <div>
             {header}
-            <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6">
+            <div className="grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-6">
               <div className="space-y-3 order-1">
-                <div role="tablist" aria-label={t("map.floors")} className="flex flex-wrap gap-1">
+                <div role="tablist" aria-label={t("map.floors")} className="cn-scroll-x">
                   {routeFloors.map((fid, i) => {
                     const f = l.floors.get(fid);
                     const firstStep = steps.findIndex((s) => (s.toFloorId && s.kind !== "start" ? s.toFloorId : s.floorId) === fid);
@@ -207,7 +196,8 @@ function NavigateInner() {
                         role="tab"
                         aria-selected={fid === viewFloorId}
                         onClick={() => setStepIdx(Math.max(0, firstStep))}
-                        className={cx("min-h-11 px-3 border text-sm", fid === viewFloorId ? "border-accent text-accent" : "border-line-strong text-muted")}
+                        aria-current={fid === viewFloorId ? "true" : undefined}
+                        className="cn-chip !min-h-9"
                       >
                         {l.buildings.get(f?.buildingId ?? "")?.code} · {lt(f?.name, loc)}
                       </button>
@@ -231,7 +221,7 @@ function NavigateInner() {
               </div>
 
               <div className="order-2 space-y-4">
-                <div className="cn-card grid grid-cols-2 !p-0 overflow-hidden">
+                <div className="cn-panel grid grid-cols-2 overflow-hidden">
                   <div className="p-4 border-e border-line">
                     <div className="label-caps">{t("navigate.distance")}</div>
                     <div className="cn-figure text-3xl md:text-4xl mt-2">{formatDistance(loc, plan.route.distanceM)}</div>
@@ -254,9 +244,19 @@ function NavigateInner() {
                     {t("navigate.changeStart")}
                   </button>
                 </div>
-                <Toggle checked={accessible} onChange={setAccessible} label={t("navigate.accessible")} />
+                <PreferencePicker value={pref} onChange={setPref} />
+                {activeClosures.length ? <Notice tone="warn">{t("navigate.avoidingClosures", { n: activeClosures.length })}</Notice> : null}
+                <div>
+                  <div className="flex justify-between text-xs text-muted mb-1.5">
+                    <span>{t("navigate.progress", { n: Math.min(stepIdx, steps.length - 1) + 1, total: steps.length })}</span>
+                    <span className="mono">{Math.round(((Math.min(stepIdx, steps.length - 1) + 1) / steps.length) * 100)}%</span>
+                  </div>
+                  <div className="cn-progress" role="progressbar" aria-valuemin={1} aria-valuemax={steps.length} aria-valuenow={Math.min(stepIdx, steps.length - 1) + 1} aria-label={t("navigate.steps")}>
+                    <span style={{ width: `${((Math.min(stepIdx, steps.length - 1) + 1) / steps.length) * 100}%` }} />
+                  </div>
+                </div>
 
-                <ol className="cn-card !p-0 overflow-hidden" aria-label={t("navigate.steps")}>
+                <ol className="cn-panel overflow-hidden max-h-[42vh] overflow-y-auto" aria-label={t("navigate.steps")}>
                   {steps.map((s, i) => (
                     <li key={i}>
                       <button
@@ -270,7 +270,7 @@ function NavigateInner() {
                     </li>
                   ))}
                 </ol>
-                <div className="flex gap-2">
+                <div className="flex gap-2 cn-actionbar -mx-4 px-4 py-3 md:static md:mx-0 md:px-0 md:py-0 md:bg-transparent md:border-0 md:backdrop-blur-none">
                   <Button onClick={() => setStepIdx(Math.max(0, stepIdx - 1))} disabled={stepIdx === 0} aria-label={t("navigate.prev")}>
                     <span className="rtl:rotate-180">←</span>
                   </Button>
@@ -292,11 +292,15 @@ function NavigateInner() {
                   )}
                   <Button onClick={() => { reload(); setRecalcKey((k) => k + 1); }}>{t("navigate.recalculate")}</Button>
                 </div>
-                <p className="text-xs text-faint">
-                  <Link className="underline" href={`/scan?then=${encodeURIComponent(returnTo)}`}>
-                    {t("navigate.scanToStart")}
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <ShareButton path={`/navigate?to=${encodeURIComponent(params.get("to") ?? "")}&from=${encodeURIComponent(startId)}`} />
+                  <ButtonLink href={`/scan?then=${encodeURIComponent(returnTo)}`}>
+                    <Icon d={I.scan} className="size-4" /> {t("nav.scan")}
+                  </ButtonLink>
+                  <Link className="text-muted underline ms-auto" href={`/report?category=wrong_directions&from=${encodeURIComponent(startId)}&to=${encodeURIComponent(destNodeId)}`}>
+                    {t("report.link")}
                   </Link>
-                </p>
+                </div>
               </div>
             </div>
           </div>

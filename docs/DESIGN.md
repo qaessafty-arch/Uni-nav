@@ -35,6 +35,13 @@ Three selectable styles share the same components, colours and behaviour; they d
 
 Selection: student web → Settings › Visual style (stored with the existing preferences; a tiny inline script applies it before first paint); admin → sidebar selector (browser-local); mobile → Settings › Visual style (stored with the existing app preferences). On mobile the same values live in `styleTokens` (`packages/tokens/src/index.ts`) and are read by the native primitives via `useLook()` / `useCard()` in `apps/mobile/src/ui.tsx`; Instrument Serif is bundled for the Editorial headings.
 
+## App layout (bars)
+
+- **Student web:** desktop sidebar grouped into Explore (Home, Search, Map, Nearby, Scan), Academic (Timetable, Lecturers) and You (Saved, Notifications, Ask, Settings), with a "Your location" bar on top and "Report a problem" at the bottom. A top bar holds global search (Ctrl/⌘ K or "/"), online/offline status and notifications. On phones: top bar + location bar, and a bottom tab bar (Home, Map, a raised Scan button, Timetable, More → drawer).
+- **Directions:** route preference segmented control (Shortest / Fewer stairs / Step-free), step progress bar, sticky step controls above the tab bar on phones, Share and Report links.
+- **Admin:** grouped sidebar with icons and an open-report counter, top bar with breadcrumb, "Jump to…" page search (Ctrl/⌘ K) and a Quick action menu; dashboard "Needs attention" row.
+- Default visual style is now Minimalism × Electric; Editorial and Brutalism remain selectable.
+
 ## Typography
 
 | Role | Font | Notes |

@@ -285,6 +285,40 @@ export const announcementSchema = z.object({
   priority: z.enum(["normal", "important"]),
 });
 
+const isoInstant = z.string().refine((s) => !Number.isNaN(Date.parse(s)), "invalid_date");
+
+export const closureSchema = z
+  .object({
+    id: uuidish,
+    universityId: uuidish,
+    targetType: z.enum(["edge", "node", "room"]),
+    targetId: uuidish,
+    reason: localizedTextSchema,
+    startsAt: isoInstant,
+    endsAt: isoInstant.nullish(),
+  })
+  .refine((c) => !c.endsAt || Date.parse(c.endsAt) > Date.parse(c.startsAt), { message: "end_before_start", path: ["endsAt"] });
+
+export const problemCategorySchema = z.enum(["wrong_location", "blocked_path", "wrong_directions", "wrong_info", "accessibility", "other"]);
+
+/** What a student/visitor may submit. Free text is length-limited; no personal fields exist. */
+export const problemReportInputSchema = z.object({
+  universityId: uuidish,
+  category: problemCategorySchema,
+  message: text(1000).min(5, "too_short"),
+  roomId: optionalId,
+  nodeId: optionalId,
+  routeFromNodeId: optionalId,
+  routeToNodeId: optionalId,
+});
+
+export const problemReportSchema = problemReportInputSchema.extend({
+  id: uuidish,
+  status: z.enum(["open", "in_progress", "resolved", "rejected"]),
+  adminNote: text(1000).nullish(),
+  createdAt: z.string(),
+});
+
 export const entitySchemas = {
   universities: universitySchema,
   campuses: campusSchema,
@@ -303,6 +337,8 @@ export const entitySchemas = {
   timetable_entries: timetableEntrySchema,
   schedule_changes: scheduleChangeSchema,
   announcements: announcementSchema,
+  closures: closureSchema,
+  problem_reports: problemReportSchema,
 } as const;
 
 export type EntityTable = keyof typeof entitySchemas;

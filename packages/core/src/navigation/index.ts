@@ -2,10 +2,13 @@ import type { CampusBundle, NavNode } from "../model/types";
 import { buildGraph, type NavGraph, type RouteOptions } from "./graph";
 import { buildInstructions, estimateWalkingTime, type RouteStep, type WalkingEstimate } from "./instructions";
 import { findRoute, type Route, type RouteError } from "./pathfinding";
+import { closedEdgeIds } from "./closures";
 
 export * from "./graph";
 export * from "./pathfinding";
 export * from "./instructions";
+export * from "./closures";
+export * from "./nearest";
 export { MinHeap } from "./heap";
 
 export interface NavigationPlan {
@@ -29,9 +32,20 @@ export function graphForBundle(bundle: CampusBundle): NavGraph {
   return g;
 }
 
-export function planRoute(bundle: CampusBundle, fromNodeId: string, toNodeId: string, options: RouteOptions = {}): PlanResult {
+/** Route options with the bundle's active closures merged into `avoidEdgeIds`. */
+export function withClosures(bundle: CampusBundle, options: RouteOptions = {}, at: Date = new Date()): RouteOptions {
+  const closed = closedEdgeIds(bundle, at);
+  if (!closed.size) return options;
+  return { ...options, avoidEdgeIds: [...(options.avoidEdgeIds ?? []), ...closed] };
+}
+
+/**
+ * Plan a route. Active closures in the bundle are always avoided; pass `at` to
+ * plan for another moment (tests, "leave later").
+ */
+export function planRoute(bundle: CampusBundle, fromNodeId: string, toNodeId: string, options: RouteOptions = {}, at: Date = new Date()): PlanResult {
   const graph = graphForBundle(bundle);
-  const res = findRoute(graph, fromNodeId, toNodeId, options);
+  const res = findRoute(graph, fromNodeId, toNodeId, withClosures(bundle, options, at));
   if (!res.ok) return res;
   return {
     ok: true,
@@ -43,11 +57,11 @@ export function planRoute(bundle: CampusBundle, fromNodeId: string, toNodeId: st
   };
 }
 
-export function planRouteToRoom(bundle: CampusBundle, fromNodeId: string, roomId: string, options: RouteOptions = {}): PlanResult {
+export function planRouteToRoom(bundle: CampusBundle, fromNodeId: string, roomId: string, options: RouteOptions = {}, at: Date = new Date()): PlanResult {
   const room = bundle.rooms.find((r) => r.id === roomId);
   if (!room) return { ok: false, error: { code: "ROOM_NOT_FOUND" } };
   if (!room.entranceNodeId) return { ok: false, error: { code: "ROOM_HAS_NO_ENTRANCE" } };
-  return planRoute(bundle, fromNodeId, room.entranceNodeId, options);
+  return planRoute(bundle, fromNodeId, room.entranceNodeId, options, at);
 }
 
 /** Closest node on a floor to a map coordinate (e.g. where the user tapped "I am here"). */

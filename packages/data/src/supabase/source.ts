@@ -2,7 +2,10 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   evaluateCheckpoint,
   parseCheckpointPayload,
+  problemReportInputSchema,
   type CampusBundle,
+  type ProblemReportInput,
+  type ProblemStatus,
   type CheckpointResolution,
   type EntityTable,
   type Role,
@@ -94,8 +97,10 @@ export class SupabaseDataSource implements CampusDataSource {
       "schedule_changes",
       "announcements",
     ] as const;
-    const [checkpoints, ...results] = await Promise.all([
+    const nowIso = new Date().toISOString();
+    const [checkpoints, closures, ...results] = await Promise.all([
       this.all("public_checkpoints", universityId, "id,node_id,label"),
+      check(await this.client.from("closures").select("*").eq("university_id", universityId).or(`ends_at.is.null,ends_at.gt.${nowIso}`).limit(2000)) as unknown as Promise<Record<string, unknown>[]>,
       ...tables.map((t) => this.all(t, universityId)),
     ]);
     const m = <T>(rows: Record<string, unknown>[]) => rows.map((r) => rowToDomain<T>(r));
@@ -123,7 +128,24 @@ export class SupabaseDataSource implements CampusDataSource {
       timetable: m(timetable!),
       scheduleChanges: m(scheduleChanges!),
       announcements: m<CampusBundle["announcements"][number]>(announcements!).filter((a) => !a.expiresAt || Date.parse(a.expiresAt) > now),
+      closures: m(closures as Record<string, unknown>[]),
     };
+  }
+
+  async submitReport(input: ProblemReportInput): Promise<{ status: "sent"; id: string }> {
+    const v = problemReportInputSchema.parse(input);
+    const id = check(
+      await this.client.rpc("submit_problem_report", {
+        p_university: v.universityId,
+        p_category: v.category,
+        p_message: v.message,
+        p_room: v.roomId ?? null,
+        p_node: v.nodeId ?? null,
+        p_from: v.routeFromNodeId ?? null,
+        p_to: v.routeToNodeId ?? null,
+      }),
+    ) as unknown as string;
+    return { status: "sent", id };
   }
 
   async resolveCheckpoint(raw: string, activeUniversityId?: string): Promise<CheckpointResolution> {
@@ -193,7 +215,13 @@ export class SupabaseAdminSource implements AdminDataSource {
     q = table === "universities" ? q.eq("id", universityId) : q.eq("university_id", universityId);
     if (SOFT_DELETE_TABLES.has(table)) q = q.is("deleted_at", null);
     const rows = check(await q.limit(10000)) as Record<string, unknown>[];
+    // problem_reports expose their submission time (created_at is otherwise treated as DB-only).
+    if (table === "problem_reports") return rows.map((r) => ({ ...rowToDomain<Record<string, unknown>>(r), createdAt: r.created_at }) as T);
     return rows.map((r) => rowToDomain<T>(r));
+  }
+
+  async updateReport(id: string, status: ProblemStatus, adminNote: string | null): Promise<void> {
+    check(await this.client.from("problem_reports").update({ status, admin_note: adminNote }).eq("id", id));
   }
 
   async upsert<T extends { id: string }>(table: EntityTable, row: T): Promise<T> {

@@ -572,3 +572,361 @@ html[dir="rtl"] .cn-btn {
     text-transform: none !important;
   }
 }
+
+/* ───────────────────────── App layout v2: bars & navigation ─────────────────────────
+ * Sidebar (desktop), top bar, location bar, mobile tab bar, drawer, command palette,
+ * chips, segmented control, progress bar. All colours come from tokens, so the three
+ * visual styles and both themes apply automatically. */
+@layer components {
+  .cn-app {
+    display: grid;
+    /* minmax(0, …) stops wide children (maps, chip rows) from widening the page on phones */
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 100dvh;
+  }
+  @media (min-width: 1024px) {
+    .cn-app {
+      grid-template-columns: 264px minmax(0, 1fr);
+    }
+  }
+  .cn-rail {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    overflow-y: auto;
+    background: var(--cn-surface);
+    border-inline-end: var(--cn-bw) solid var(--cn-border);
+    display: flex;
+    flex-direction: column;
+  }
+  .cn-side-group {
+    padding: 0.75rem 0.75rem 0.25rem;
+  }
+  .cn-side-label {
+    font-family: var(--cn-font-mono, "IBM Plex Mono", ui-monospace, monospace);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cn-text-faint);
+    padding: 0 0.625rem 0.375rem;
+  }
+  .cn-navitem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 40px;
+    padding: 0 0.625rem;
+    border-radius: var(--cn-radius);
+    color: var(--cn-text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    border: var(--cn-bw) solid transparent;
+    transition: background-color 120ms, color 120ms;
+  }
+  .cn-navitem:hover {
+    background: var(--cn-surface-raised);
+    color: var(--cn-text);
+  }
+  .cn-navitem[aria-current="page"] {
+    background: var(--cn-accent-soft);
+    color: var(--cn-text);
+    border-color: color-mix(in srgb, var(--cn-accent) 35%, transparent);
+  }
+  .cn-navitem[aria-current="page"] svg {
+    color: var(--cn-accent);
+  }
+  .cn-navitem .cn-count {
+    margin-inline-start: auto;
+    font-size: 11px;
+    min-width: 20px;
+    text-align: center;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--cn-accent);
+    color: var(--cn-accent-text);
+    font-weight: 700;
+  }
+  html[data-style="brutal"] .cn-navitem[aria-current="page"] {
+    background: var(--cn-accent);
+    color: var(--cn-accent-text);
+    border-color: var(--cn-text);
+  }
+  html[data-style="brutal"] .cn-navitem[aria-current="page"] svg {
+    color: var(--cn-accent-text);
+  }
+  .cn-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: color-mix(in srgb, var(--cn-bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: var(--cn-bw) solid var(--cn-border);
+  }
+  .cn-searchtrigger {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    min-height: 42px;
+    padding: 0 0.75rem;
+    border-radius: var(--cn-radius);
+    border: var(--cn-bw) solid var(--cn-border-strong);
+    background: var(--cn-surface);
+    color: var(--cn-text-muted);
+    font-size: 14px;
+    text-align: start;
+  }
+  .cn-searchtrigger:hover {
+    border-color: var(--cn-text-muted);
+    color: var(--cn-text);
+  }
+  .cn-kbd {
+    font-family: var(--cn-font-mono, "IBM Plex Mono", ui-monospace, monospace);
+    font-size: 11px;
+    border: 1px solid var(--cn-border-strong);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--cn-text-faint);
+  }
+  .cn-locbar {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--cn-radius);
+    background: var(--cn-surface-raised);
+    border: var(--cn-bw) solid var(--cn-border);
+    font-size: 13px;
+    text-align: start;
+    width: 100%;
+  }
+  .cn-locbar:hover {
+    border-color: var(--cn-accent);
+  }
+  .cn-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    flex: none;
+  }
+  .cn-pulse {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--cn-accent) 60%, transparent);
+    animation: cn-pulse 2s infinite;
+  }
+  @keyframes cn-pulse {
+    70% {
+      box-shadow: 0 0 0 8px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cn-pulse {
+      animation: none;
+    }
+  }
+  .cn-tabbar2 {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    background: color-mix(in srgb, var(--cn-surface) 94%, transparent);
+    backdrop-filter: blur(12px);
+    border-top: var(--cn-bw) solid var(--cn-border);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .cn-tab2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 62px;
+    font-size: 11px;
+    color: var(--cn-text-muted);
+  }
+  .cn-tab2[aria-current="page"] {
+    color: var(--cn-accent);
+    font-weight: 600;
+  }
+  .cn-tab2-fab {
+    width: 52px;
+    height: 52px;
+    margin-top: -22px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: var(--cn-accent);
+    color: var(--cn-accent-text);
+    border: 3px solid var(--cn-bg);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--cn-accent) 30%, transparent);
+  }
+  html[data-style="brutal"] .cn-tab2-fab {
+    border-radius: 0;
+    border-color: var(--cn-text);
+    box-shadow: 3px 3px 0 0 var(--cn-text);
+  }
+  .cn-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: color-mix(in srgb, #000 55%, transparent);
+  }
+  .cn-drawer {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 61;
+    width: min(320px, 88vw);
+    background: var(--cn-surface);
+    border-inline-end: var(--cn-bw) solid var(--cn-border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .cn-dialog {
+    position: fixed;
+    z-index: 61;
+    inset-inline: 0;
+    margin-inline: auto;
+    top: 8vh;
+    width: min(640px, calc(100vw - 24px));
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--cn-surface);
+    border: var(--cn-bw) solid var(--cn-border-strong);
+    border-radius: calc(var(--cn-radius) * 2);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+  }
+  html[data-style="brutal"] .cn-dialog {
+    border-radius: 0;
+    box-shadow: 6px 6px 0 0 var(--cn-accent);
+  }
+  .cn-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 48px;
+    padding: 0.5rem 1rem;
+    text-align: start;
+  }
+  .cn-option[aria-selected="true"] {
+    background: var(--cn-accent-soft);
+  }
+  .cn-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 40px;
+    padding: 0 0.875rem;
+    border-radius: 999px;
+    border: var(--cn-bw) solid var(--cn-border-strong);
+    background: var(--cn-surface);
+    font-size: 13.5px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .cn-chip:hover {
+    border-color: var(--cn-accent);
+  }
+  .cn-chip[aria-pressed="true"],
+  .cn-chip[aria-current="true"] {
+    background: var(--cn-accent);
+    border-color: var(--cn-accent);
+    color: var(--cn-accent-text);
+  }
+  html[data-style="brutal"] .cn-chip {
+    border-radius: 0;
+  }
+  .cn-segment {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 2px;
+    padding: 3px;
+    border-radius: calc(var(--cn-radius) + 3px);
+    background: var(--cn-surface-sunken);
+    border: var(--cn-bw) solid var(--cn-border);
+  }
+  .cn-segment > button {
+    min-height: 38px;
+    padding: 0 0.625rem;
+    border-radius: var(--cn-radius);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cn-text-muted);
+  }
+  .cn-segment > button[aria-checked="true"] {
+    background: var(--cn-surface-raised);
+    color: var(--cn-text);
+    box-shadow: inset 0 0 0 1px var(--cn-accent);
+  }
+  .cn-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--cn-surface-sunken);
+    overflow: hidden;
+  }
+  .cn-progress > span {
+    display: block;
+    height: 100%;
+    background: var(--cn-accent);
+    transition: width 200ms;
+  }
+  .cn-panel {
+    background: var(--cn-card-bg, var(--cn-surface));
+    border: var(--cn-bw) solid var(--cn-border);
+    border-radius: calc(var(--cn-radius) * 2);
+  }
+  html[data-style="brutal"] .cn-panel {
+    border-radius: 0;
+    border-color: var(--cn-text);
+    box-shadow: 4px 4px 0 0 var(--cn-text);
+  }
+  .cn-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-bottom: var(--cn-bw) solid var(--cn-border);
+  }
+  .cn-actionbar {
+    position: sticky;
+    /* sits above the mobile tab bar; flush with the bottom on larger screens */
+    bottom: calc(62px + env(safe-area-inset-bottom));
+    z-index: 20;
+    background: color-mix(in srgb, var(--cn-bg) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-top: var(--cn-bw) solid var(--cn-border);
+  }
+  @media (min-width: 768px) {
+    .cn-actionbar {
+      bottom: 0;
+    }
+  }
+  .cn-scroll-x {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .cn-scroll-x::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer components {
+  /* Grid items default to min-width:auto, so one wide child (map, chip row, table) can widen the whole page on phones. */
+  #main .grid > * {
+    min-width: 0;
+  }
+}

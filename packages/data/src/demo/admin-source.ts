@@ -1,6 +1,6 @@
-import { canAssignRole, type CampusBundle, type EntityTable, type Role, type UniversitySummary } from "@campusnav/core";
+import { canAssignRole, type CampusBundle, type EntityTable, type ProblemStatus, type Role, type UniversitySummary } from "@campusnav/core";
 import type { AdminDataSource, AdminSession, AuditEntry, MembershipRow } from "../types";
-import { demoBundle, demoCheckpoints, DEMO_UNIVERSITY_ID } from "./dataset";
+import { demoBundle, demoCheckpoints, did, DEMO_UNIVERSITY_ID } from "./dataset";
 
 /**
  * LOCAL SANDBOX admin data source.
@@ -43,13 +43,24 @@ const TABLE_FROM_BUNDLE: [EntityTable, (b: CampusBundle) => unknown[]][] = [
   ["timetable_entries", (b) => b.timetable],
   ["schedule_changes", (b) => b.scheduleChanges],
   ["announcements", (b) => b.announcements],
+  ["closures", (b) => b.closures ?? []],
 ];
+
+/** Fictional example reports so the triage screen has something to show. */
+function demoReports(): Record<string, unknown>[] {
+  const now = Date.now();
+  return [
+    { id: "demo-report-1", universityId: DEMO_UNIVERSITY_ID, category: "blocked_path", message: "Demo report: the corridor door next to room 204 was locked at 9am.", roomId: did("eng-room-204"), nodeId: null, routeFromNodeId: null, routeToNodeId: null, status: "open", adminNote: null, createdAt: new Date(now - 3_600_000).toISOString() },
+    { id: "demo-report-2", universityId: DEMO_UNIVERSITY_ID, category: "wrong_info", message: "Demo report: the lab sign says S101 but the app calls it Optics Lab.", roomId: did("sci-room-S101"), nodeId: null, routeFromNodeId: null, routeToNodeId: null, status: "in_progress", adminNote: "Checking with the department", createdAt: new Date(now - 86_400_000).toISOString() },
+  ];
+}
 
 function initialState(): SandboxState {
   const b = demoBundle();
   const tables: SandboxState["tables"] = {};
   for (const [t, get] of TABLE_FROM_BUNDLE) tables[t] = structuredClone(get(b)) as Record<string, unknown>[];
   tables.qr_checkpoints = structuredClone(demoCheckpoints) as unknown as Record<string, unknown>[];
+  tables.problem_reports = demoReports();
   return {
     tables,
     audit: [],
@@ -71,6 +82,9 @@ export class SandboxAdminSource implements AdminDataSource {
       parsed = null;
     }
     this.state = parsed ?? initialState();
+    // Sandboxes saved by older versions lack the newer tables: add them without touching edits.
+    if (!this.state.tables.closures) this.state.tables.closures = structuredClone(demoBundle().closures ?? []) as unknown as Record<string, unknown>[];
+    if (!this.state.tables.problem_reports) this.state.tables.problem_reports = demoReports();
   }
 
   private save() {
@@ -161,6 +175,17 @@ export class SandboxAdminSource implements AdminDataSource {
     }
   }
 
+  async updateReport(id: string, status: ProblemStatus, adminNote: string | null): Promise<void> {
+    const rows = (this.state.tables.problem_reports ??= []);
+    const r = rows.find((x) => x.id === id);
+    if (!r) throw new Error("NOT_FOUND");
+    const before = { status: r.status, adminNote: r.adminNote };
+    r.status = status;
+    r.adminNote = adminNote;
+    this.log("update", "problem_reports", id, { before, after: { status, adminNote } });
+    this.save();
+  }
+
   async auditLog(): Promise<AuditEntry[]> {
     return structuredClone(this.state.audit);
   }
@@ -229,6 +254,7 @@ export class SandboxAdminSource implements AdminDataSource {
       timetable: get("timetable_entries"),
       scheduleChanges: get("schedule_changes"),
       announcements: get("announcements"),
+      closures: get("closures"),
     };
   }
 }

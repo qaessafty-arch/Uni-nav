@@ -353,3 +353,59 @@ describe("permission matrix parity", () => {
     for (const r of ranks.rows) expect(r.rank).toBe(ROLE_RANK[r.role as Role]);
   });
 });
+
+describe("closures and problem reports", () => {
+  const EDGE = did(`edge:${did(`${ENG_FLOOR_1}-stairs`)}:${did(`${did("eng-floor-2")}-stairs`)}`);
+  const reason = '{"en":"Closed for repairs"}';
+
+  it("only map editors can create closures; everyone who can read the university sees them", async () => {
+    await as("adminA", async (q) => {
+      await q("insert into public.closures (university_id, target_type, target_id, reason) values ($1, 'edge', $2, $3)", [A, EDGE, reason]);
+      await q("set local role anon");
+      await q("select set_config('request.jwt.claim.sub', '', true)");
+      expect((await q("select 1 from public.closures where university_id = $1", [A])).rowCount).toBe(1);
+    });
+    await as("studentA", (q) => expectDenied(q("insert into public.closures (university_id, target_type, target_id, reason) values ($1, 'edge', $2, $3)", [A, EDGE, reason])));
+    await as("deptAdminA", (q) => expectDenied(q("insert into public.closures (university_id, target_type, target_id, reason) values ($1, 'edge', $2, $3)", [A, EDGE, reason])));
+    await as(null, (q) => expectDenied(q("insert into public.closures (university_id, target_type, target_id, reason) values ($1, 'edge', $2, $3)", [A, EDGE, reason])));
+  });
+
+  it("closure targets must exist in the same university and end after they start", async () => {
+    await as("adminA", async (q) => {
+      await expect(q("insert into public.closures (university_id, target_type, target_id, reason) values ($1, 'room', $2, $3)", [A, B_ROOM, reason])).rejects.toThrow(/not found/);
+      await expect(q("insert into public.closures (university_id, target_type, target_id, reason, starts_at, ends_at) values ($1, 'room', $2, $3, now(), now() - interval '1 day')", [A, ROOM_204, reason])).rejects.toThrow(/check/);
+    });
+    await as("adminB", (q) => expectDenied(q("insert into public.closures (university_id, target_type, target_id, reason) values ($1, 'edge', $2, $3)", [A, EDGE, reason])));
+  });
+
+  it("anyone can submit a report through the RPC, but cannot read reports or insert directly", async () => {
+    await as(null, async (q) => {
+      const r = await q("select public.submit_problem_report($1, 'blocked_path', 'Door near room 204 is locked', $2) as id", [A, ROOM_204]);
+      expect(r.rows[0].id).toBeTruthy();
+      await expectDenied(q("select 1 from public.problem_reports"));
+      await expectDenied(q("insert into public.problem_reports (university_id, category, message) values ($1, 'other', 'direct insert')", [A]));
+      await expect(q("select public.submit_problem_report($1, 'other', 'x')", [A])).rejects.toThrow(/check/);
+      await expect(q("select public.submit_problem_report($1, 'spam', 'valid length text')", [A])).rejects.toThrow(/check/);
+      await expect(q("select public.submit_problem_report($1, 'other', $2)", [A, "a".repeat(1001)])).rejects.toThrow(/check/);
+      // Unpublished university B is not readable by anonymous users
+      await expectDenied(q("select public.submit_problem_report($1, 'other', 'hello there')", [B]), /not found|42501/);
+      // A room from another university cannot be attached
+      await expect(q("select public.submit_problem_report($1, 'other', 'hello there', $2)", [A, B_ROOM])).rejects.toThrow(/foreign key/);
+    });
+  });
+
+  it("staff with report.manage triage reports (status/note only); others cannot see them", async () => {
+    await pool.query("select public.submit_problem_report($1, 'wrong_info', 'Room name is outdated')", [A]);
+    await as("adminA", async (q) => {
+      const r = await q("select id from public.problem_reports where university_id = $1 and message = 'Room name is outdated'", [A]);
+      expect(r.rowCount).toBe(1);
+      const id = r.rows[0].id;
+      await q("update public.problem_reports set status = 'resolved', admin_note = 'Fixed' where id = $1", [id]);
+      await expectDenied(q("update public.problem_reports set message = 'tampered' where id = $1", [id]), /only status/);
+    });
+    await as("studentA", async (q) => expect((await q("select 1 from public.problem_reports")).rowCount).toBe(0));
+    await as("lecturerA", async (q) => expect((await q("select 1 from public.problem_reports")).rowCount).toBe(0));
+    await as("adminB", async (q) => expect((await q("select 1 from public.problem_reports where university_id = $1", [A])).rowCount).toBe(0));
+    await pool.query("delete from public.problem_reports where message = 'Room name is outdated'");
+  });
+});

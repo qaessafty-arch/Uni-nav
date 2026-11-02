@@ -76,7 +76,7 @@ export interface HistoryItem {
 const DEFAULT_PREFS: Prefs = {
   locale: "en",
   theme: "dark",
-  style: "editorial",
+  style: "minimal",
   universityId: null,
   groupId: null,
   accessible: false,

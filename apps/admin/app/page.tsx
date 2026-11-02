@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
-import { detectConflicts, lt, validateMap } from "@campusnav/core";
+import { detectConflicts, lt, relevantClosures, validateMap, type Closure, type ProblemReport } from "@campusnav/core";
 import { useAdminBundle } from "@/lib/bundle";
+import { useAdmin, useTable } from "@/lib/admin";
 import { Badge, ErrorState, PageTitle, Section, Spinner } from "@/components/ui";
 
 /**
@@ -10,6 +11,9 @@ import { Badge, ErrorState, PageTitle, Section, Spinner } from "@/components/ui"
  */
 export default function Dashboard() {
   const { data, error } = useAdminBundle();
+  const { can } = useAdmin();
+  const reports = useTable<ProblemReport>("problem_reports");
+  const closures = useTable<Closure>("closures");
   if (error) return <ErrorState title="Could not load data" body={error} />;
   if (!data) return <Spinner label="Loading…" />;
   const b = data.bundle;
@@ -36,9 +40,26 @@ export default function Dashboard() {
     ["Timetable entries", b.timetable.length, "/timetable"],
   ];
 
+  const openReports = (reports.rows ?? []).filter((r) => r.status === "open").length;
+  const cl = relevantClosures({ closures: closures.rows ?? [] }, new Date());
+  const attention: [string, number, string, boolean][] = [
+    ["Open problem reports", openReports, "/reports", can("report.manage")],
+    ["Closures in force", cl.active.length, "/closures", can("map.edit")],
+    ["Planned closures (14 days)", cl.upcoming.length, "/closures", can("map.edit")],
+    ["Map errors", errors.length, "/map-editor", can("map.edit")],
+  ];
+
   return (
     <div>
       <PageTitle eyebrow={b.university.dataStatus === "demo" ? "Demo university" : b.university.published ? "Published" : "Not published"}>{lt(b.university.name, "en")}</PageTitle>
+      <section aria-label="Needs attention" className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        {attention.filter((a) => a[3]).map(([label, n, href]) => (
+          <Link key={label} href={href} className={`cn-panel p-4 flex items-center justify-between gap-3 hover:!border-[var(--cn-accent)] ${n ? "!border-[var(--cn-warning)]" : ""}`}>
+            <span className="text-sm">{label}</span>
+            <span className={`cn-figure text-3xl ${n ? "text-warn" : "text-muted"}`}>{n}</span>
+          </Link>
+        ))}
+      </section>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {stats.map(([label, n, href]) => (
           <Link key={label} href={href} className="cn-tile p-4 min-h-28 flex flex-col justify-between">

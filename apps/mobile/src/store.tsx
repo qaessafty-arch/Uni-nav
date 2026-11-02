@@ -40,7 +40,7 @@ export interface Prefs {
   style: VisualStyle;
 }
 
-const DEFAULT: Prefs = { locale: "en", universityId: null, groupId: null, accessible: false, onboarded: false, reminders: false, keepHistory: false, style: "editorial" };
+const DEFAULT: Prefs = { locale: "en", universityId: null, groupId: null, accessible: false, onboarded: false, reminders: false, keepHistory: false, style: "minimal" };
 
 type BundleState =
   | { status: "idle" | "loading" }

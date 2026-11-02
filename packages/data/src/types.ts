@@ -1,4 +1,4 @@
-import type { CampusBundle, CheckpointResolution, EntityTable, Role, UniversitySummary } from "@campusnav/core";
+import type { CampusBundle, CheckpointResolution, EntityTable, ProblemReportInput, ProblemStatus, Role, UniversitySummary } from "@campusnav/core";
 
 /** Read-side data access used by the student web app and mobile app. */
 export interface CampusDataSource {
@@ -7,6 +7,11 @@ export interface CampusDataSource {
   getBundle(universityId: string): Promise<CampusBundle>;
   /** Validates an opaque checkpoint token against the backend. */
   resolveCheckpoint(token: string, activeUniversityId?: string): Promise<CheckpointResolution>;
+  /**
+   * Send a problem report to the university's staff. "demo" means nothing was
+   * sent (demo mode has no backend); the UI must say so honestly.
+   */
+  submitReport(input: ProblemReportInput): Promise<{ status: "sent"; id: string } | { status: "demo" }>;
 }
 
 export interface AuditEntry {
@@ -57,4 +62,6 @@ export interface AdminDataSource {
   uploadFloorPlan(universityId: string, floorId: string, file: File | Blob, contentType: string): Promise<string>;
   /** Upload a campus background picture (PNG/JPEG/WebP, already resized client-side). Returns its URL. */
   uploadCampusImage(universityId: string, campusId: string, file: Blob, contentType: "image/jpeg" | "image/png" | "image/webp"): Promise<string>;
+  /** Triage a user problem report (only status and the staff note can change). */
+  updateReport(id: string, status: ProblemStatus, adminNote: string | null): Promise<void>;
 }
