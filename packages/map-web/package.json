@@ -1,0 +1,13 @@
+{
+  "name": "@campusnav/map-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": { "@campusnav/core": "workspace:*" },
+  "peerDependencies": { "react": ">=19" },
+  "devDependencies": { "@types/react": "19.3.0", "react": "19.3.1", "typescript": "5.9.3" }
+}

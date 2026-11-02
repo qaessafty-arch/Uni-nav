@@ -85,15 +85,24 @@ export function buildInstructions(route: Route, floors: Map<string, Floor>): Rou
       if (differentBuilding) kind = "enter_building";
       else if (leg.edge.kind === "elevator") kind = delta >= 0 ? "elevator_up" : "elevator_down";
       else kind = delta >= 0 ? "stairs_up" : "stairs_down";
-      steps.push({
-        kind,
-        distanceM: leg.distanceM,
-        floorId: leg.from.floorId,
-        toFloorId: leg.to.floorId,
-        floors: Math.abs(delta),
-        nodeId: leg.from.id,
-        landmark: leg.to.label ?? null,
-      });
+      const prev = steps[steps.length - 1];
+      // Merge consecutive transitions in the same shaft/stairwell ("up 2 floors" not "up 1, up 1").
+      if (prev && prev.kind === kind && kind !== "enter_building" && prev.toFloorId === leg.from.floorId) {
+        prev.toFloorId = leg.to.floorId;
+        prev.floors = (prev.floors ?? 0) + Math.abs(delta);
+        prev.distanceM += leg.distanceM;
+        prev.landmark = leg.to.label ?? prev.landmark ?? null;
+      } else {
+        steps.push({
+          kind,
+          distanceM: leg.distanceM,
+          floorId: leg.from.floorId,
+          toFloorId: leg.to.floorId,
+          floors: Math.abs(delta),
+          nodeId: leg.from.id,
+          landmark: leg.to.label ?? null,
+        });
+      }
       prevHeading = null;
       continue;
     }

@@ -33,7 +33,22 @@ function formatParam(locale: Locale, v: string | number): string {
   return typeof v === "number" ? formatNumber(locale, v) : v;
 }
 
+/**
+ * Some runtimes (notably Chromium's reduced ICU and Hermes) lack Sorani locale
+ * data and silently fall back to English. Detect that and format manually.
+ */
+const ICU_HAS_CKB = (() => {
+  try {
+    return Intl.DateTimeFormat.supportedLocalesOf(["ckb"]).length > 0 && Intl.NumberFormat.supportedLocalesOf(["ckb"]).length > 0;
+  } catch {
+    return false;
+  }
+})();
+const CKB_MONTHS = ["کانوونی دووەم", "شوبات", "ئازار", "نیسان", "ئایار", "حوزەیران", "تەمموز", "ئاب", "ئەیلوول", "تشرینی یەکەم", "تشرینی دووەم", "کانوونی یەکەم"];
+const toArabicIndic = (s: string) => s.replace(/[0-9]/g, (d) => String.fromCharCode(0x0660 + Number(d)));
+
 export function formatNumber(locale: Locale, n: number, opts?: Intl.NumberFormatOptions): string {
+  if (locale === "ckb" && !ICU_HAS_CKB) return toArabicIndic(new Intl.NumberFormat("en", { ...opts, useGrouping: false }).format(n));
   try {
     return new Intl.NumberFormat(intlTag(locale), opts).format(n);
   } catch {
@@ -43,6 +58,7 @@ export function formatNumber(locale: Locale, n: number, opts?: Intl.NumberFormat
 
 /** Format a university-local wall-clock time "HH:MM" without shifting zones. */
 export function formatClock(locale: Locale, hhmm: string): string {
+  if (locale === "ckb" && !ICU_HAS_CKB) return toArabicIndic(hhmm);
   const [h, m] = hhmm.split(":").map(Number);
   const d = new Date(Date.UTC(2000, 0, 1, h, m));
   try {
@@ -55,6 +71,13 @@ export function formatClock(locale: Locale, hhmm: string): string {
 /** Format a calendar date "YYYY-MM-DD". */
 export function formatDate(locale: Locale, iso: string, opts: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric", month: "short" }): string {
   const d = new Date(`${iso.slice(0, 10)}T12:00:00Z`);
+  if (locale === "ckb" && !ICU_HAS_CKB) {
+    const parts: string[] = [];
+    if (opts.weekday) parts.push(messages.ckb[`day.${d.getUTCDay()}` as MessageKey]);
+    const dm = [opts.day ? `${toArabicIndic(String(d.getUTCDate()))}ی` : "", opts.month ? CKB_MONTHS[d.getUTCMonth()] : "", opts.year ? toArabicIndic(String(d.getUTCFullYear())) : ""].filter(Boolean).join(" ");
+    if (dm) parts.push(dm);
+    return parts.join("، ");
+  }
   try {
     return new Intl.DateTimeFormat(intlTag(locale), { ...opts, timeZone: "UTC" }).format(d);
   } catch {
@@ -64,6 +87,10 @@ export function formatDate(locale: Locale, iso: string, opts: Intl.DateTimeForma
 
 /** Format an instant in the university's time zone. */
 export function formatInstant(locale: Locale, isoInstant: string, timeZone: string): string {
+  if (locale === "ckb" && !ICU_HAS_CKB) {
+    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(isoInstant)).map((p) => [p.type, p.value]));
+    return `${formatDate("ckb", `${parts.year}-${parts.month}-${parts.day}`, { day: "numeric", month: "long", year: "numeric" })} ${toArabicIndic(`${parts.hour}:${parts.minute}`)}`;
+  }
   try {
     return new Intl.DateTimeFormat(intlTag(locale), { dateStyle: "medium", timeStyle: "short", timeZone }).format(new Date(isoInstant));
   } catch {

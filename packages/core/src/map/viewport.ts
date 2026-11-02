@@ -37,7 +37,7 @@ export function focusOn(base: ViewBox, x: number, y: number, zoom = 2.5): ViewBo
 }
 
 /** Bounding view box around points with padding, never zooming beyond MAX_ZOOM. */
-export function fitPoints(base: ViewBox, pts: { x: number; y: number }[], pad = 40): ViewBox {
+export function fitPoints(base: ViewBox, pts: { x: number; y: number }[], pad = 40, maxZoom = 3): ViewBox {
   if (!pts.length) return base;
   const xs = pts.map((p) => p.x);
   const ys = pts.map((p) => p.y);
@@ -55,7 +55,7 @@ export function fitPoints(base: ViewBox, pts: { x: number; y: number }[], pad = 
     x -= (nw - w) / 2;
     w = nw;
   }
-  const minW = base.w / MAX_ZOOM;
+  const minW = base.w / Math.min(maxZoom, MAX_ZOOM);
   if (w < minW) {
     const cx = x + w / 2;
     const cy = y + h / 2;

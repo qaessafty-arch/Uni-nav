@@ -26,3 +26,17 @@ describe("i18n", () => {
     expect(formatDistance("ar", 42)).toContain("م");
   });
 });
+
+describe("Sorani formatting fallback", () => {
+  it("produces Sorani dates even without ICU data", async () => {
+    const orig = Intl.DateTimeFormat.supportedLocalesOf;
+    // Simulate a runtime without ckb data (Chromium reduced ICU, Hermes)
+    (Intl.DateTimeFormat as unknown as { supportedLocalesOf: () => string[] }).supportedLocalesOf = () => [];
+    const { vi } = await import("vitest");
+    vi.resetModules();
+    const mod = await import("../src/index");
+    expect(mod.formatDate("ckb", "2026-11-02", { weekday: "long", day: "numeric", month: "long" })).toBe("دووشەممە، ٢ی تشرینی دووەم");
+    expect(mod.formatClock("ckb", "08:30")).toBe("٠٨:٣٠");
+    Intl.DateTimeFormat.supportedLocalesOf = orig;
+  });
+});

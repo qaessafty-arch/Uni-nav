@@ -143,3 +143,18 @@ describe("instructions", () => {
     expect(est.isEstimate).toBe(true);
   });
 });
+
+describe("instruction merging", () => {
+  it("merges consecutive elevator rides into one step", () => {
+    const floors = [floor("F0", 0), floor("F1", 1), floor("F2", 2)];
+    const nodes = [n("a", "F0", 0, 0, "elevator"), n("b", "F1", 0, 0, "elevator"), n("c", "F2", 0, 0, "elevator"), n("d", "F2", 10, 0)];
+    const edges = [e("ab", "a", "b", "elevator", { distanceM: 0 }), e("bc", "b", "c", "elevator", { distanceM: 0 }), e("cd", "c", "d")];
+    const g = buildGraph(nodes, edges, floors);
+    const r = findRoute(g, "a", "d");
+    if (!r.ok) throw new Error("no route");
+    const steps = buildInstructions(r.route, g.floors);
+    const lifts = steps.filter((s) => s.kind === "elevator_up");
+    expect(lifts).toHaveLength(1);
+    expect(lifts[0]).toMatchObject({ toFloorId: "F2", floors: 2 });
+  });
+});
