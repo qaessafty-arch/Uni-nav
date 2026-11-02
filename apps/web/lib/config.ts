@@ -1,4 +1,4 @@
-import { createSupabase, DemoDataSource, SupabaseDataSource, SandboxAdminSource, type CampusDataSource } from "@campusnav/data";
+import type { CampusDataSource } from "@campusnav/data";
 
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -7,27 +7,30 @@ export const APP_VERSION = "0.1.0";
 
 export const backendMode: "supabase" | "demo" = SUPABASE_URL && SUPABASE_ANON_KEY ? "supabase" : "demo";
 
-let source: CampusDataSource | null = null;
+let source: Promise<CampusDataSource> | null = null;
 
 /**
- * Data source for the student app. Without Supabase configuration the app runs
- * on the fictional demo dataset (and reflects any local admin-sandbox edits made
- * in the same browser, so the admin → student flow can be demonstrated offline).
+ * Data source for the student app, loaded lazily so the initial JS bundle
+ * contains neither the Supabase client (in demo mode) nor the demo dataset (in
+ * Supabase mode). Without Supabase configuration the app runs on the fictional
+ * demo dataset, overlaid with local admin-sandbox edits when both apps share
+ * an origin.
  */
-export function getDataSource(): CampusDataSource {
+export function getDataSource(): Promise<CampusDataSource> {
   if (source) return source;
-  if (backendMode === "supabase") {
-    source = new SupabaseDataSource(createSupabase({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY, persistSession: true }));
-  } else {
-    source = new DemoDataSource(() => {
-      if (typeof window === "undefined") return null;
-      try {
-        if (!window.localStorage.getItem("campusnav.sandbox.v1")) return null;
-        return new SandboxAdminSource(window.localStorage).toBundle();
-      } catch {
-        return null;
-      }
-    });
-  }
+  source =
+    backendMode === "supabase"
+      ? import("@campusnav/data/supabase").then(({ SupabaseDataSource, createSupabase }) => new SupabaseDataSource(createSupabase({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY, persistSession: true })))
+      : import("@campusnav/data/demo").then(
+          ({ DemoDataSource, SandboxAdminSource }) =>
+            new DemoDataSource(() => {
+              try {
+                if (!window.localStorage.getItem("campusnav.sandbox.v1")) return null;
+                return new SandboxAdminSource(window.localStorage).toBundle();
+              } catch {
+                return null;
+              }
+            }),
+        );
   return source;
 }

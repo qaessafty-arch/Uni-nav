@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { CampusBundle, Locale, UniversitySummary } from "@campusnav/core";
 import { buildSearchIndex, type SearchIndex } from "@campusnav/core";
-import { clearCachedBundle, loadBundle, readCachedBundle, type AsyncKV } from "@campusnav/data";
+import { clearCachedBundle, loadBundle, readCachedBundle, type AsyncKV } from "@campusnav/data/cache";
 import { dir, isLocale, translate, type MessageKey, type Params } from "@campusnav/i18n";
 import { getDataSource } from "./config";
 
@@ -167,7 +167,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     getDataSource()
-      .listUniversities()
+      .then((src) => src.listUniversities())
       .then(setUniversities)
       .catch(() => setUniversities([]));
   }, [hydrated, reloadKey]);
@@ -183,7 +183,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const cached = await readCachedBundle(kv, uid);
       if (cached && !cancelled) setBundleState({ status: "ready", ...cached, index: buildSearchIndex(cached.bundle) });
       try {
-        const res = await loadBundle(getDataSource(), kv, uid);
+        const res = await loadBundle(await getDataSource(), kv, uid);
         if (!cancelled) setBundleState({ status: "ready", ...res, index: buildSearchIndex(res.bundle) });
       } catch (e) {
         if (!cancelled && !cached) setBundleState({ status: "error", error: e instanceof Error ? e.message : String(e) });
