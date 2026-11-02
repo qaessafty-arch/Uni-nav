@@ -94,7 +94,6 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "course.manage",
     "group.manage",
     "timetable.department_manage",
-    "announcement.manage",
     "data.export",
     "public.read",
     "student.personal",
