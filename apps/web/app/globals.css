@@ -1,0 +1,63 @@
+@import "tailwindcss";
+@import "@campusnav/tokens/css";
+@import "@campusnav/tokens/ui.css";
+@import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+@import "@fontsource/noto-sans-arabic/400.css";
+@import "@fontsource/noto-sans-arabic/600.css";
+@import "@fontsource/noto-sans-arabic/700.css";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
+
+@theme inline {
+  --color-bg: var(--cn-bg);
+  --color-surface: var(--cn-surface);
+  --color-raised: var(--cn-surface-raised);
+  --color-sunken: var(--cn-surface-sunken);
+  --color-line: var(--cn-border);
+  --color-line-strong: var(--cn-border-strong);
+  --color-fg: var(--cn-text);
+  --color-muted: var(--cn-text-muted);
+  --color-faint: var(--cn-text-faint);
+  --color-accent: var(--cn-accent);
+  --color-accent-fg: var(--cn-accent-text);
+  --color-accent-soft: var(--cn-accent-soft);
+  --color-warn: var(--cn-warning);
+  --color-danger: var(--cn-danger);
+  --color-info: var(--cn-info);
+  --font-sans: "Inter Variable", "Noto Sans Arabic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --radius-sm: var(--cn-radius);
+  --radius-md: var(--cn-radius);
+}
+
+html {
+  background: var(--cn-bg);
+  color: var(--cn-text);
+  -webkit-text-size-adjust: 100%;
+}
+html[dir="rtl"] body {
+  font-family: "Noto Sans Arabic", "Inter Variable", system-ui, sans-serif;
+  line-height: 1.7;
+}
+body {
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+}
+[data-element-id]:focus-visible rect,
+[data-element-id]:focus-visible path {
+  stroke: var(--cn-accent);
+  stroke-width: 3;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  svg animate {
+    display: none;
+  }
+}

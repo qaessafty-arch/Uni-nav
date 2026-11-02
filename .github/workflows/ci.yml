@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck all packages and apps
+        run: pnpm typecheck
+      - name: Unit and integration tests
+        run: pnpm test
+      - name: Seed file is up to date with the demo dataset
+        run: pnpm db:seed:generate && git diff --exit-code supabase/seed.sql
+      - name: Database RLS / tenant isolation tests
+        run: pnpm test:db
+        env:
+          TEST_DATABASE_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      - name: Build web and admin
+        run: pnpm --filter @campusnav/web build && NEXT_PUBLIC_ALLOW_SANDBOX=true pnpm --filter @campusnav/admin build
+      - name: Install Playwright browser
+        run: pnpm --filter @campusnav/e2e exec playwright install --with-deps chromium
+      - name: End-to-end tests
+        run: pnpm test:e2e
+      - name: Mobile JS bundle builds
+        run: pnpm --filter @campusnav/mobile exec expo export --platform android --output-dir /tmp/expo-export
+        env:
+          CI: "1"
