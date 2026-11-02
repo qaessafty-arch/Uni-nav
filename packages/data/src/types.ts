@@ -55,4 +55,6 @@ export interface AdminDataSource {
   setMemberRole(universityId: string, email: string, role: Role, departmentId?: string | null): Promise<MembershipRow>;
   removeMember(membershipId: string): Promise<void>;
   uploadFloorPlan(universityId: string, floorId: string, file: File | Blob, contentType: string): Promise<string>;
+  /** Upload a campus background picture (PNG/JPEG/WebP, already resized client-side). Returns its URL. */
+  uploadCampusImage(universityId: string, campusId: string, file: Blob, contentType: "image/jpeg" | "image/png" | "image/webp"): Promise<string>;
 }

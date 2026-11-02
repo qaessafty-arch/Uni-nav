@@ -301,6 +301,17 @@ describe("data integrity and audit", () => {
       await expectDenied(q(`insert into public.buildings (university_id, campus_id, code, name) values ($1, $2, 'Z', '{"ar":"no english"}')`, [A, did("demo-campus-main")]), /check constraint/i);
     });
   });
+  it("campus pictures must be http(s) URLs and only campus managers can set them", async () => {
+    const campus = did("demo-campus-main");
+    await as("adminA", async (q) => {
+      expect((await q("update public.campuses set overview_image_url = $1 where id = $2", ["https://example.supabase.co/storage/v1/object/public/campus-images/a.jpg", campus])).rowCount).toBe(1);
+      await expectDenied(q("update public.campuses set overview_image_url = 'javascript:alert(1)' where id = $1", [campus]), /check constraint/i);
+      await expectDenied(q("update public.campuses set overview_image_url = 'data:image/png;base64,AAAA' where id = $1", [campus]), /check constraint/i);
+    });
+    await as("studentA", async (q) => {
+      expect((await q("update public.campuses set overview_image_url = 'https://evil.example/x.jpg' where id = $1", [campus])).rowCount).toBe(0);
+    });
+  });
   it("records who changed what, readable only by the tenant's admins, with tokens redacted", async () => {
     await as("adminA", async (q) => {
       await q("update public.rooms set capacity = 77 where id = $1", [ROOM_204]);

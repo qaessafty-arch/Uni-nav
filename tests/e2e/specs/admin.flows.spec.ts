@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { selectByText } from "../fixtures/select";
 import { expect, test, type Page } from "@playwright/test";
 
@@ -142,4 +144,50 @@ test("role assignment cannot escalate above the actor's rank", async ({ page }) 
   const options = await page.getByLabel("Role").locator("option").allTextContents();
   expect(options).not.toContain("platform owner");
   expect(options).toContain("university admin");
+});
+
+test("admin adds a campus picture and places buildings by drawing on the map", async ({ page }) => {
+  await openSandbox(page);
+  // 1) Campus picture + move an existing building on the Campus map page
+  await page.goto(`${ADMIN}/campus-map`);
+  await expect(page.getByText("2 / 2 buildings placed")).toBeVisible();
+  const png = readFileSync(resolve(__dirname, "../../../apps/web/public/icons/icon-512.png"));
+  await page.getByLabel("Campus picture").setInputFiles({ name: "campus.png", mimeType: "image/png", buffer: png });
+  await expect(page.getByText(/Picture added/)).toBeVisible();
+  await expect(page.locator('svg[aria-label="Campus map editor"] image')).toHaveCount(1);
+  await page.getByLabel("Campus picture").setInputFiles({ name: "notes.txt", mimeType: "text/plain", buffer: Buffer.from("hello") });
+  await expect(page.getByText(/Use a PNG, JPEG or WebP image/)).toBeVisible();
+
+  await page.getByRole("button", { name: /DEMO-SCI/ }).click();
+  const svg = page.locator('svg[aria-label="Campus map editor"]');
+  const sci = svg.locator('[data-b] rect').nth(1);
+  const box = (await sci.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 - 60, box.y + box.height / 2 - 40, { steps: 6 });
+  await page.mouse.up();
+  await expect(page.getByText("unsaved")).toBeVisible();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText(/Saved 1 footprint/)).toBeVisible();
+
+  // 2) New building: draw its footprint directly in the building form
+  await page.goto(`${ADMIN}/buildings`);
+  await page.getByRole("button", { name: "+ New building" }).click();
+  await page.locator("#f-campusId").selectOption({ index: 1 });
+  await page.locator("#f-code").fill("DEMO-LIB");
+  await page.locator("#f-name").fill("Demo Library Building");
+  const picker = page.locator('[role="dialog"] svg[aria-label="Campus map editor"]');
+  await expect(picker.locator("image")).toHaveCount(1); // the campus picture shows in the form too
+  await picker.scrollIntoViewIfNeeded();
+  const pb = (await picker.boundingBox())!;
+  await page.mouse.move(pb.x + pb.width * 0.1, pb.y + pb.height * 0.65);
+  await page.mouse.down();
+  await page.mouse.move(pb.x + pb.width * 0.3, pb.y + pb.height * 0.85, { steps: 6 });
+  await page.mouse.up();
+  await expect(page.getByText("Drag to move · handles to resize")).toBeVisible();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByRole("cell", { name: "DEMO-LIB" })).toBeVisible();
+
+  await page.goto(`${ADMIN}/campus-map`);
+  await expect(page.getByText("3 / 3 buildings placed")).toBeVisible();
 });

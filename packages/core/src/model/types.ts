@@ -64,6 +64,11 @@ export interface Campus {
   /** Optional outdoor overview map (floor-like canvas) */
   overviewWidth?: number;
   overviewHeight?: number;
+  /**
+   * Optional background picture for the campus overview (aerial photo or official
+   * campus plan). Stretched over the overview canvas; building footprints are drawn on top.
+   */
+  overviewImageUrl?: string | null;
 }
 
 export interface Building {

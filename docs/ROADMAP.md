@@ -19,7 +19,7 @@
 - Polygons can be stored and rendered, but the map editor draws rectangles only (edit coordinates for other shapes).
 - Lecturer `availability` is displayed only when set by an authorised source; there is no lecturer self-service UI yet (the database permits it).
 - Web reminders fire only while the app/tab is open (no Web Push server).
-- Campus overview maps are schematic footprints; there is no outdoor geo-referenced map.
+- Campus overview: admins can upload a campus picture (aerial screenshot or official plan) and draw building footprints on it; it is not a geo-referenced map (no live map tiles or GPS coordinates).
 - Translations need native-speaker review.
 
 **Security/operations** — see [SECURITY.md › residual risks](SECURITY.md#residual-risks-and-required-actions-before-production).

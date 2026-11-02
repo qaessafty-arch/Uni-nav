@@ -16,6 +16,7 @@ const NAV: { group: string; items: { href: string; label: string; perm?: Permiss
       { href: "/university", label: "University", perm: "university.update" },
       { href: "/campuses", label: "Campuses", perm: "campus.manage" },
       { href: "/buildings", label: "Buildings", perm: "building.manage" },
+      { href: "/campus-map", label: "Campus map", perm: "building.manage" },
       { href: "/floors", label: "Floors", perm: "floor.manage" },
       { href: "/map-editor", label: "Map editor", perm: "map.edit" },
       { href: "/rooms", label: "Rooms", perm: "room.manage" },

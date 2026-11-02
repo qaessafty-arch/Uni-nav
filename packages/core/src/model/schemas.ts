@@ -65,6 +65,11 @@ export const campusSchema = z.object({
   description: localizedTextSchema.nullish(),
   overviewWidth: z.number().positive().optional(),
   overviewHeight: z.number().positive().optional(),
+  overviewImageUrl: z
+    .string()
+    .max(3_000_000)
+    .refine((s) => /^https?:\/\//.test(s) || /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(s), "invalid_image_url")
+    .nullish(),
 });
 
 const rectSchema = z.object({ x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() });

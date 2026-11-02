@@ -45,9 +45,11 @@ export const campusConfig: EntityConfig<Campus> = {
     { key: "overviewWidth", label: "Overview map width (units)", type: "number" },
     { key: "overviewHeight", label: "Overview map height (units)", type: "number" },
   ],
+  intro: "Add the campus picture and place buildings on it from Campus map.",
   columns: [
     { label: "Name", render: (r) => <L v={r.name} /> },
     { label: "Overview", render: (r) => (r.overviewWidth ? `${r.overviewWidth} × ${r.overviewHeight}` : "—") },
+    { label: "Picture", render: (r) => (r.overviewImageUrl ? <Badge tone="accent">yes</Badge> : <Badge>none</Badge>) },
   ],
   searchText: (r) => `${r.name.en} ${r.name.ckb ?? ""} ${r.name.ar ?? ""}`,
   defaults: () => ({ name: { en: "" }, overviewWidth: 1000, overviewHeight: 700 }),
@@ -64,7 +66,7 @@ export const buildingConfig: EntityConfig<Building> = {
     { key: "code", label: "Code", type: "text", required: true, hint: "Short unique code, e.g. ENG" },
     { key: "name", label: "Name", type: "localized", required: true },
     { key: "description", label: "Description", type: "localized", multiline: true },
-    { key: "overview", label: "Campus footprint", type: "rect" },
+    { key: "overview", label: "Location on campus map", type: "rect" },
     status,
   ],
   columns: [

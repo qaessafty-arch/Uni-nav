@@ -1,10 +1,11 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import type { ZodType } from "zod";
-import { lt, normalizeSearch, type EntityTable, type LocalizedText, type Permission } from "@campusnav/core";
+import { lt, normalizeSearch, type Building, type Campus, type EntityTable, type LocalizedText, type Permission } from "@campusnav/core";
 import { errorMessage, getAdminSource, newId, useAdmin, useTable } from "@/lib/admin";
 import { Badge, Button, EmptyState, ErrorState, PageTitle, Spinner } from "./ui";
 import { Field, LocalizedInput, OfficeHoursInput, inputCls } from "./Form";
+import { CampusCanvas, type Rect } from "./CampusCanvas";
 
 export type FieldDef =
   | { key: string; label: string; type: "text" | "email" | "url"; required?: boolean; hint?: string }
@@ -283,19 +284,12 @@ function FieldInput({ f, form, set, error }: { f: FieldDef; form: Record<string,
           <OfficeHoursInput value={(v as never) ?? []} onChange={(x) => set(f.key, x)} />
         </Field>
       );
-    case "rect": {
-      const r = (v as { x: number; y: number; w: number; h: number } | null) ?? null;
+    case "rect":
       return (
-        <Field label={f.label} error={error} hint="Footprint on the campus overview map (map units). Leave empty to hide.">
-          <div className="grid grid-cols-4 gap-1">
-            {(["x", "y", "w", "h"] as const).map((k) => (
-              <input key={k} type="number" placeholder={k} aria-label={k} value={r ? r[k] : ""} onChange={(e) => set(f.key, { ...(r ?? { x: 0, y: 0, w: 100, h: 100 }), [k]: Number(e.target.value) })} className={inputCls} />
-            ))}
-          </div>
-          {r ? <button type="button" className="text-xs underline mt-1" onClick={() => set(f.key, null)}>Clear</button> : null}
+        <Field label={f.label} error={error} hint="Draw where this building is on the campus map. You can also place all buildings at once on the Campus map page.">
+          <FootprintPicker form={form} value={(v as Rect | null) ?? null} onChange={(r) => set(f.key, r)} />
         </Field>
       );
-    }
   }
 }
 
@@ -305,4 +299,39 @@ export function L({ v }: { v: unknown }) {
 
 export function StatusBadge({ status }: { status: string }) {
   return status === "demo" ? <Badge tone="warn">demo</Badge> : status === "verified" ? <Badge tone="accent">verified</Badge> : <Badge>unverified</Badge>;
+}
+
+/** Building footprint picker: the campus picture with other buildings, draw/move/resize this one. */
+function FootprintPicker({ form, value, onChange }: { form: Record<string, unknown>; value: Rect | null; onChange: (r: Rect | null) => void }) {
+  const { rows: campuses } = useTable<Campus>("campuses");
+  const { rows: buildings } = useTable<Building>("buildings");
+  const [draw, setDraw] = useState(!value);
+  const campus = campuses?.find((c) => c.id === form.campusId);
+  if (!form.campusId) return <p className="text-sm text-muted">Choose the campus first.</p>;
+  if (!campus) return <Spinner label="Loading map…" />;
+  const id = String(form.id);
+  const others = (buildings ?? []).filter((b) => b.campusId === campus.id && b.id !== id);
+  return (
+    <div className="space-y-2">
+      <CampusCanvas
+        width={campus.overviewWidth ?? 1000}
+        height={campus.overviewHeight ?? 700}
+        imageUrl={campus.overviewImageUrl}
+        buildings={[...others.map((b) => ({ id: b.id, code: b.code, name: lt(b.name, "en"), overview: b.overview ?? null })), { id, code: String(form.code || "NEW"), name: "", overview: value }]}
+        selectedId={id}
+        onSelect={() => {}}
+        onChange={(_, r) => onChange(r)}
+        drawMode={draw}
+        onDrawDone={() => setDraw(false)}
+        height_="320px"
+      />
+      <div className="flex flex-wrap gap-2 items-center text-xs">
+        <Button className="!min-h-9" variant={draw ? "primary" : "secondary"} aria-pressed={draw} onClick={() => setDraw(!draw)}>
+          {value ? "Redraw" : "Draw footprint"}
+        </Button>
+        {value ? <Button className="!min-h-9" variant="danger" onClick={() => onChange(null)}>Remove from map</Button> : null}
+        <span className="text-muted">{draw ? "Drag on the map to outline the building." : value ? "Drag to move · handles to resize" : "Not on the campus map"}</span>
+      </div>
+    </div>
+  );
 }

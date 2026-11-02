@@ -28,11 +28,13 @@ export default function CampusMapPage() {
               const w = campus.overviewWidth ?? 1000;
               const h = campus.overviewHeight ?? 700;
               const drawable = buildings.filter((b) => b.overview);
+              const hasPicture = !!campus.overviewImageUrl;
               return (
                 <Section key={campus.id} title={lt(campus.name, loc)}>
                   {drawable.length ? (
                     <div className="border border-line bg-[var(--cn-map-bg)] grid-bg">
                       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto max-h-[60vh]" role="img" aria-label={lt(campus.name, loc)} direction="ltr">
+                        {campus.overviewImageUrl ? <image href={campus.overviewImageUrl} x={0} y={0} width={w} height={h} preserveAspectRatio="none" opacity={0.9} /> : null}
                         {drawable.map((b) => (
                           <g
                             key={b.id}
@@ -45,11 +47,11 @@ export default function CampusMapPage() {
                               if (e.key === "Enter") router.push(`/buildings/${b.id}`);
                             }}
                           >
-                            <rect x={b.overview!.x} y={b.overview!.y} width={b.overview!.w} height={b.overview!.h} fill="var(--cn-map-room)" stroke="var(--cn-border-strong)" strokeWidth={2} className="group-hover:stroke-[var(--cn-accent)] group-focus:stroke-[var(--cn-accent)]" />
-                            <text x={b.overview!.x + 14} y={b.overview!.y + 30} fill="var(--cn-text)" fontSize={22} fontFamily="IBM Plex Mono, monospace">
+                            <rect x={b.overview!.x} y={b.overview!.y} width={b.overview!.w} height={b.overview!.h} fill={hasPicture ? "color-mix(in srgb, var(--cn-accent) 18%, transparent)" : "var(--cn-map-room)"} stroke="var(--cn-border-strong)" strokeWidth={2} className="group-hover:stroke-[var(--cn-accent)] group-focus:stroke-[var(--cn-accent)]" />
+                            <text x={b.overview!.x + 14} y={b.overview!.y + 30} fill="var(--cn-text)" fontSize={22} fontFamily="IBM Plex Mono, monospace" stroke="var(--cn-bg)" strokeWidth={4} paintOrder="stroke">
                               {b.code}
                             </text>
-                            <text x={b.overview!.x + 14} y={b.overview!.y + 56} fill="var(--cn-text-muted)" fontSize={16}>
+                            <text x={b.overview!.x + 14} y={b.overview!.y + 56} fill="var(--cn-text)" fontSize={16} stroke="var(--cn-bg)" strokeWidth={4} paintOrder="stroke">
                               {lt(b.name, loc)}
                             </text>
                           </g>

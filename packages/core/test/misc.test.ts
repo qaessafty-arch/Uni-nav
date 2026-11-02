@@ -179,3 +179,16 @@ describe("assistant intent parsing", () => {
     expect(p.parse("أين المكتبة؟")).toEqual({ type: "find_place", query: "المكتبة" });
   });
 });
+
+describe("campus overview picture", () => {
+  it("accepts https and inline raster images, rejects scripts and other schemes", async () => {
+    const { campusSchema } = await import("../src");
+    const base = { id: "c", universityId: "u", name: { en: "Campus" } };
+    expect(campusSchema.safeParse({ ...base, overviewImageUrl: "https://x.supabase.co/storage/v1/object/public/campus-images/u/c.jpg" }).success).toBe(true);
+    expect(campusSchema.safeParse({ ...base, overviewImageUrl: "data:image/jpeg;base64,/9j/4AAQSkZJRg==" }).success).toBe(true);
+    expect(campusSchema.safeParse({ ...base, overviewImageUrl: null }).success).toBe(true);
+    for (const bad of ["javascript:alert(1)", "data:text/html;base64,PHNjcmlwdD4=", "data:image/svg+xml;base64,PHN2Zz4=", "ftp://x/y.png"]) {
+      expect(campusSchema.safeParse({ ...base, overviewImageUrl: bad }).success, bad).toBe(false);
+    }
+  });
+});
