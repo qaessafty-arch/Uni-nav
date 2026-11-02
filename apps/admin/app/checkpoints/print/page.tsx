@@ -13,7 +13,7 @@ function PrintInner() {
   const { rows } = useTable<QrCheckpoint>("qr_checkpoints");
   const { rows: unis } = useTable<University>("universities");
   const [svgs, setSvgs] = useState<Record<string, string>>({});
-  const list = (rows ?? []).filter((c) => c.status === "active" && (!only || c.id === only));
+  const list = (rows ?? []).filter((c) => c.status === "active" && (!c.expiresAt || Date.parse(c.expiresAt) > Date.now()) && (!only || c.id === only));
 
   useEffect(() => {
     let cancelled = false;
