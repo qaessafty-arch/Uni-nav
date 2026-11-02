@@ -25,7 +25,7 @@ export default function RoomScreen() {
         return (
           <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 10 }}>
             <T muted size="sm">{`${building?.code ?? ""} · ${lt(floor.name, loc)}`}</T>
-            <T size="3xl" bold mono>{room.code}</T>
+            <T size="4xl" bold mono style={{ fontSize: 64, lineHeight: 68 }}>{room.code}</T>
             <T size="lg">{lt(room.name, loc)}</T>
             <View style={{ flexDirection: tx.row, gap: 6, flexWrap: "wrap" }}>
               <Badge>{t(`roomType.${room.type}`)}</Badge>

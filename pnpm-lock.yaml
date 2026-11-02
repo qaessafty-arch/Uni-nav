@@ -99,6 +99,9 @@ importers:
       '@expo-google-fonts/ibm-plex-mono':
         specifier: 0.4.1
         version: 0.4.1
+      '@expo-google-fonts/instrument-serif':
+        specifier: 0.4.1
+        version: 0.4.1
       '@expo-google-fonts/noto-sans-arabic':
         specifier: 0.4.3
         version: 0.4.3
@@ -910,6 +913,9 @@ packages:
 
   '@expo-google-fonts/ibm-plex-mono@0.4.1':
     resolution: {integrity: sha512-/yYz1mPZq8Nd4tSiH0SBDPEdJUqiOGBwVgSrQvLuw7SPh6C7ezBzmi6eFyHY4QaQwjHDmOLSBKsxzq8ZDFXVAg==}
+
+  '@expo-google-fonts/instrument-serif@0.4.1':
+    resolution: {integrity: sha512-1CgCrLbTSgE7RV8ZrTT7i06UAyNQDBrhxQuxkReNnfq5yvUhTmvpOK17grlEsXG5p04lJ1ZXGiIjPeHo6X0sXg==}
 
   '@expo-google-fonts/noto-sans-arabic@0.4.3':
     resolution: {integrity: sha512-YvtxyuegxPegu2g5urXJ+gQxRp8i798nQswTmEjwXOWR/fqy0Gvey6h5IoNRBrc43SxRxPezqCiR9ivpfPAXSg==}
@@ -4759,6 +4765,8 @@ snapshots:
     optional: true
 
   '@expo-google-fonts/ibm-plex-mono@0.4.1': {}
+
+  '@expo-google-fonts/instrument-serif@0.4.1': {}
 
   '@expo-google-fonts/noto-sans-arabic@0.4.3': {}
 

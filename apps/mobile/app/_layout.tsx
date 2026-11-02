@@ -1,6 +1,7 @@
 import "react-native-url-polyfill/auto";
 // Import single weights so unused font files are not bundled.
 import { IBMPlexMono_400Regular } from "@expo-google-fonts/ibm-plex-mono/400Regular";
+import { InstrumentSerif_400Regular } from "@expo-google-fonts/instrument-serif/400Regular";
 import { NotoSansArabic_400Regular } from "@expo-google-fonts/noto-sans-arabic/400Regular";
 import { NotoSansArabic_700Bold } from "@expo-google-fonts/noto-sans-arabic/700Bold";
 import { useFonts } from "expo-font";
@@ -35,7 +36,7 @@ function Reminders() {
 
 function Root() {
   const { hydrated, t } = useApp();
-  const [fontsLoaded] = useFonts({ IBMPlexMono_400Regular, NotoSansArabic_400Regular, NotoSansArabic_700Bold });
+  const [fontsLoaded] = useFonts({ IBMPlexMono_400Regular, InstrumentSerif_400Regular, NotoSansArabic_400Regular, NotoSansArabic_700Bold });
   useEffect(() => {
     if (hydrated && fontsLoaded) SplashScreen.hideAsync().catch(() => {});
   }, [hydrated, fontsLoaded]);

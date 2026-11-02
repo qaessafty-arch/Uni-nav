@@ -33,7 +33,7 @@ Three selectable styles share the same components, colours and behaviour; they d
 | **Editorial × Electric** (`editorial`, default) | Instrument Serif oversized headings, rule-based layouts instead of boxes, numbered section annotations (`01 —`), mono uppercase controls |
 | **Brutalism × Electric** (`brutal`) | 2–3 px black/white borders, hard offset shadows, uppercase heavy display type, grid background, solid accent highlights |
 
-Selection: student web → Settings › Visual style (stored with the existing preferences); admin → sidebar selector (browser-local). A tiny inline script applies the saved style before first paint. The mobile app uses the shared tokens (new accent) but has no style selector yet.
+Selection: student web → Settings › Visual style (stored with the existing preferences; a tiny inline script applies it before first paint); admin → sidebar selector (browser-local); mobile → Settings › Visual style (stored with the existing app preferences). On mobile the same values live in `styleTokens` (`packages/tokens/src/index.ts`) and are read by the native primitives via `useLook()` / `useCard()` in `apps/mobile/src/ui.tsx`; Instrument Serif is bundled for the Editorial headings.
 
 ## Typography
 

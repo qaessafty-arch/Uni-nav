@@ -3,6 +3,7 @@ import { PanResponder, Pressable, Text, View, type GestureResponderEvent } from 
 import Svg, { Circle, G, Path, Polyline, Rect, Text as SvgText } from "react-native-svg";
 import { fitPoints, fitViewBox, lt, pan, polygonPath, shapeCenter, zoomAt, type Floor, type Locale, type MapElement, type NavNode, type Room, type ViewBox } from "@campusnav/core";
 import { colors } from "@campusnav/tokens";
+import { useLook } from "./ui";
 
 const c = colors.dark;
 const FILL: Record<string, string> = { room: c.mapRoom, corridor: c.mapCorridor, stairs: c.mapStairs, elevator: c.mapElevator, toilet: c.mapToilet, entrance: c.accentSoft, emergency_exit: "#3A1C1C", wall: c.borderStrong, outdoor: "transparent", building: c.mapRoom };
@@ -27,6 +28,7 @@ export interface NativeFloorMapProps {
  * React Native's built-in PanResponder — no extra gesture library required.
  */
 export function NativeFloorMap(p: NativeFloorMapProps) {
+  const look = useLook();
   const base = useMemo(() => fitViewBox(p.floor.width, p.floor.height), [p.floor.width, p.floor.height]);
   const target = useMemo(() => {
     const pts = (p.route ?? []).flat();
@@ -83,7 +85,7 @@ export function NativeFloorMap(p: NativeFloorMapProps) {
   const zoom = (f: number) => setVb((v) => zoomAt(v, f, v.x + v.w / 2, v.y + v.h / 2, base));
 
   return (
-    <View style={{ height: p.height ?? 380, borderWidth: 1, borderColor: c.border, backgroundColor: c.mapBg }} onLayout={(e) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })} {...responder.panHandlers}>
+    <View style={{ height: p.height ?? 380, borderWidth: look.borderWidth, borderColor: look.strongBorders ? c.text : c.border, borderRadius: look.radius, overflow: "hidden", backgroundColor: c.mapBg }} onLayout={(e) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })} {...responder.panHandlers}>
       <Svg width="100%" height="100%" viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} accessibilityLabel={lt(p.floor.name, p.locale)}>
         <Rect x={0} y={0} width={p.floor.width} height={p.floor.height} fill={c.mapBg} stroke={c.border} />
         {p.elements.map((el) => {
@@ -115,7 +117,7 @@ export function NativeFloorMap(p: NativeFloorMapProps) {
           ["−", p.labels.zoomOut, () => zoom(1 / 1.4)],
           ["⟲", p.labels.reset, () => setVb(target.length ? fitPoints(base, target, 80) : base)],
         ].map(([g, label, fn]) => (
-          <Pressable key={label as string} accessibilityRole="button" accessibilityLabel={label as string} onPress={fn as () => void} style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center", backgroundColor: c.surface, borderWidth: 1, borderColor: c.borderStrong }}>
+          <Pressable key={label as string} accessibilityRole="button" accessibilityLabel={label as string} onPress={fn as () => void} style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center", backgroundColor: c.surface, borderWidth: look.borderWidth, borderRadius: look.radius, borderColor: look.strongBorders ? c.text : c.borderStrong }}>
             <Text style={{ color: c.text, fontSize: 20 }}>{g as string}</Text>
           </Pressable>
         ))}

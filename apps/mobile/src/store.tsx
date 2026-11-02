@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { buildSearchIndex, type CampusBundle, type Locale, type SearchIndex, type UniversitySummary } from "@campusnav/core";
 import { createSupabase, DemoDataSource, loadBundle, readCachedBundle, SupabaseDataSource, type AsyncKV, type CampusDataSource } from "@campusnav/data";
 import { dir, isLocale, translate, type MessageKey, type Params } from "@campusnav/i18n";
+import { visualStyles, type VisualStyle } from "@campusnav/tokens";
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -35,9 +36,11 @@ export interface Prefs {
   onboarded: boolean;
   reminders: boolean;
   keepHistory: boolean;
+  /** UI-only visual style (Minimalism / Editorial / Brutalism × Electric). */
+  style: VisualStyle;
 }
 
-const DEFAULT: Prefs = { locale: "en", universityId: null, groupId: null, accessible: false, onboarded: false, reminders: false, keepHistory: false };
+const DEFAULT: Prefs = { locale: "en", universityId: null, groupId: null, accessible: false, onboarded: false, reminders: false, keepHistory: false, style: "editorial" };
 
 type BundleState =
   | { status: "idle" | "loading" }
@@ -81,6 +84,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         parsed.locale = lang === "ckb" || lang === "ku" ? "ckb" : lang === "ar" ? "ar" : "en";
       }
       if (!isLocale(parsed.locale)) parsed.locale = "en";
+      if (!parsed.style || !visualStyles.includes(parsed.style)) parsed.style = DEFAULT.style;
       setPrefsState({ ...DEFAULT, ...parsed });
       setStartState(s ? JSON.parse(s) : null);
       setSaved(sv ? JSON.parse(sv) : []);

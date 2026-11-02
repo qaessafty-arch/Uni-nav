@@ -24,7 +24,7 @@ export default function FloorScreen() {
         const cps = b.checkpoints.map((cp) => b.navNodes.find((n) => n.id === cp.nodeId)).filter((n): n is NonNullable<typeof n> => !!n && n.floorId === floor.id);
         return (
           <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 10 }}>
-            <T bold size="xl">{lt(floor.name, loc)}</T>
+            <T display size="2xl">{lt(floor.name, loc)}</T>
             <View style={{ flexDirection: tx.row, gap: 4 }} accessibilityRole="tablist">
               {siblings.map((f) => (
                 <Pressable key={f.id} accessibilityRole="tab" accessibilityState={{ selected: f.id === floor.id }} onPress={() => router.setParams({ id: f.id })} style={{ minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: f.id === floor.id ? c.accent : c.borderStrong, backgroundColor: f.id === floor.id ? c.accent : c.surface }}>

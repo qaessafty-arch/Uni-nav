@@ -1,11 +1,12 @@
 import { router } from "expo-router";
 import { Pressable, ScrollView, Switch, View } from "react-native";
 import { LOCALES, lt } from "@campusnav/core";
+import { visualStyleLabels } from "@campusnav/tokens";
 import { formatInstant } from "@campusnav/i18n";
 import { clearCachedBundle } from "@campusnav/data";
 import { requestPermission } from "@/notifications";
 import { kv, useApp } from "@/store";
-import { Btn, Label, Notice, T, c, useText } from "@/ui";
+import { Btn, Label, Notice, StylePicker, T, c, useText } from "@/ui";
 
 export default function SettingsScreen() {
   const { t, prefs, setPrefs, universities, bundleState, reload } = useApp();
@@ -19,6 +20,8 @@ export default function SettingsScreen() {
           <T style={{ color: prefs.locale === l ? c.accent : c.text }}>{t(`language.${l}`)}</T>
         </Pressable>
       ))}
+      <Label>{t("settings.style")}</Label>
+      <StylePicker value={prefs.style} onChange={(style) => setPrefs({ style })} labels={visualStyleLabels} />
       <Label>{t("campus.select")}</Label>
       <T>{uni ? lt(uni.name, prefs.locale) : "—"}</T>
       <Btn title={t("campus.change")} onPress={() => router.push("/campus")} />

@@ -6,7 +6,7 @@ import { formatClock, formatCountdownText } from "@campusnav/i18n";
 import { DataBanners, Gate } from "@/Gate";
 import { OccurrenceCard, resultHref } from "@/OccurrenceCard";
 import { useApp } from "@/store";
-import { Badge, Btn, Input, Label, Row, T, c, styles, useText } from "@/ui";
+import { Badge, Btn, Input, Label, Row, T, c, useCard, useText } from "@/ui";
 
 function Home({ bundle, index }: { bundle: CampusBundle; index: Parameters<typeof search>[0] }) {
   const { t, prefs, saved } = useApp();
@@ -14,10 +14,11 @@ function Home({ bundle, index }: { bundle: CampusBundle; index: Parameters<typeo
   const results = useMemo(() => (q.trim() ? search(index, q, { limit: 10 }) : []), [index, q]);
   const cn = prefs.groupId ? currentAndNext(new Date(), bundle.university.settings.timezone, bundle.timetable, bundle.scheduleChanges, { groupId: prefs.groupId }) : null;
   const loc = prefs.locale;
+  const card = useCard();
   return (
     <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 12 }} keyboardShouldPersistTaps="handled">
       <DataBanners />
-      <T size="2xl" bold>{lt(bundle.university.name, loc)}</T>
+      <T display size="4xl">{lt(bundle.university.name, loc)}</T>
       <T muted>{t("splash.tagline")}</T>
       <Input value={q} onChangeText={setQ} placeholder={t("home.searchPlaceholder")} accessibilityLabel={t("common.search")} returnKeyType="search" maxLength={120} />
       {q.trim() ? (
@@ -32,7 +33,7 @@ function Home({ bundle, index }: { bundle: CampusBundle; index: Parameters<typeo
         <>
           <Label>{cn?.current ? t("home.currentLecture") : t("home.nextLecture")}</Label>
           {!prefs.groupId ? (
-            <View style={styles.card}>
+            <View style={card}>
               <T>{t("home.pickGroup")}</T>
               <Link href="/timetable" asChild>
                 <Pressable accessibilityRole="link" style={{ minHeight: 44, justifyContent: "center" }}>

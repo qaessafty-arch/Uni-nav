@@ -2,6 +2,7 @@ import { Tabs } from "expo-router";
 import Svg, { Path } from "react-native-svg";
 import { colors } from "@campusnav/tokens";
 import { useApp } from "@/store";
+import { useLook } from "@/ui";
 
 const ICONS: Record<string, string> = {
   index: "M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z",
@@ -13,6 +14,7 @@ const ICONS: Record<string, string> = {
 
 export default function TabsLayout() {
   const { t } = useApp();
+  const look = useLook();
   const c = colors.dark;
   const icon = (name: string) =>
     function TabIcon({ color }: { color: unknown }) {
@@ -28,7 +30,9 @@ export default function TabsLayout() {
         headerStyle: { backgroundColor: c.bg },
         headerTintColor: c.text,
         headerShadowVisible: false,
-        tabBarStyle: { backgroundColor: c.bg, borderTopColor: c.border },
+        headerTitleStyle: look.displayFont ? { fontFamily: look.displayFont, fontSize: 24 } : look.displayUppercase ? { fontWeight: "900", textTransform: "uppercase" } as never : undefined,
+        tabBarStyle: { backgroundColor: c.bg, borderTopColor: look.strongBorders ? c.text : c.border, borderTopWidth: 1 },
+        tabBarLabelStyle: look.buttonMono ? { fontFamily: "IBMPlexMono_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase" } : undefined,
         tabBarActiveTintColor: c.accent,
         tabBarInactiveTintColor: c.textMuted,
         sceneStyle: { backgroundColor: c.bg },

@@ -18,7 +18,7 @@ export default function BuildingScreen() {
         return (
           <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 8 }}>
             <T muted mono>{building.code}</T>
-            <T size="2xl" bold>{lt(building.name, loc)}</T>
+            <T display size="3xl">{lt(building.name, loc)}</T>
             {building.description ? <T muted>{lt(building.description, loc)}</T> : null}
             <Label>{t("map.floors")}</Label>
             {floors.length === 0 ? <T muted>{t("map.noFloors")}</T> : floors.map((f) => <Row key={f.id} title={lt(f.name, loc)} meta={String(b.rooms.filter((r) => r.floorId === f.id).length)} href={`/floor/${f.id}`} />)}

@@ -21,7 +21,7 @@ export default function LecturerScreen() {
         return (
           <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 8 }}>
             {l.title ? <T muted size="sm">{lt(l.title, loc)}</T> : null}
-            <T size="2xl" bold>{lt(l.fullName, loc)}</T>
+            <T display size="3xl">{lt(l.fullName, loc)}</T>
             <T muted>{lt(b.departments.find((d) => d.id === l.departmentId)?.name, loc)}</T>
             {l.dataStatus === "demo" ? <Badge tone="warn">{t("data.demo")}</Badge> : null}
             <Label>{t("lecturer.office")}</Label>

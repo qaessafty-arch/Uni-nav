@@ -35,7 +35,7 @@ export function CheckpointResult({ token, then, onReset }: { token: string; then
     const safeThen = then && /^\/[A-Za-z0-9]/.test(then) ? then : null;
     return (
       <View style={{ borderWidth: 1, borderColor: c.accent, padding: 16, gap: 12 }} accessibilityLiveRegion="polite">
-        <T bold size="lg">{t("scan.ok", { place: lt(res.checkpoint.label, prefs.locale) })}</T>
+        <T display size="xl">{t("scan.ok", { place: lt(res.checkpoint.label, prefs.locale) })}</T>
         {safeThen ? <Btn variant="primary" title={t("common.continue")} onPress={() => router.replace(safeThen as never)} /> : <Btn variant="primary" title={t("scan.navigateFromHere")} href="/" />}
         {onReset ? <Btn title={t("nav.scan")} onPress={onReset} /> : null}
       </View>

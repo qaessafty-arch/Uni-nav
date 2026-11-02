@@ -94,6 +94,39 @@ export const visualStyleLabels: Record<VisualStyle, string> = {
   brutal: "Brutalism × Electric",
 };
 
+/**
+ * Native (React Native) equivalents of the CSS visual-style variables in
+ * tokens.css / ui.css. UI-only: geometry, type and surface treatment.
+ */
+export interface StyleTokens {
+  radius: number;
+  borderWidth: number;
+  borderWidthStrong: number;
+  /** Font family for display headings; null = platform sans-serif. */
+  displayFont: string | null;
+  displayWeight: "400" | "600" | "700" | "800" | "900";
+  displayUppercase: boolean;
+  displayScale: number;
+  displayTracking: number;
+  labelTracking: number;
+  /** Hard offset shadow (brutal) in px; 0 = none. */
+  shadowOffset: number;
+  buttonUppercase: boolean;
+  buttonMono: boolean;
+  /** Cards drawn as a top rule instead of a box (editorial). */
+  ruleCards: boolean;
+  /** Card/control borders use the text colour instead of the border colour. */
+  strongBorders: boolean;
+  /** Numbered section labels ("01 —"). */
+  sectionIndex: boolean;
+}
+
+export const styleTokens: Record<VisualStyle, StyleTokens> = {
+  minimal: { radius: 3, borderWidth: 1, borderWidthStrong: 1, displayFont: null, displayWeight: "600", displayUppercase: false, displayScale: 1, displayTracking: -0.6, labelTracking: 1.6, shadowOffset: 0, buttonUppercase: false, buttonMono: false, ruleCards: false, strongBorders: false, sectionIndex: false },
+  editorial: { radius: 0, borderWidth: 1, borderWidthStrong: 1, displayFont: "InstrumentSerif_400Regular", displayWeight: "400", displayUppercase: false, displayScale: 1.3, displayTracking: -0.3, labelTracking: 2.2, shadowOffset: 0, buttonUppercase: true, buttonMono: true, ruleCards: true, strongBorders: false, sectionIndex: true },
+  brutal: { radius: 0, borderWidth: 2, borderWidthStrong: 3, displayFont: null, displayWeight: "900", displayUppercase: true, displayScale: 1.1, displayTracking: -1, labelTracking: 1, shadowOffset: 4, buttonUppercase: true, buttonMono: false, ruleCards: false, strongBorders: true, sectionIndex: true },
+};
+
 export type ThemeName = keyof typeof colors;
 export type ThemeColors = { [K in keyof (typeof colors)["dark"]]: string };
 

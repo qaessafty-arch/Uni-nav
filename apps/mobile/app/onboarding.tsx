@@ -36,7 +36,7 @@ export default function Onboarding() {
       </View>
       <View style={{ flex: 1, justifyContent: "center", gap: 12 }}>
         <T muted mono size="xs">{`0${step + 1} / 03`}</T>
-        <T size="3xl" bold>{slides[step]![0]}</T>
+        <T display size="4xl">{slides[step]![0]}</T>
         <T muted size="lg">{slides[step]![1]}</T>
       </View>
       <View style={{ flexDirection: tx.row, gap: 6, marginBottom: 16 }}>

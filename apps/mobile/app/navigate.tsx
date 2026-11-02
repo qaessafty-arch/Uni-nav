@@ -18,7 +18,7 @@ function StartPicker({ b, onPick, to }: { b: CampusBundle; onPick: (id: string) 
   const list = useMemo(() => startCandidates(b).filter((n) => n.kind !== "room_entrance" || true), [b]);
   return (
     <View style={{ gap: 8 }}>
-      <T bold size="lg">{t("navigate.chooseStart")}</T>
+      <T display size="xl">{t("navigate.chooseStart")}</T>
       <T muted size="sm">{t("navigate.chooseStartHint")}</T>
       <Btn variant="primary" title={t("navigate.scanToStart")} href={`/scan?then=${encodeURIComponent(`/navigate?to=${to}`)}`} />
       <Label>{t("navigate.pickStart")}</Label>
@@ -46,7 +46,7 @@ export default function NavigateScreen() {
         const header = (
           <View style={{ marginBottom: 8 }}>
             <T muted size="sm">{t("navigate.to")}</T>
-            <T bold size="xl">{`${room.code} · ${lt(room.name, loc)}`}</T>
+            <T display size="2xl">{`${room.code} · ${lt(room.name, loc)}`}</T>
           </View>
         );
         if (!start) {
@@ -93,7 +93,7 @@ export default function NavigateScreen() {
           return (
             <View style={{ flex: 1, backgroundColor: c.bg, padding: 24, justifyContent: "center", gap: 12 }} accessibilityLiveRegion="polite">
               <T size="3xl" bold style={{ textAlign: "center", color: c.accent }}>✓</T>
-              <T size="2xl" bold style={{ textAlign: "center" }}>{t("navigate.arrived")}</T>
+              <T display size="3xl" style={{ textAlign: "center" }}>{t("navigate.arrived")}</T>
               <T muted style={{ textAlign: "center" }}>{t("navigate.arrivedAt", { place: `${room.code} · ${lt(room.name, loc)}` })}</T>
               <Btn variant="primary" title={t("nav.home")} href="/" />
             </View>
