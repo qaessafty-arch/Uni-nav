@@ -18,9 +18,15 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const PREPAINT = `try{var p=JSON.parse(localStorage.getItem("campusnav.prefs")||"{}"),d=document.documentElement;if(["minimal","editorial","brutal"].indexOf(p.style)>-1)d.dataset.style=p.style;if(p.theme==="light"||p.theme==="dark")d.dataset.theme=p.theme;if(p.locale==="ar"||p.locale==="ckb"){d.dir="rtl";d.lang=p.locale}}catch(e){}`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" dir="ltr" data-theme="dark" suppressHydrationWarning>
+    <html lang="en" dir="ltr" data-theme="dark" data-style="editorial" suppressHydrationWarning>
+      <head>
+        {/* Apply the saved visual style/theme before first paint (presentation only). */}
+        <script dangerouslySetInnerHTML={{ __html: PREPAINT }} />
+      </head>
       <body>
         <Providers>{children}</Providers>
       </body>

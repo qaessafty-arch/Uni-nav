@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { lt } from "@campusnav/core";
 import { formatInstant } from "@campusnav/i18n";
-import { Button, ButtonLink, PageTitle, Section, Toggle, cx } from "@/components/ui";
+import { visualStyleLabels } from "@campusnav/tokens";
+import { Button, ButtonLink, PageTitle, Section, StyleSelector, Toggle } from "@/components/ui";
 import { useApp } from "@/lib/store";
 import { APP_VERSION, backendMode } from "@/lib/config";
 
@@ -25,10 +26,13 @@ export default function SettingsPage() {
           <span aria-hidden className="rtl:rotate-180">→</span>
         </Link>
       </Section>
+      <Section title={t("settings.style")}>
+        <StyleSelector value={prefs.style} onChange={(style) => setPrefs({ style })} labels={visualStyleLabels} legend={t("settings.style")} />
+      </Section>
       <Section title={t("settings.theme")}>
-        <div className="flex border border-line-strong w-fit" role="radiogroup" aria-label={t("settings.theme")}>
+        <div className="cn-seg" role="radiogroup" aria-label={t("settings.theme")}>
           {(["dark", "light", "system"] as const).map((th) => (
-            <button key={th} role="radio" aria-checked={prefs.theme === th} onClick={() => setPrefs({ theme: th })} className={cx("min-h-11 px-4 text-sm", prefs.theme === th ? "bg-accent text-accent-fg" : "text-muted")}>
+            <button key={th} role="radio" aria-checked={prefs.theme === th} onClick={() => setPrefs({ theme: th })} className="min-h-11 px-4 text-sm">
               {t(`settings.theme.${th}`)}
             </button>
           ))}

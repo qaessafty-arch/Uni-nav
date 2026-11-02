@@ -34,7 +34,7 @@ export default function LecturerPage() {
               )}
               <div className="min-w-0">
                 {x.title ? <div className="label-caps">{lt(x.title, loc)}</div> : null}
-                <h1 className="text-3xl font-bold">{lt(x.fullName, loc)}</h1>
+                <h1 className="cn-display cn-display-lg mt-1">{lt(x.fullName, loc)}</h1>
                 {dept ? (
                   <Link href={`/lecturers?dept=${dept.id}`} className="text-muted hover:underline">
                     {lt(dept.name, loc)}
@@ -46,7 +46,7 @@ export default function LecturerPage() {
 
             <Section title={t("lecturer.office")} className="mt-8">
               {office ? (
-                <div className="flex flex-wrap items-center justify-between gap-3 border border-line p-4">
+                <div className="cn-card flex flex-wrap items-center justify-between gap-3 p-4">
                   <div>
                     <Link href={`/rooms/${office.id}`} className="mono text-xl font-semibold hover:underline">
                       {office.code}

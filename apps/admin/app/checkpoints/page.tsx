@@ -77,9 +77,9 @@ export default function CheckpointsPage() {
         </form>
       ) : null}
       {!rows ? <Spinner label="Loading…" /> : rows.length === 0 ? <EmptyState title="No checkpoints yet." /> : (
-        <div className="border border-line overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-surface"><tr>{["Label", "Location", "Status", "Link", ""].map((h) => <th key={h} className="text-start px-3 py-2">{h}</th>)}</tr></thead>
+        <div className="cn-tablewrap">
+          <table className="cn-table">
+            <thead><tr>{["Label", "Location", "Status", "Link", ""].map((h) => <th key={h}>{h}</th>)}</tr></thead>
             <tbody>
               {rows.map((cp) => {
                 const n = nodeById.get(cp.nodeId);

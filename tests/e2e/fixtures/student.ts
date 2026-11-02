@@ -7,8 +7,8 @@ export async function enterDemo(page: Page, prefs: Record<string, unknown> = {})
   await page.evaluate(
     ([uid, extra]) => {
       localStorage.clear();
-      localStorage.setItem("campusnav.prefs", JSON.stringify({ locale: "en", theme: "dark", universityId: uid, onboarded: true, groupId: null, accessible: false, keepHistory: false, reminders: false, ...(extra as object) }));
+      localStorage.setItem("campusnav.prefs", JSON.stringify({ locale: "en", theme: "dark", style: (extra as { style?: string }).style ?? "editorial", universityId: uid, onboarded: true, groupId: null, accessible: false, keepHistory: false, reminders: false, ...(extra as object) }));
     },
-    [DEMO_UNIVERSITY_ID, prefs] as const,
+    [DEMO_UNIVERSITY_ID, { style: process.env.E2E_STYLE ?? "editorial", ...prefs }] as const,
   );
 }

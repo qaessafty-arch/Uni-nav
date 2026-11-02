@@ -74,9 +74,9 @@ export default function MapEditorPage() {
         <select aria-label="Building" className={cx(inputCls, "w-auto")} value={buildingId} onChange={(e) => setBuildingId(e.target.value)}>
           {b.buildings.map((x) => <option key={x.id} value={x.id}>{x.code} — {lt(x.name, "en")}</option>)}
         </select>
-        <div className="flex border border-line-strong" role="tablist" aria-label="Floor">
+        <div className="cn-seg" role="tablist" aria-label="Floor">
           {floors.map((f) => (
-            <button key={f.id} role="tab" aria-selected={f.id === floorId} onClick={() => setFloorId(f.id)} className={cx("min-h-10 px-3 mono text-sm", f.id === floorId ? "bg-accent text-accent-fg" : "text-muted")}>
+            <button key={f.id} role="tab" aria-selected={f.id === floorId} onClick={() => setFloorId(f.id)} className="!min-h-10 px-3 mono text-sm">
               L{f.level}
             </button>
           ))}
@@ -362,7 +362,7 @@ function Editor({ bundle, building, floorId, setFloorId, checkpoints }: { bundle
               ["edge", "Connect nodes"],
             ] as [Tool, string][]
           ).map(([t, label]) => (
-            <button key={t} disabled={!editable && t !== "select"} aria-pressed={tool === t} onClick={() => { setTool(t); setEdgeStart(null); }} className={cx("min-h-10 px-3 text-sm border", tool === t ? "border-accent text-accent" : "border-line-strong text-muted")}>
+            <button key={t} disabled={!editable && t !== "select"} aria-pressed={tool === t} onClick={() => { setTool(t); setEdgeStart(null); }} className={cx("cn-btn !min-h-10 !px-3", tool === t && "cn-btn-primary")}>
               {label}
             </button>
           ))}
@@ -386,7 +386,7 @@ function Editor({ bundle, building, floorId, setFloorId, checkpoints }: { bundle
         <svg
           ref={svgRef}
           viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
-          className="w-full h-[68vh] bg-[var(--cn-map-bg)] border border-line touch-none select-none"
+          className="cn-mapframe w-full h-[68vh] bg-[var(--cn-map-bg)] border border-line touch-none select-none"
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}

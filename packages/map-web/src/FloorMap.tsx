@@ -170,7 +170,7 @@ export function FloorMap(props: FloorMapProps) {
   const unit = vb.w / 100; // relative stroke/label sizing
 
   return (
-    <div className={props.className} style={{ position: "relative", height: props.height ?? "100%", minHeight: 240, background: "var(--cn-map-bg)", border: "1px solid var(--cn-border)", touchAction: "none", overflow: "hidden" }}>
+    <div className={["cn-mapframe", props.className].filter(Boolean).join(" ")} style={{ position: "relative", height: props.height ?? "100%", minHeight: 240, background: "var(--cn-map-bg)", border: "1px solid var(--cn-border)", touchAction: "none", overflow: "hidden" }}>
       <svg
         ref={svgRef}
         role="img"
@@ -297,7 +297,8 @@ function MapButton({ label, onClick, children }: { label: string; onClick: () =>
         placeItems: "center",
         background: "var(--cn-surface)",
         color: "var(--cn-text)",
-        border: "1px solid var(--cn-border-strong)",
+        border: "var(--cn-bw, 1px) solid var(--cn-border-strong)",
+        borderRadius: "var(--cn-radius, 0px)",
         fontFamily: "IBM Plex Mono, ui-monospace, monospace",
         fontSize: 20,
         cursor: "pointer",

@@ -19,9 +19,9 @@ export default function AuditPage() {
     <div>
       <PageTitle eyebrow="Written by database triggers — cannot be edited">Audit log</PageTitle>
       {rows.length === 0 ? <EmptyState title="No changes recorded yet." /> : (
-        <div className="border border-line overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-surface"><tr>{["When", "Who", "Action", "Table", "Record", ""].map((h) => <th key={h} className="text-start px-3 py-2">{h}</th>)}</tr></thead>
+        <div className="cn-tablewrap">
+          <table className="cn-table">
+            <thead><tr>{["When", "Who", "Action", "Table", "Record", ""].map((h) => <th key={h}>{h}</th>)}</tr></thead>
             <tbody>
               {rows.map((r) => (
                 <Fragment key={r.id}>

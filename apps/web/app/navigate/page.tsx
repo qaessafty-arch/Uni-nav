@@ -45,7 +45,7 @@ function StartPicker({ bundle, onPick, returnTo }: { bundle: CampusBundle; onPic
   }, [bundle, l, loc]);
 
   return (
-    <div className="border border-line bg-surface p-5">
+    <div className="cn-card p-5 md:p-6">
       <h2 className="text-xl font-semibold">{t("navigate.chooseStart")}</h2>
       <p className="text-muted text-sm mt-1">{t("navigate.chooseStartHint")}</p>
       <div className="mt-4 flex flex-col sm:flex-row gap-3">
@@ -133,7 +133,7 @@ function NavigateInner() {
         const header = (
           <div className="mb-5">
             <div className="label-caps">{t("navigate.to")}</div>
-            <h1 className="text-2xl font-bold">{destName}</h1>
+            <h1 className="cn-display cn-display-lg mt-1">{destName}</h1>
             {room ? (
               <p className="text-muted text-sm">
                 {lt(l.buildings.get(room.buildingId)?.name, loc)} · {lt(l.floors.get(room.floorId)?.name, loc)}
@@ -177,10 +177,10 @@ function NavigateInner() {
         if (arrived) {
           return (
             <div className="max-w-xl mx-auto text-center py-10">
-              <div className="mx-auto size-16 border-2 border-accent grid place-items-center text-accent text-3xl" aria-hidden>
+              <div className="mx-auto size-20 bg-accent text-accent-fg grid place-items-center text-4xl font-black" aria-hidden>
                 ✓
               </div>
-              <h1 className="text-3xl font-bold mt-6">{t("navigate.arrived")}</h1>
+              <h1 className="cn-display cn-display-xl mt-8">{t("navigate.arrived")}</h1>
               <p className="text-muted mt-2">{t("navigate.arrivedAt", { place: destName })}</p>
               <div className="mt-8 flex justify-center gap-2">
                 {room ? <ButtonLink href={`/rooms/${room.id}`}>{t("common.room")}</ButtonLink> : null}
@@ -231,16 +231,16 @@ function NavigateInner() {
               </div>
 
               <div className="order-2 space-y-4">
-                <div className="grid grid-cols-2 border border-line">
+                <div className="cn-card grid grid-cols-2 !p-0 overflow-hidden">
                   <div className="p-4 border-e border-line">
                     <div className="label-caps">{t("navigate.distance")}</div>
-                    <div className="text-2xl font-bold mono mt-1">{formatDistance(loc, plan.route.distanceM)}</div>
+                    <div className="cn-figure text-3xl md:text-4xl mt-2">{formatDistance(loc, plan.route.distanceM)}</div>
                   </div>
                   <div className="p-4">
                     <div className="label-caps flex items-center gap-2">
                       {t("navigate.time")} <Badge>{t("data.estimate")}</Badge>
                     </div>
-                    <div className="text-2xl font-bold mono mt-1">≈ {formatDuration(loc, plan.estimate.seconds)}</div>
+                    <div className="cn-figure text-3xl md:text-4xl mt-2">≈ {formatDuration(loc, plan.estimate.seconds)}</div>
                   </div>
                   <p className="col-span-2 border-t border-line px-4 py-2 text-xs text-muted">{t("navigate.timeNote", { speed: formatNumber(loc, plan.estimate.assumptions.speedMps) })}</p>
                 </div>
@@ -256,7 +256,7 @@ function NavigateInner() {
                 </div>
                 <Toggle checked={accessible} onChange={setAccessible} label={t("navigate.accessible")} />
 
-                <ol className="border border-line" aria-label={t("navigate.steps")}>
+                <ol className="cn-card !p-0 overflow-hidden" aria-label={t("navigate.steps")}>
                   {steps.map((s, i) => (
                     <li key={i}>
                       <button

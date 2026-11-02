@@ -40,9 +40,9 @@ export default function TimetablePage() {
             {hidden ? <Notice tone="info">{t("timetable.hidden")}</Notice> : null}
 
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              <div className="flex border border-line-strong" role="tablist">
+              <div className="cn-seg" role="tablist">
                 {(["day", "week"] as const).map((v) => (
-                  <button key={v} role="tab" aria-selected={view === v} onClick={() => { setView(v); setOffset(0); }} className={cx("min-h-11 px-4 text-sm", view === v ? "bg-accent text-accent-fg" : "text-muted")}>
+                  <button key={v} role="tab" aria-selected={view === v} onClick={() => { setView(v); setOffset(0); }} className="min-h-11 px-4 text-sm">
                     {t(`timetable.${v}`)}
                   </button>
                 ))}

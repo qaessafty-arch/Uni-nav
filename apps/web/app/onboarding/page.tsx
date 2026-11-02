@@ -81,7 +81,7 @@ export default function OnboardingPage() {
           </svg>
         </div>
         <p className="label-caps mt-8">{`0${step + 1} / 03`}</p>
-        <h1 className="text-3xl font-bold mt-2">{s.title}</h1>
+        <h1 className="cn-display cn-display-xl mt-3">{s.title}</h1>
         <p className="text-muted mt-3 text-lg">{s.body}</p>
       </div>
 

@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { visualStyleLabels, visualStyles, type VisualStyle } from "@campusnav/tokens";
 import { lt, type Permission } from "@campusnav/core";
 import { AdminProvider, adminMode, getAdminSource, useAdmin } from "@/lib/admin";
 import { Badge, Button, Notice, Spinner, cx } from "./ui";
@@ -46,6 +47,52 @@ const NAV: { group: string; items: { href: string; label: string; perm?: Permiss
   },
 ];
 
+const STYLE_KEY = "campusnav.admin.style";
+
+/** UI-only visual style preference for the admin dashboard (browser-local). */
+function useVisualStyle(): [VisualStyle, (s: VisualStyle) => void] {
+  const [style, setStyle] = useState<VisualStyle>("editorial");
+  useEffect(() => {
+    try {
+      const v = window.localStorage.getItem(STYLE_KEY) as VisualStyle | null;
+      if (v && visualStyles.includes(v)) setStyle(v);
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
+  useEffect(() => {
+    document.documentElement.dataset.style = style;
+  }, [style]);
+  return [
+    style,
+    (s) => {
+      setStyle(s);
+      try {
+        window.localStorage.setItem(STYLE_KEY, s);
+      } catch {
+        /* ignore */
+      }
+    },
+  ];
+}
+
+function StylePicker() {
+  const [style, setStyle] = useVisualStyle();
+  return (
+    <div>
+      <div className="label-caps mb-1.5">Visual style</div>
+      <div className="cn-seg w-full" role="radiogroup" aria-label="Visual style">
+        {visualStyles.map((k) => (
+          <button key={k} type="button" role="radio" aria-checked={style === k} title={visualStyleLabels[k]} onClick={() => setStyle(k)} className="flex-1 !px-1 !min-h-9 text-[11px] mono uppercase">
+            {k === "minimal" ? "Min" : k === "editorial" ? "Edit" : "Brut"}
+          </button>
+        ))}
+      </div>
+      <div className="text-[10px] text-faint mt-1 mono">{visualStyleLabels[style]}</div>
+    </div>
+  );
+}
+
 function Login() {
   const { refreshSession } = useAdmin();
   const [email, setEmail] = useState("");
@@ -54,7 +101,7 @@ function Login() {
   const [busy, setBusy] = useState(false);
   return (
     <div className="min-h-dvh grid place-items-center px-4 grid-bg">
-      <div className="w-full max-w-sm bg-bg border border-line-strong p-6">
+      <div className="cn-card w-full max-w-sm !bg-bg p-7">
         <div className="flex items-center gap-2 mb-6">
           <Logo />
           <span className="mono font-semibold tracking-wider">CAMPUS NAV</span>
@@ -62,7 +109,7 @@ function Login() {
         </div>
         {adminMode === "sandbox" ? (
           <>
-            <h1 className="text-xl font-bold">Local sandbox</h1>
+            <h1 className="cn-display cn-display-md">Local sandbox</h1>
             <div className="mt-3">
               <Notice tone="warn">
                 No Supabase project is configured. The sandbox runs entirely in this browser on fictional demo data, with no real authentication. Nothing is sent to any server.
@@ -92,11 +139,11 @@ function Login() {
               else await refreshSession();
             }}
           >
-            <h1 className="text-xl font-bold">Staff sign-in</h1>
+            <h1 className="cn-display cn-display-md">Staff sign-in</h1>
             <label className="block mt-5 text-sm" htmlFor="email">Email</label>
-            <input id="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full min-h-11 mt-1 bg-surface border border-line-strong px-3" />
+            <input id="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} className="cn-input w-full mt-1" />
             <label className="block mt-4 text-sm" htmlFor="password">Password</label>
-            <input id="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full min-h-11 mt-1 bg-surface border border-line-strong px-3" />
+            <input id="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className="cn-input w-full mt-1" />
             {error ? <p role="alert" className="text-danger text-sm mt-3">{error}</p> : null}
             <Button type="submit" variant="primary" className="w-full mt-5" disabled={busy}>
               {busy ? "Signing in…" : "Sign in"}
@@ -138,15 +185,15 @@ function Frame({ children }: { children: ReactNode }) {
   const uni = universities.find((u) => u.id === universityId);
   return (
     <div className="min-h-dvh md:grid md:grid-cols-[248px_1fr]">
-      <aside className={cx("no-print border-e border-line bg-surface md:block md:sticky md:top-0 md:h-dvh overflow-y-auto", open ? "block" : "hidden")}>
-        <div className="flex items-center gap-2 px-4 h-14 border-b border-line">
+      <aside className={cx("cn-sidebar no-print md:block md:sticky md:top-0 md:h-dvh overflow-y-auto", open ? "block" : "hidden")}>
+        <div className="flex items-center gap-2 px-4 h-16 border-b border-line">
           <Logo />
           <span className="mono font-semibold tracking-wider text-sm">CAMPUS NAV</span>
           <Badge className="ms-auto">ADMIN</Badge>
         </div>
         <div className="p-4 border-b border-line">
           <label className="label-caps" htmlFor="uni">University</label>
-          <select id="uni" value={universityId} onChange={(e) => setUniversityId(e.target.value)} className="w-full mt-1 min-h-10 bg-bg border border-line-strong px-2 text-sm">
+          <select id="uni" value={universityId} onChange={(e) => setUniversityId(e.target.value)} className="cn-input w-full mt-1 !min-h-10 text-sm">
             {universities.map((u) => (
               <option key={u.id} value={u.id}>{lt(u.name, "en")}</option>
             ))}
@@ -166,7 +213,7 @@ function Frame({ children }: { children: ReactNode }) {
                 {items.map((i) => {
                   const active = i.href === "/" ? path === "/" : path.startsWith(i.href);
                   return (
-                    <Link key={i.href} href={i.href} onClick={() => setOpen(false)} aria-current={active ? "page" : undefined} className={cx("block px-2 py-2 text-sm border-s-2", active ? "border-accent text-fg bg-bg" : "border-transparent text-muted hover:text-fg")}>
+                    <Link key={i.href} href={i.href} onClick={() => setOpen(false)} aria-current={active ? "page" : undefined} className="cn-sidelink block px-3 py-2 text-sm">
                       {i.label}
                     </Link>
                   );
@@ -175,20 +222,23 @@ function Frame({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
+        <div className="p-4 border-t border-line">
+          <StylePicker />
+        </div>
         <div className="p-4 border-t border-line text-xs text-muted">
           <div className="truncate mono">{session.email}</div>
           <button className="underline mt-2" onClick={() => void signOut()}>Sign out</button>
         </div>
       </aside>
       <div className="min-w-0">
-        <header className="no-print md:hidden flex items-center h-14 px-4 border-b border-line">
+        <header className="cn-header no-print md:hidden flex items-center h-14 px-4">
           <button className="min-h-11 px-2 border border-line-strong" onClick={() => setOpen(!open)} aria-expanded={open}>Menu</button>
           <span className="ms-3 mono text-sm">{uni ? lt(uni.name, "en") : ""}</span>
         </header>
         {adminMode === "sandbox" ? (
-          <div className="no-print border-b border-warn/40 px-6 py-1.5 text-xs text-warn mono">LOCAL SANDBOX — browser-only demo data, no authentication, nothing leaves this device.</div>
+          <div className="cn-strip no-print px-6 md:px-10 py-1.5 text-xs text-warn mono">LOCAL SANDBOX — browser-only demo data, no authentication, nothing leaves this device.</div>
         ) : null}
-        <main className="p-4 md:p-8 max-w-7xl">{children}</main>
+        <main className="cn-sections p-4 md:p-10 max-w-7xl">{children}</main>
       </div>
     </div>
   );

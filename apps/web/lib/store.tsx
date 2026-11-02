@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { CampusBundle, Locale, UniversitySummary } from "@campusnav/core";
+import { visualStyles, type VisualStyle } from "@campusnav/tokens";
 import { buildSearchIndex, type SearchIndex } from "@campusnav/core";
 import { clearCachedBundle, loadBundle, readCachedBundle, type AsyncKV } from "@campusnav/data/cache";
 import { dir, isLocale, translate, type MessageKey, type Params } from "@campusnav/i18n";
@@ -49,6 +50,8 @@ export const kv: AsyncKV & { getJSON<T>(k: string, d: T): T; setJSON(k: string, 
 export interface Prefs {
   locale: Locale;
   theme: "dark" | "light" | "system";
+  /** UI-only visual style (Minimalism / Editorial / Brutalism × Electric). */
+  style: VisualStyle;
   universityId: string | null;
   groupId: string | null;
   accessible: boolean;
@@ -73,6 +76,7 @@ export interface HistoryItem {
 const DEFAULT_PREFS: Prefs = {
   locale: "en",
   theme: "dark",
+  style: "editorial",
   universityId: null,
   groupId: null,
   accessible: false,
@@ -128,6 +132,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       p.locale = nav.startsWith("ckb") || nav.startsWith("ku") ? "ckb" : nav.startsWith("ar") ? "ar" : "en";
     }
     if (!isLocale(p.locale)) p.locale = "en";
+    if (!visualStyles.includes(p.style)) p.style = DEFAULT_PREFS.style;
     setPrefsState(p);
     setStartState(kv.getJSON<Start | null>("campusnav.start", null));
     setSaved(kv.getJSON<string[]>("campusnav.saved", []));
@@ -152,7 +157,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     el.dir = dir(prefs.locale);
     const theme = prefs.theme === "system" ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : prefs.theme;
     el.dataset.theme = theme;
-  }, [hydrated, prefs.locale, prefs.theme]);
+    el.dataset.style = prefs.style;
+  }, [hydrated, prefs.locale, prefs.theme, prefs.style]);
 
   const setPrefs = useCallback((p: Partial<Prefs>) => {
     setPrefsState((prev) => {

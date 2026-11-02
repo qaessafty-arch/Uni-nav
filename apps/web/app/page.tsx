@@ -36,22 +36,28 @@ export default function HomePage() {
         const startNode = start ? l.nodes.get(start.nodeId) : undefined;
 
         return (
-          <div className="grid lg:grid-cols-[1fr_340px] gap-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{lt(bundle.university.name, loc)}</h1>
-              <p className="text-muted mt-1 mb-5">{t("splash.tagline")}</p>
+          <div className="grid lg:grid-cols-12 gap-x-10 gap-y-12">
+            <div className="lg:col-span-8">
+              <p className="label-caps mb-4 flex items-center gap-2">
+                <span className="cn-mark" aria-hidden /> {bundle.university.branding.productName ?? t("brand.product")}
+              </p>
+              <h1 className="cn-display cn-display-xl">{lt(bundle.university.name, loc)}</h1>
+              <p className="text-muted mt-4 mb-8 text-lg max-w-xl">{t("splash.tagline")}</p>
               <SearchBox bundle={bundle} index={index} />
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
                 {[
                   { href: "/scan", label: t("nav.scan"), d: "M4 4h5v5H4zM15 4h5v5h-5zM4 15h5v5H4zM15 15h5v5h-5z" },
                   { href: "/map", label: t("map.campus"), d: "M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z" },
                   { href: "/lecturers", label: t("nav.lecturers"), d: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" },
                   { href: "/timetable", label: t("nav.timetable"), d: "M4 5h16v15H4zM4 9h16" },
-                ].map((q) => (
-                  <Link key={q.href} href={q.href} className="border border-line hover:border-accent bg-surface p-3 min-h-20 flex flex-col justify-between">
-                    <Icon d={q.d} className="text-accent" />
-                    <span className="text-sm font-medium">{q.label}</span>
+                ].map((q, i) => (
+                  <Link key={q.href} href={q.href} className="cn-tile p-4 min-h-28 flex flex-col justify-between">
+                    <span className="flex items-start justify-between">
+                      <Icon d={q.d} className="text-accent size-6" />
+                      <span className="mono text-[10px] text-faint">{String(i + 1).padStart(2, "0")}</span>
+                    </span>
+                    <span className="text-sm font-semibold">{q.label}</span>
                   </Link>
                 ))}
               </div>
@@ -63,7 +69,7 @@ export default function HomePage() {
                 </p>
               ) : null}
 
-              <Section title={cn?.current ? t("home.currentLecture") : t("home.nextLecture")} className="mt-8">
+              <Section title={cn?.current ? t("home.currentLecture") : t("home.nextLecture")} className="mt-12">
                 {!prefs.groupId ? (
                   <EmptyState title={t("home.pickGroup")} action={<Link className="text-accent underline" href="/timetable">{t("timetable.chooseGroup")}</Link>} />
                 ) : cn?.current || cn?.next ? (
@@ -77,14 +83,14 @@ export default function HomePage() {
               </Section>
             </div>
 
-            <aside>
+            <aside className="lg:col-span-4 lg:border-s lg:border-line lg:ps-8">
               <Section title={t("home.announcements")}>
                 {announcements.length === 0 ? (
                   <p className="text-sm text-muted">{t("notifications.empty")}</p>
                 ) : (
                   <ul className="space-y-3">
                     {announcements.slice(0, 4).map((a) => (
-                      <li key={a.id} className={`border-s-2 ps-3 ${a.priority === "important" ? "border-warn" : "border-line-strong"}`}>
+                      <li key={a.id} className={`border-s-2 ps-4 ${a.priority === "important" ? "border-warn" : "border-line-strong"}`}>
                         <p className="font-medium text-sm">{lt(a.title, loc)}</p>
                         <p className="text-sm text-muted mt-0.5">{lt(a.body, loc)}</p>
                         <p className="mono text-[11px] text-faint mt-1">{formatDate(loc, a.publishedAt)}</p>

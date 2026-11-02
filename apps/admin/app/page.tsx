@@ -39,16 +39,16 @@ export default function Dashboard() {
   return (
     <div>
       <PageTitle eyebrow={b.university.dataStatus === "demo" ? "Demo university" : b.university.published ? "Published" : "Not published"}>{lt(b.university.name, "en")}</PageTitle>
-      <div className="grid grid-cols-2 sm:grid-cols-5 border-t border-s border-line">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {stats.map(([label, n, href]) => (
-          <Link key={label} href={href} className="border-e border-b border-line p-4 hover:bg-surface">
+          <Link key={label} href={href} className="cn-tile p-4 min-h-28 flex flex-col justify-between">
             <div className="label-caps">{label}</div>
-            <div className="text-3xl font-bold mono mt-1">{n}</div>
+            <div className="cn-figure text-4xl mt-3">{n}</div>
           </Link>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8 mt-8">
+      <div className="grid lg:grid-cols-2 gap-x-10 gap-y-2 mt-12">
         <Section title="Map & navigation integrity">
           <p className="text-sm mb-3">
             {errors.length === 0 ? <Badge tone="accent">no blocking errors</Badge> : <Badge tone="danger">{errors.length} errors</Badge>} <Badge tone={warnings.length ? "warn" : "neutral"}>{warnings.length} warnings</Badge>

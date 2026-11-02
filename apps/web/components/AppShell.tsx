@@ -37,15 +37,18 @@ export function AppShell({ children }: { children: ReactNode }) {
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 bg-accent text-accent-fg px-3 py-2 z-50">
         Skip to content
       </a>
-      <header className="sticky top-0 z-30 bg-bg/95 backdrop-blur border-b border-line">
-        <div className="mx-auto max-w-6xl flex items-center gap-4 px-4 h-14">
+      <header className="cn-header sticky top-0 z-30 backdrop-blur">
+        <div className="mx-auto max-w-6xl flex items-center gap-4 px-4 h-16">
           <Link href="/" className="flex items-center gap-2 min-w-0" aria-label={t("brand.product")}>
             <Logo />
-            <span className="mono font-semibold tracking-wider truncate">{bundle?.university.branding.productName ?? t("brand.product")}</span>
+            <span className="flex flex-col leading-none min-w-0">
+              <span className="mono font-semibold tracking-[0.14em] truncate text-[13px]">{bundle?.university.branding.productName ?? t("brand.product")}</span>
+              <span className="mono text-[9.5px] tracking-[0.24em] text-faint mt-1">NULL-TECH</span>
+            </span>
           </Link>
           <nav className="hidden md:flex items-center gap-1 ms-6" aria-label="Primary">
             {NAV.map((n) => (
-              <Link key={n.href} href={n.href} aria-current={active(n.href) ? "page" : undefined} className={cx("px-3 py-2 text-sm border-b-2", active(n.href) ? "border-accent text-fg" : "border-transparent text-muted hover:text-fg")}>
+              <Link key={n.href} href={n.href} aria-current={active(n.href) ? "page" : undefined} className="cn-navlink px-3 py-2 text-sm">
                 {t(n.key)}
               </Link>
             ))}
@@ -63,7 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
         {isDemo ? (
-          <div className="border-t border-warn/40 bg-[color-mix(in_srgb,var(--cn-warning)_10%,transparent)]">
+          <div className="cn-strip">
             <p className="mx-auto max-w-6xl px-4 py-1.5 text-xs flex items-center gap-2">
               <span className="mono font-semibold text-warn">{t("data.demo")}</span>
               <span className="text-muted">{t("data.demoLong")}</span>
@@ -80,11 +83,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         ) : null}
       </header>
 
-      <main id="main" className="flex-1 mx-auto w-full max-w-6xl px-4 py-6 pb-28 md:pb-10">
+      <main id="main" className="cn-sections flex-1 mx-auto w-full max-w-6xl px-4 py-8 md:py-12 pb-28 md:pb-16">
         {children}
       </main>
 
-      <footer className="hidden md:block border-t border-line">
+      <footer className="hidden md:block cn-header !border-b-0 border-t border-line">
         <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between text-xs text-faint mono">
           <span>
             {t("brand.product")} · {bundle ? lt(bundle.university.name, prefs.locale) : ""}
@@ -93,9 +96,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </footer>
 
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-bg border-t border-line grid grid-cols-5 pb-[env(safe-area-inset-bottom)]" aria-label="Primary">
+      <nav className="cn-tabbar md:hidden fixed bottom-0 inset-x-0 z-30 grid grid-cols-5 pb-[env(safe-area-inset-bottom)]" aria-label="Primary">
         {NAV.map((n) => (
-          <Link key={n.href} href={n.href} aria-current={active(n.href) ? "page" : undefined} className={cx("flex flex-col items-center justify-center gap-1 h-16 text-[11px]", active(n.href) ? "text-accent" : "text-muted")}>
+          <Link key={n.href} href={n.href} aria-current={active(n.href) ? "page" : undefined} className={cx("cn-tab relative flex flex-col items-center justify-center gap-1 h-16 text-[11px]", active(n.href) ? "font-semibold" : "text-muted")}>
             <Icon d={n.icon} />
             <span>{t(n.key)}</span>
           </Link>

@@ -240,6 +240,7 @@ export const ar: Record<MessageKey, string> = {
 
   "settings.title": "الإعدادات",
   "settings.language": "اللغة",
+  "settings.style": "النمط البصري",
   "settings.theme": "المظهر",
   "settings.theme.dark": "داكن",
   "settings.theme.light": "فاتح",

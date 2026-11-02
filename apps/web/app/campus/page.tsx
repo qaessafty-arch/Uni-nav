@@ -23,7 +23,7 @@ export default function CampusSelectPage() {
         <Logo />
         <span className="mono font-semibold tracking-wider">CAMPUS NAV</span>
       </div>
-      <h1 className="text-3xl font-bold">{t("campus.select")}</h1>
+      <h1 className="cn-display cn-display-lg">{t("campus.select")}</h1>
       <p className="text-muted mt-2">{t("campus.selectHint")}</p>
       <div className="mt-8 space-y-2">
         {universities === null ? (
@@ -36,7 +36,7 @@ export default function CampusSelectPage() {
               key={u.id}
               type="button"
               onClick={() => choose(u.id)}
-              className="w-full text-start border border-line-strong hover:border-accent p-4 flex items-center gap-4 min-h-16"
+              className="cn-tile w-full text-start p-4 flex items-center gap-4 min-h-16"
               aria-current={prefs.universityId === u.id ? "true" : undefined}
             >
               <span className="size-10 grid place-items-center border border-line-strong mono text-xs">{u.shortName.slice(0, 4)}</span>

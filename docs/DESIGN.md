@@ -17,11 +17,23 @@ Source of truth: `packages/tokens` (TypeScript for React Native, CSS variables i
 | `surface` / `surfaceRaised` / `surfaceSunken` | `#111315` / `#16191C` / `#1C2024` | Cards, menus, inputs |
 | `border` / `borderStrong` | `#272C31` / `#353B42` | Dividers, controls |
 | `text` / `textMuted` / `textFaint` | `#EDEDE8` / `#8C949C` / `#6B737C` | Off-white text hierarchy |
-| `accent` / `accentText` / `accentSoft` | `#2BFF88` / `#0B0C0D` / `#06261A` | Primary actions, route, selection |
+| `accent` / `accentText` / `accentSoft` | `#B7FF35` / `#0B0C0D` / `#1E2A08` | Primary actions, route, selection |
 | `warning` / `danger` / `info` | `#FFB547` / `#FF5A5A` / `#6CB4FF` | Demo/changes, errors, checkpoints |
 | Map tokens | `mapRoom`, `mapCorridor`, `mapStairs`, `mapElevator`, `mapToilet`, `mapSelected`, `mapRoute` | Floor plans |
 
-A light theme with the same token names is provided (accent darkened to `#0E9F50` for contrast).
+A light theme with the same token names is provided (accent darkened to `#4F7A00` for contrast on off-white).
+
+## Visual styles (UI-only)
+
+Three selectable styles share the same components, colours and behaviour; they differ only in geometry, type and surface treatment. They are driven by `html[data-style]` and the shared stylesheet `packages/tokens/src/ui.css` (`cn-*` classes, in Tailwind's `components` layer so utilities still override).
+
+| Style | Character |
+|---|---|
+| **Minimalism × Electric** (`minimal`) | 3 px radii, 1 px hairlines, Inter display headings, generous spacing, accent used only for actions and state |
+| **Editorial × Electric** (`editorial`, default) | Instrument Serif oversized headings, rule-based layouts instead of boxes, numbered section annotations (`01 —`), mono uppercase controls |
+| **Brutalism × Electric** (`brutal`) | 2–3 px black/white borders, hard offset shadows, uppercase heavy display type, grid background, solid accent highlights |
+
+Selection: student web → Settings › Visual style (stored with the existing preferences); admin → sidebar selector (browser-local). A tiny inline script applies the saved style before first paint. The mobile app uses the shared tokens (new accent) but has no style selector yet.
 
 ## Typography
 
@@ -30,6 +42,7 @@ A light theme with the same token names is provided (accent darkened to `#0E9F50
 | Latin UI | Inter (variable) | Self-hosted via `@fontsource` (no third-party font requests) |
 | Arabic script (Sorani, Arabic) | Noto Sans Arabic 400/600/700 | Covers Sorani letters ە ڕ ڵ ۆ ێ ڤ; loaded only when Arabic-script text appears (`unicode-range`) |
 | Codes, metadata, labels | IBM Plex Mono | Room numbers, times, uppercase labels |
+| Editorial display | Instrument Serif | Headings in the Editorial style only (Latin; Arabic script falls back to Noto Sans Arabic) |
 
 In RTL, letter-spacing is forced to 0 (Arabic script is cursive) and monospace labels fall back to Noto Sans Arabic.
 

@@ -253,6 +253,7 @@ export const en = {
   // Settings
   "settings.title": "Settings",
   "settings.language": "Language",
+  "settings.style": "Visual style",
   "settings.theme": "Theme",
   "settings.theme.dark": "Dark",
   "settings.theme.light": "Light",

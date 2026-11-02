@@ -240,6 +240,7 @@ export const ckb: Record<MessageKey, string> = {
 
   "settings.title": "ڕێکخستنەکان",
   "settings.language": "زمان",
+  "settings.style": "شێوازی دیزاین",
   "settings.theme": "ڕووکار",
   "settings.theme.dark": "تاریک",
   "settings.theme.light": "ڕووناک",

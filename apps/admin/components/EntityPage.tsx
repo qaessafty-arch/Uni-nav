@@ -92,7 +92,7 @@ export function EntityPage<T extends { id: string; universityId: string }>({ con
     const parsed = config.schema.safeParse(editing);
     if (!parsed.success) {
       const errs: Record<string, string> = {};
-      for (const i of parsed.error.issues) errs[String(i.path[0] ?? "_")] = i.message === "required" ? "Required" : i.message.replace(/_/g, " ");
+      for (const i of parsed.error.issues) errs[String(i.path[0] ?? "_")] = i.message === "required" || /received undefined|received null/.test(i.message) ? "Required" : i.message.replace(/_/g, " ");
       setErrors(errs);
       return;
     }
@@ -156,19 +156,19 @@ export function EntityPage<T extends { id: string; universityId: string }>({ con
       ) : list.length === 0 ? (
         <EmptyState title={q ? "No matches." : `No ${config.title.toLowerCase()} yet.`} />
       ) : (
-        <div className="overflow-x-auto border border-line">
-          <table className="w-full text-sm">
-            <thead className="bg-surface text-start">
+        <div className="cn-tablewrap">
+          <table className="cn-table">
+            <thead>
               <tr>
                 {config.columns.map((c) => (
-                  <th key={c.label} className="text-start font-medium px-3 py-2 border-b border-line whitespace-nowrap">{c.label}</th>
+                  <th key={c.label}>{c.label}</th>
                 ))}
                 <th className="border-b border-line w-1" />
               </tr>
             </thead>
             <tbody>
               {list.map((row) => (
-                <tr key={row.id} className="border-b border-line last:border-0 hover:bg-surface">
+                <tr key={row.id}>
                   {config.columns.map((c) => (
                     <td key={c.label} className="px-3 py-2 align-top">{c.render(row, rel)}</td>
                   ))}
@@ -188,23 +188,23 @@ export function EntityPage<T extends { id: string; universityId: string }>({ con
       )}
 
       {editing ? (
-        <div className="fixed inset-0 z-40 bg-black/60 flex justify-end" role="dialog" aria-modal="true" aria-label={`Edit ${config.singular}`} onKeyDown={(e) => e.key === "Escape" && setEditing(null)}>
+        <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-[2px] flex justify-end" role="dialog" aria-modal="true" aria-label={`Edit ${config.singular}`} onKeyDown={(e) => e.key === "Escape" && setEditing(null)}>
           <form
-            className="w-full max-w-xl h-full overflow-y-auto bg-bg border-s border-line-strong p-6"
+            className="cn-drawer w-full max-w-xl h-full overflow-y-auto p-6 md:p-8 !pb-0"
             onSubmit={(e) => {
               e.preventDefault();
               void save();
             }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">{(rows ?? []).some((r) => r.id === editing.id) ? "Edit" : "New"} {config.singular.toLowerCase()}</h2>
+              <h2 className="cn-display cn-display-md">{(rows ?? []).some((r) => r.id === editing.id) ? "Edit" : "New"} {config.singular.toLowerCase()}</h2>
               <button type="button" className="min-h-11 px-3" onClick={() => setEditing(null)} aria-label="Close">×</button>
             </div>
             {config.fields.map((f) => (
               <FieldInput key={f.key} f={f} form={editing} set={set} error={errors[f.key]} />
             ))}
             {errors._ ? <p role="alert" className="text-danger text-sm mb-4 whitespace-pre-line">{errors._}</p> : null}
-            <div className="flex gap-2 sticky bottom-0 bg-bg py-3 border-t border-line">
+            <div className="flex gap-2 sticky bottom-0 bg-bg pt-4 pb-6 md:pb-8 border-t border-line">
               <Button type="submit" variant="primary" disabled={busy}>{busy ? "Saving…" : "Save"}</Button>
               <Button onClick={() => setEditing(null)}>Cancel</Button>
             </div>

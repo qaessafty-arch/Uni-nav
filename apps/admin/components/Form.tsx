@@ -2,12 +2,12 @@
 import type { LocalizedText, OfficeHour, Weekday } from "@campusnav/core";
 import { cx } from "./ui";
 
-export const inputCls = "w-full min-h-10 bg-bg border border-line-strong px-2 text-sm aria-[invalid=true]:border-danger";
+export const inputCls = "cn-input w-full !min-h-10 text-sm aria-[invalid=true]:!border-danger";
 
 export function Field({ label, error, children, hint, htmlFor }: { label: string; error?: string; hint?: string; children: React.ReactNode; htmlFor?: string }) {
   return (
     <div className="mb-4">
-      <label htmlFor={htmlFor} className="block text-sm font-medium mb-1">{label}</label>
+      <label htmlFor={htmlFor} className="label-caps block mb-1.5">{label}</label>
       {children}
       {hint ? <p className="text-xs text-muted mt-1">{hint}</p> : null}
       {error ? <p className="text-xs text-danger mt-1" role="alert">{error}</p> : null}
@@ -27,7 +27,7 @@ export function LocalizedInput({ id, value, onChange, invalid, multiline }: { id
     <div className="grid gap-1">
       {LANG.map((l) => (
         <div key={l.k} className="flex items-stretch">
-          <span className="w-16 shrink-0 grid place-items-center text-xs mono border border-e-0 border-line-strong text-muted" lang={l.k}>{l.label}</span>
+          <span className="w-16 shrink-0 grid place-items-center text-[11px] mono text-muted bg-sunken" lang={l.k}>{l.label}</span>
           {multiline ? (
             <textarea
               id={l.k === "en" ? id : undefined}

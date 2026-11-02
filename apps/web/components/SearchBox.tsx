@@ -67,7 +67,7 @@ export function SearchBox({ bundle, index, autoFocus, initial = "" }: { bundle: 
         <label className="sr-only" htmlFor={`${listId}-input`}>
           {t("common.search")}
         </label>
-        <div className="flex items-center border border-line-strong focus-within:border-accent bg-surface">
+        <div className="cn-input flex items-center !px-0">
           <svg viewBox="0 0 24 24" className="size-5 ms-3 text-muted shrink-0" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
             <circle cx="10" cy="10" r="6" />
             <path d="M15 15l5 5" />
@@ -103,7 +103,7 @@ export function SearchBox({ bundle, index, autoFocus, initial = "" }: { bundle: 
         </div>
       </form>
       {q.trim() ? (
-        <ul id={listId} role="listbox" className="absolute z-20 inset-x-0 mt-1 bg-raised border border-line-strong max-h-[60vh] overflow-auto shadow-2xl">
+        <ul id={listId} role="listbox" className="cn-card !bg-raised !p-0 absolute z-20 inset-x-0 mt-2 max-h-[60vh] overflow-auto shadow-2xl">
           {results.length === 0 ? (
             <li className="p-4 text-muted text-sm">{t("search.noResults", { q })}</li>
           ) : (

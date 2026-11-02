@@ -17,10 +17,10 @@ export const palette = {
   gray300: "#B4BAC0",
   offwhite100: "#EDEDE8",
   offwhite50: "#F6F6F2",
-  green500: "#2BFF88",
-  green600: "#17D86E",
-  green700: "#0E9F50",
-  green950: "#06261A",
+  green500: "#B7FF35",
+  green600: "#9FE620",
+  green700: "#4F7A00",
+  green950: "#1E2A08",
   amber500: "#FFB547",
   red500: "#FF5A5A",
   blue400: "#6CB4FF",
@@ -66,7 +66,7 @@ export const colors = {
     textFaint: "#6B737C",
     accent: palette.green700,
     accentText: "#FFFFFF",
-    accentSoft: "#DFF8EA",
+    accentSoft: "#EEFAD6",
     warning: "#9A5B00",
     danger: "#B42318",
     info: "#175CD3",
@@ -77,10 +77,22 @@ export const colors = {
     mapStairs: "#EEF1E2",
     mapElevator: "#E6EBF0",
     mapToilet: "#E8EEF5",
-    mapSelected: "#C9F5DC",
+    mapSelected: "#E2F7B8",
     mapRoute: palette.green700,
   },
 } as const;
+
+/**
+ * Visual styles (UI-only). They change geometry, typography and surface
+ * treatment — never colours' meaning, layout semantics or behaviour.
+ */
+export const visualStyles = ["minimal", "editorial", "brutal"] as const;
+export type VisualStyle = (typeof visualStyles)[number];
+export const visualStyleLabels: Record<VisualStyle, string> = {
+  minimal: "Minimalism × Electric",
+  editorial: "Editorial × Electric",
+  brutal: "Brutalism × Electric",
+};
 
 export type ThemeName = keyof typeof colors;
 export type ThemeColors = { [K in keyof (typeof colors)["dark"]]: string };

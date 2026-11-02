@@ -36,9 +36,9 @@ function FloorInner() {
                 <Link href={`/buildings/${building?.id}`} className="label-caps hover:text-fg">
                   {building?.code} · {lt(building?.name, loc)}
                 </Link>
-                <h1 className="text-2xl font-bold">{lt(floor.name, loc)}</h1>
+                <h1 className="cn-display cn-display-lg mt-1">{lt(floor.name, loc)}</h1>
               </div>
-              <div role="tablist" aria-label={t("map.floors")} className="flex border border-line-strong">
+              <div role="tablist" aria-label={t("map.floors")} className="cn-seg">
                 {siblings
                   .slice()
                   .reverse()
@@ -48,7 +48,7 @@ function FloorInner() {
                       role="tab"
                       aria-selected={f.id === floor.id}
                       onClick={() => router.replace(`/floors/${f.id}`)}
-                      className={cx("min-w-11 min-h-11 px-3 mono text-sm border-s border-line first:border-s-0", f.id === floor.id ? "bg-accent text-accent-fg" : "text-muted hover:text-fg")}
+                      className="min-w-11 min-h-11 px-3 mono text-sm hover:text-fg"
                       title={lt(f.name, loc)}
                     >
                       {f.level === 0 ? "G" : f.level}
@@ -70,7 +70,7 @@ function FloorInner() {
               checkpointNodes={cps}
               height="62vh"
             />
-            <div aria-live="polite" className="border border-line bg-surface p-4 min-h-20">
+            <div aria-live="polite" className="cn-card p-4 min-h-20">
               {room ? (
                 <div className="flex flex-wrap items-center gap-3 justify-between">
                   <div>

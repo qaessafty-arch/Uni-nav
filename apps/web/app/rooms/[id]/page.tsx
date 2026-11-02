@@ -39,8 +39,8 @@ export default function RoomPage() {
                   {lt(floor?.name, loc)}
                 </Link>
               </div>
-              <h1 className="text-4xl font-bold mono mt-1">{room.code}</h1>
-              <p className="text-lg mt-1">{lt(room.name, loc)}</p>
+              <h1 className="cn-figure text-7xl md:text-8xl mt-3">{room.code}</h1>
+              <p className="text-xl mt-3">{lt(room.name, loc)}</p>
               <div className="flex flex-wrap gap-2 mt-3">
                 <Badge>{t(`roomType.${room.type}`)}</Badge>
                 {room.dataStatus === "demo" ? <Badge tone="warn">{t("data.demo")}</Badge> : room.dataStatus === "verified" ? <Badge tone="accent">{t("data.verified")}</Badge> : <Badge>{t("data.unverified")}</Badge>}

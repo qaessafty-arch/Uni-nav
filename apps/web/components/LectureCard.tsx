@@ -22,11 +22,11 @@ export function LectureCard({ bundle, occ, emphasis, countdown, showDate }: { bu
   const origRoom = occ.original.roomId ? l.rooms.get(occ.original.roomId) : undefined;
 
   return (
-    <article className={cx("border bg-surface p-4", emphasis ? "border-accent" : "border-line", occ.cancelled && "opacity-70")} aria-label={lt(course?.name, loc)}>
+    <article className={cx("cn-card p-4 md:p-5", emphasis && "cn-card-accent", occ.cancelled && "opacity-70")} aria-label={lt(course?.name, loc)}>
       <div className="flex items-start gap-4">
         <div className="mono text-sm leading-tight shrink-0 w-16">
           {showDate ? <div className="text-faint text-xs mb-1">{formatDate(loc, occ.date)}</div> : null}
-          <div className={cx("font-semibold", occ.cancelled && "line-through")}>{formatClock(loc, occ.startTime)}</div>
+          <div className={cx("cn-figure text-xl", occ.cancelled && "line-through")}>{formatClock(loc, occ.startTime)}</div>
           <div className="text-muted">{formatClock(loc, occ.endTime)}</div>
         </div>
         <div className="min-w-0 flex-1">

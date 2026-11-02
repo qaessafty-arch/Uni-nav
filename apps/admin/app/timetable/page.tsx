@@ -175,9 +175,9 @@ export default function TimetableAdminPage() {
       </div>
 
       {entries.length === 0 ? <EmptyState title="No timetable entries." /> : (
-        <div className="border border-line overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-surface"><tr>{["Day", "Time", "Course", "Group", "Room", "Lecturer", "Range", ""].map((h) => <th key={h} className="text-start px-3 py-2 whitespace-nowrap">{h}</th>)}</tr></thead>
+        <div className="cn-tablewrap">
+          <table className="cn-table">
+            <thead><tr>{["Day", "Time", "Course", "Group", "Room", "Lecturer", "Range", ""].map((h) => <th key={h}>{h}</th>)}</tr></thead>
             <tbody>
               {entries.map((e) => (
                 <tr key={e.id} className={cx("border-t border-line", conflictIds.has(e.id) && "bg-[color-mix(in_srgb,var(--cn-danger)_10%,transparent)]")}>
@@ -245,9 +245,9 @@ export default function TimetableAdminPage() {
       ) : null}
 
       {editing ? (
-        <div className="fixed inset-0 z-40 bg-black/60 flex justify-end" role="dialog" aria-modal="true" aria-label="Edit timetable entry">
-          <form className="w-full max-w-lg h-full overflow-y-auto bg-bg border-s border-line-strong p-6" onSubmit={(e) => { e.preventDefault(); void save(); }}>
-            <h2 className="text-xl font-bold mb-6">Timetable entry</h2>
+        <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-[2px] flex justify-end" role="dialog" aria-modal="true" aria-label="Edit timetable entry">
+          <form className="cn-drawer w-full max-w-lg h-full overflow-y-auto p-6 md:p-8" onSubmit={(e) => { e.preventDefault(); void save(); }}>
+            <h2 className="cn-display cn-display-md mb-6">Timetable entry</h2>
             <Field label="Course *" htmlFor="tc">
               <select id="tc" className={inputCls} value={editing.courseId} onChange={(e) => setEditing({ ...editing, courseId: e.target.value })}>
                 <option value="">Select…</option>
