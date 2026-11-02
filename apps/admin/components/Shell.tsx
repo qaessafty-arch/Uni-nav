@@ -66,6 +66,7 @@ const NAV: { group: string; items: NavItem[] }[] = [
       { href: "/map-editor", label: "Map editor", icon: IC.pen, perm: "map.edit" },
       { href: "/rooms", label: "Rooms", icon: IC.door, perm: "room.manage" },
       { href: "/checkpoints", label: "QR checkpoints", icon: IC.qr, perm: "checkpoint.manage" },
+      { href: "/verification", label: "Verification & publishing", icon: IC.shield, perm: "building.manage" },
     ],
   },
   {

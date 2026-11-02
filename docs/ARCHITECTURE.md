@@ -82,6 +82,14 @@ Indoor space is a graph:
 
 **Validation** (`validateMap`) runs in the admin editor and the test suite: duplicate ids, duplicate room codes, missing codes, rooms without/unknown/wrong-floor entrances, unreachable rooms (outside the main connected component), dangling edges, cross-floor edges without distance, isolated nodes, stairs/elevators without a floor link, disconnected floors, checkpoints on missing/unreachable nodes, out-of-bounds shapes.
 
+## 3D explorer (student web)
+
+- **Map-first home** (`apps/web/components/Explorer.tsx`): campus map fills the screen; search, details and actions live in a side panel (desktop) or bottom sheet (phone). State is in the URL (`?b=building&f=floor&r=room&in=1&v=3d|2d`).
+- **Rendering** uses plain `three` (0.186.1) with its bundled OrbitControls — no React renderer. `lib/three/viewer.ts` owns the canvas, camera, picking, DOM labels with collision avoidance and **on-demand rendering** (frames only when something changes). `lib/three/scenes.ts` turns the CampusBundle into geometry. Routing never depends on 3D.
+- **Campus model:** building footprints from the campus map (`buildings.overview`), height = number of floors × a fixed schematic storey height. **Building model:** each floor's map elements extruded (rooms as low "cutaway" boxes, stairs/elevators taller), floors stacked or separated ("exploded"), room picking, checkpoints, and — on `/navigate` — the route drawn through the exact graph nodes returned by `planRoute`.
+- **Honesty:** the 3D view is labelled "Schematic 3D generated from the map data"; demo/unverified status, "not placed on the campus map" and "floor plan unavailable" are shown from the data. No geometry is invented: unplaced buildings are listed but not drawn; floors without map elements show only a slab.
+- **Performance/fallback:** three.js is a lazy chunk (`next/dynamic`, ~594 KB uncompressed) loaded only when a 3D view is shown; phones and Data Saver default to 2D. Detailed interiors are built only for the building being explored. No real-time shadows. If WebGL is missing or the context is lost, the explorer switches to the SVG 2D maps (`?no3d=1` forces this for testing).
+
 ## QR checkpoint positioning
 
 Indoor GPS is unreliable, so position comes from scanning signs:

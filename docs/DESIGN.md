@@ -42,6 +42,12 @@ Selection: student web → Settings › Visual style (stored with the existing p
 - **Admin:** grouped sidebar with icons and an open-report counter, top bar with breadcrumb, "Jump to…" page search (Ctrl/⌘ K) and a Quick action menu; dashboard "Needs attention" row.
 - Default visual style is now Minimalism × Electric; Editorial and Brutalism remain selectable.
 
+## Map-first home and 3D
+
+- Home = full-screen map. Desktop: floating side panel (search, location, contextual details) at the start edge; view switch (3D/2D) and data badges at the top end; floor selector at the end edge; map controls bottom end. Phone: the panel becomes a bottom sheet; the 3D camera re-centres on the area above it; zoom/rotate buttons hide (pinch/drag instead).
+- Explore (3D) is for understanding space; Navigate (/navigate) keeps 2D by default with an optional 3D route view.
+- 3D labels are DOM elements (high contrast, mono codes, collision-avoided); selected items use the accent colour only.
+
 ## Typography
 
 | Role | Font | Notes |

@@ -930,3 +930,180 @@ html[dir="rtl"] .cn-btn {
     min-width: 0;
   }
 }
+
+/* ───────────────────────── Map-first explorer & 3D ───────────────────────── */
+@layer components {
+  .cn-explorer {
+    position: relative;
+    /* fills the space left by the app bars (the shell gives <main> a fixed height) */
+    height: 100%;
+    min-height: 360px;
+    overflow: hidden;
+    background: var(--cn-map-bg);
+  }
+  .cn-explorer-map {
+    position: absolute;
+    inset: 0;
+  }
+  .cn3d {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    touch-action: none;
+    background: radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--cn-map-bg) 80%, var(--cn-text) 6%), var(--cn-map-bg) 70%);
+  }
+  .cn3d-labels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .cn3d-label {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--cn-bg) 82%, transparent);
+    border: 1px solid var(--cn-border-strong);
+    color: var(--cn-text);
+    font: 600 12px/1.25 var(--cn-font-mono, "IBM Plex Mono", ui-monospace, monospace);
+    white-space: nowrap;
+    will-change: transform;
+  }
+  .cn3d-label small {
+    font: 500 11px/1.2 "Inter Variable", "Noto Sans Arabic", system-ui, sans-serif;
+    color: var(--cn-text-muted);
+  }
+  .cn3d-label-accent {
+    background: var(--cn-accent);
+    border-color: var(--cn-accent);
+    color: var(--cn-accent-text);
+  }
+  .cn3d-label-accent small {
+    color: var(--cn-accent-text);
+  }
+  .cn3d-label-muted {
+    opacity: 0.6;
+  }
+  .cn3d-controls,
+  .cn-mapctl {
+    position: absolute;
+    inset-inline-end: 12px;
+    bottom: calc(var(--cn-sheet-h, 0px) + 12px);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 5;
+  }
+  .cn3d-btn {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--cn-radius);
+    background: var(--cn-surface);
+    border: var(--cn-bw) solid var(--cn-border-strong);
+    color: var(--cn-text);
+    font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+  @media (max-width: 767.98px) {
+    /* phones: pinch/drag to zoom and rotate; keep only "reset view" */
+    .cn3d-controls .cn3d-btn:not(:last-child) {
+      display: none;
+    }
+  }
+  .cn3d-btn:hover {
+    border-color: var(--cn-accent);
+  }
+  .cn-float {
+    position: absolute;
+    z-index: 10;
+  }
+  .cn-floorbar {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+    border-radius: calc(var(--cn-radius) + 4px);
+    background: color-mix(in srgb, var(--cn-surface) 94%, transparent);
+    border: var(--cn-bw) solid var(--cn-border);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+  .cn-floorbar button {
+    min-width: 44px;
+    min-height: 40px;
+    padding: 0 10px;
+    border-radius: var(--cn-radius);
+    font: 600 13px/1 var(--cn-font-mono, "IBM Plex Mono", ui-monospace, monospace);
+    color: var(--cn-text-muted);
+  }
+  .cn-floorbar button[aria-pressed="true"] {
+    background: var(--cn-accent);
+    color: var(--cn-accent-text);
+  }
+  /* Side panel on desktop, bottom sheet on phones */
+  .cn-sidepanel {
+    position: absolute;
+    z-index: 12;
+    display: flex;
+    flex-direction: column;
+    background: var(--cn-surface);
+    border: var(--cn-bw) solid var(--cn-border);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    .cn-sidepanel {
+      top: 16px;
+      bottom: 16px;
+      inset-inline-start: 16px;
+      width: 384px;
+      border-radius: calc(var(--cn-radius) * 2 + 4px);
+    }
+  }
+  @media (max-width: 767.98px) {
+    .cn-sidepanel {
+      inset-inline: 0;
+      bottom: 0;
+      max-height: 58%;
+      border-radius: 16px 16px 0 0;
+      transition: max-height 200ms ease;
+    }
+    .cn-sidepanel[data-collapsed="true"] {
+      max-height: 168px;
+    }
+  }
+  html[data-style="brutal"] .cn-sidepanel {
+    border-radius: 0;
+    border-color: var(--cn-text);
+    box-shadow: 6px 6px 0 0 var(--cn-text);
+  }
+  .cn-grabber {
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--cn-border-strong);
+    margin: 8px auto 2px;
+  }
+  .cn-mapbadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: color-mix(in srgb, var(--cn-surface) 92%, transparent);
+    border: 1px solid var(--cn-border-strong);
+    color: var(--cn-text-muted);
+    max-width: 100%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cn-sidepanel {
+      transition: none;
+    }
+  }
+}

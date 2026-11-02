@@ -136,6 +136,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [drawer, setDrawer] = useState(false);
   const [palette, setPalette] = useState(false);
   const [locOpen, setLocOpen] = useState(false);
+  /** Map pages fill the screen; the explorer brings its own search and location row. */
+  const fullBleed = path === "/" || path === "/map";
   const openLocation = useCallback(() => {
     setDrawer(false);
     setLocOpen(true);
@@ -166,7 +168,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <SidebarContent bundle={bundle} onOpenLocation={openLocation} />
       </aside>
 
-      <div className="min-w-0 flex flex-col">
+      <div className={cx("min-w-0 flex flex-col", fullBleed && "h-dvh overflow-hidden")}>
         <header className="cn-topbar">
           <div className="flex items-center gap-2 px-3 md:px-6 h-16">
             <button type="button" className="lg:hidden p-2.5 -ms-1 text-muted hover:text-fg" onClick={() => setDrawer(true)} aria-label={t("shell.menu")} aria-expanded={drawer}>
@@ -176,7 +178,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Logo />
               <span className="hidden sm:inline mono font-semibold tracking-[0.12em] text-[13px]">{bundle?.university.branding.productName ?? t("brand.product")}</span>
             </Link>
-            <button type="button" className="cn-searchtrigger max-w-xl min-w-0 flex-1" onClick={() => setPalette(true)} aria-haspopup="dialog">
+            <button type="button" className={cx("cn-searchtrigger max-w-xl min-w-0 flex-1", fullBleed && "!hidden")} onClick={() => setPalette(true)} aria-haspopup="dialog">
               <IconBase d={I.search} />
               <span className="flex-1 truncate">{t("shell.searchHint")}</span>
               <span className="cn-kbd hidden md:inline">Ctrl K</span>
@@ -194,7 +196,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             </div>
           </div>
-          <div className="lg:hidden px-3 md:px-6 pb-2.5">
+          <div className={cx("lg:hidden px-3 md:px-6 pb-2.5", fullBleed && "hidden")}>
             <LocationBar bundle={bundle} onOpen={openLocation} className="!min-h-10 !py-1.5" />
           </div>
           {isDemo ? (
@@ -215,9 +217,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           ) : null}
         </header>
 
-        <main id="main" className="cn-sections flex-1 w-full max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10 pb-28 md:pb-16">
-          {children}
-        </main>
+        {fullBleed ? (
+          <main id="main" className="flex-1 min-h-0 relative pb-[calc(62px+env(safe-area-inset-bottom))] md:pb-0">
+            {children}
+          </main>
+        ) : (
+          <main id="main" className="cn-sections flex-1 w-full max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10 pb-28 md:pb-16">
+            {children}
+          </main>
+        )}
       </div>
 
       <nav className="cn-tabbar2 md:hidden" aria-label="Primary">

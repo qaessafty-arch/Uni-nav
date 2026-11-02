@@ -11,6 +11,8 @@ import { Badge, Button, ButtonLink, ErrorState, Notice, cx } from "@/components/
 import { StartPicker, nodeName } from "@/components/LocationPicker";
 import { Icon } from "@/components/Icon";
 import { I } from "@/components/icons";
+import { RouteView3D } from "@/components/RouteView3D";
+import { webglAvailable } from "@/lib/three/support";
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
 
@@ -93,6 +95,9 @@ function NavigateInner() {
   const [pref, setPref] = useState<RoutePreference>(prefs.accessible ? "step_free" : "shortest");
   const accessible = pref === "step_free";
   const [stepIdx, setStepIdx] = useState(0);
+  const [view3d, setView3d] = useState(false);
+  const [no3d, setNo3d] = useState(false);
+  useEffect(() => setNo3d(!webglAvailable()), []);
   const [arrived, setArrived] = useState(false);
   const [recalcKey, setRecalcKey] = useState(0);
   const startId = fromOverride ?? start?.nodeId ?? null;
@@ -204,6 +209,18 @@ function NavigateInner() {
                     );
                   })}
                 </div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="cn-segment !p-1" role="radiogroup" aria-label={t("explore.viewMode")}>
+                    <button type="button" role="radio" aria-checked={!view3d} onClick={() => setView3d(false)} className="!min-h-8 !px-3 mono">{t("explore.view2d")}</button>
+                    <button type="button" role="radio" aria-checked={view3d} disabled={no3d} onClick={() => setView3d(true)} className="!min-h-8 !px-3 mono">{t("explore.view3d")}</button>
+                  </div>
+                  {view3d ? <span className="text-xs text-muted truncate">{t("explore.routeIn3d", { building: lt(l.buildings.get(viewFloor.buildingId)?.name, loc) })}</span> : no3d ? <span className="text-xs text-muted">{t("explore.no3d")}</span> : null}
+                </div>
+                {view3d && !no3d ? (
+                  <div className="relative cn-mapframe border border-line" style={{ height: "min(58vh, 560px)" }}>
+                    <RouteView3D bundle={bundle} route={plan.route} buildingId={viewFloor.buildingId} onUnavailable={() => { setNo3d(true); setView3d(false); }} />
+                  </div>
+                ) : (
                 <FloorMap
                   floor={viewFloor}
                   elements={bundle.mapElements.filter((e) => e.floorId === viewFloor.id)}
@@ -217,6 +234,7 @@ function NavigateInner() {
                   focusNode={stepIdx > 0 ? l.nodes.get(step.nodeId) ?? null : null}
                   height="min(58vh, 560px)"
                 />
+                )}
                 {bundle.university.dataStatus === "demo" ? <Notice tone="warn">{t("map.planDemo")}</Notice> : null}
               </div>
 

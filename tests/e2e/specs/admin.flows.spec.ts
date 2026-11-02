@@ -246,3 +246,12 @@ test("map editor calibrates the floor scale from a measured distance", async ({ 
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByText("Map saved")).toBeVisible();
 });
+
+test("verification page shows what blocks verification and refuses demo buildings", async ({ page }) => {
+  await openSandbox(page);
+  await page.goto(`${ADMIN}/verification`);
+  await expect(page.getByRole("heading", { name: "Verification & publishing" })).toBeVisible();
+  await expect(page.getByRole("list", { name: "Checks for DEMO-ENG" })).toContainText("Placed on the campus map");
+  await expect(page.getByRole("button", { name: "Mark verified" }).first()).toBeDisabled();
+  await expect(page.getByText("Demo buildings cannot be marked verified.").first()).toBeVisible();
+});

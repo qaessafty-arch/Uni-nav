@@ -26,6 +26,10 @@ test("student searches for Room 204 and opens it", async ({ page }) => {
   await page.getByRole("combobox").fill("room 204");
   await expect(page.getByRole("option").first()).toContainText("204");
   await page.keyboard.press("Enter");
+  // The map-first home focuses the room in place; Details opens the full room page.
+  await expect(page).toHaveURL(new RegExp(`r=${ROOM_204}`));
+  await expect(page.getByRole("link", { name: "Navigate" })).toBeVisible();
+  await page.getByRole("link", { name: "Details" }).click();
   await expect(page).toHaveURL(new RegExp(`/rooms/${ROOM_204}`));
   await expect(page.getByRole("heading", { name: "204" })).toBeVisible();
   await expect(page.getByText("Demo Engineering Building").first()).toBeVisible();
@@ -187,5 +191,60 @@ test("planned closures are shown on the home screen", async ({ page }) => {
   await page.goto(BASE);
   await expect(page.getByText("Closures & changes")).toBeVisible();
   await expect(page.getByText(/Science stairs closed for repainting/)).toBeVisible();
-  await expect(page.getByText("Planned closure")).toBeVisible();
+  await expect(page.getByText("Planned closure").first()).toBeVisible();
+});
+
+test("3D explorer: building → floor → room → navigate, with schematic/demo labelling", async ({ page }) => {
+  await enterDemo(page);
+  await page.goto(BASE);
+  await page.getByRole("radio", { name: "3D" }).click(); // phones default to 2D
+  await expect(page.getByRole("application", { name: "Interactive 3D model" })).toBeVisible();
+  await expect(page.locator(".cn3d canvas")).toBeVisible();
+  await page.getByRole("list", { name: "Buildings" }).getByRole("button", { name: /DEMO-ENG/ }).click();
+  await expect(page.getByRole("heading", { name: "Demo Engineering Building" })).toBeVisible();
+  await page.getByRole("button", { name: "Explore building" }).click();
+  await expect(page.getByRole("group", { name: "Floors" })).toBeVisible();
+  await page.getByRole("group", { name: "Floors" }).getByRole("button", { name: "Demo Floor 2" }).click();
+  await expect(page.getByText("Rooms on this floor")).toBeVisible();
+  await page.getByRole("button", { name: /^204/ }).click();
+  await expect(page.getByRole("heading", { name: "204" })).toBeVisible();
+  await page.getByRole("button", { name: "Separate floors" }).click();
+  await expect(page.getByRole("button", { name: "Separate floors" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("link", { name: "Navigate" }).click();
+  await expect(page).toHaveURL(new RegExp(`/navigate\\?to=${ROOM_204}`));
+});
+
+test("without WebGL the explorer falls back to the 2D map and keeps working", async ({ page }) => {
+  await enterDemo(page);
+  await page.goto(`${BASE}/?no3d=1`);
+  await expect(page.getByText("3D isn't available on this device")).toBeVisible();
+  await expect(page.locator(".cn3d canvas")).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "3D" })).toBeDisabled();
+  await page.getByRole("button", { name: "Demo Engineering Building" }).first().click();
+  await expect(page.getByRole("heading", { name: "Demo Engineering Building" })).toBeVisible();
+  await page.getByRole("button", { name: "Explore building" }).click();
+  await page.getByRole("group", { name: "Floors" }).getByRole("button", { name: "Demo Floor 2" }).click();
+  await expect(page.getByRole("img", { name: /Demo Floor 2/ }).or(page.locator(".cn-mapframe svg")).first()).toBeVisible();
+});
+
+test("directions can be shown in 3D from the router's own route", async ({ page }) => {
+  await enterDemo(page);
+  await page.goto(`${BASE}/q/DEMOengMainEntrance01`);
+  await expect(page.getByText(/Location set/)).toBeVisible();
+  await page.goto(`${BASE}/navigate?to=${ROOM_204}`);
+  await page.getByRole("radio", { name: "3D" }).click();
+  await expect(page.getByText(/Route shown inside Demo Engineering Building/)).toBeVisible();
+  await expect(page.locator(".cn3d canvas")).toBeVisible();
+  await page.getByRole("radio", { name: "2D" }).click();
+  await expect(page.locator(".cn3d canvas")).toHaveCount(0);
+});
+
+test("phones open the 2D map by default; the choice is kept in the URL", async ({ page }) => {
+  await enterDemo(page);
+  await page.goto(BASE);
+  await expect(page.getByRole("radio", { name: "2D" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator(".cn3d canvas")).toHaveCount(0);
+  await page.getByRole("radio", { name: "3D" }).click();
+  await expect(page).toHaveURL(/v=3d/);
+  await expect(page.locator(".cn3d canvas")).toBeVisible();
 });
