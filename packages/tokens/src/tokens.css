@@ -1,0 +1,57 @@
+/* Generated from @campusnav/tokens — keep in sync with src/index.ts (checked by test). */
+:root,
+[data-theme="dark"] {
+  --cn-bg: #0B0C0D;
+  --cn-surface: #111315;
+  --cn-surface-raised: #16191C;
+  --cn-surface-sunken: #1C2024;
+  --cn-border: #272C31;
+  --cn-border-strong: #353B42;
+  --cn-text: #EDEDE8;
+  --cn-text-muted: #8C949C;
+  --cn-text-faint: #6B737C;
+  --cn-accent: #2BFF88;
+  --cn-accent-text: #0B0C0D;
+  --cn-accent-soft: #06261A;
+  --cn-warning: #FFB547;
+  --cn-danger: #FF5A5A;
+  --cn-info: #6CB4FF;
+  --cn-map-bg: #121518;
+  --cn-map-room: #1E2328;
+  --cn-map-room-stroke: #3A4148;
+  --cn-map-corridor: #171B1F;
+  --cn-map-stairs: #2A2F24;
+  --cn-map-elevator: #24292F;
+  --cn-map-toilet: #1F2630;
+  --cn-map-selected: #06261A;
+  --cn-map-route: #2BFF88;
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --cn-bg: #F6F6F2;
+  --cn-surface: #FFFFFF;
+  --cn-surface-raised: #FFFFFF;
+  --cn-surface-sunken: #EDEDE8;
+  --cn-border: #D9D9D2;
+  --cn-border-strong: #B9B9B0;
+  --cn-text: #0B0C0D;
+  --cn-text-muted: #4F565D;
+  --cn-text-faint: #6B737C;
+  --cn-accent: #0E9F50;
+  --cn-accent-text: #FFFFFF;
+  --cn-accent-soft: #DFF8EA;
+  --cn-warning: #9A5B00;
+  --cn-danger: #B42318;
+  --cn-info: #175CD3;
+  --cn-map-bg: #F2F2EC;
+  --cn-map-room: #FFFFFF;
+  --cn-map-room-stroke: #9EA3A8;
+  --cn-map-corridor: #E7E7E0;
+  --cn-map-stairs: #EEF1E2;
+  --cn-map-elevator: #E6EBF0;
+  --cn-map-toilet: #E8EEF5;
+  --cn-map-selected: #C9F5DC;
+  --cn-map-route: #0E9F50;
+  color-scheme: light;
+}

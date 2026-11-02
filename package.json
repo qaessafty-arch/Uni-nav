@@ -1,0 +1,25 @@
+{
+  "name": "campus-nav",
+  "private": true,
+  "description": "NULL-TECH CAMPUS NAV — multi-university smart campus navigation platform",
+  "packageManager": "pnpm@10.28.0",
+  "engines": { "node": ">=20.11" },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "dev:web": "pnpm --filter @campusnav/web dev",
+    "dev:admin": "pnpm --filter @campusnav/admin dev",
+    "dev:mobile": "pnpm --filter @campusnav/mobile start",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:db": "pnpm --filter @campusnav/db-tests test",
+    "test:e2e": "pnpm --filter @campusnav/e2e test",
+    "db:seed:generate": "pnpm --filter @campusnav/data generate:seed",
+    "bench": "pnpm --filter @campusnav/core bench"
+  },
+  "devDependencies": {
+    "turbo": "2.11.10",
+    "typescript": "5.9.3"
+  }
+}
