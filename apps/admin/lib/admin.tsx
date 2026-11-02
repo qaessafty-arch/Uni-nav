@@ -6,11 +6,18 @@ import { createSupabase, SandboxAdminSource, SupabaseAdminSource, type AdminData
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 export const STUDENT_APP_URL = process.env.NEXT_PUBLIC_STUDENT_APP_URL ?? "http://localhost:3000";
-export const adminMode: "supabase" | "sandbox" = SUPABASE_URL && SUPABASE_ANON_KEY ? "supabase" : "sandbox";
+/**
+ * The browser-only sandbox is allowed in development, or in a production build
+ * only when explicitly enabled (NEXT_PUBLIC_ALLOW_SANDBOX=true, e.g. demos/e2e).
+ * A production deployment without Supabase config otherwise shows a config error.
+ */
+const SANDBOX_ALLOWED = process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_ALLOW_SANDBOX === "true";
+export const adminMode: "supabase" | "sandbox" | "misconfigured" = SUPABASE_URL && SUPABASE_ANON_KEY ? "supabase" : SANDBOX_ALLOWED ? "sandbox" : "misconfigured";
 
 let source: AdminDataSource | null = null;
 export function getAdminSource(): AdminDataSource {
   if (!source) {
+    if (adminMode === "misconfigured") throw new Error("Admin backend is not configured");
     source = adminMode === "supabase" ? new SupabaseAdminSource(createSupabase({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY })) : new SandboxAdminSource(window.localStorage);
   }
   return source;
@@ -43,6 +50,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<{ id: number; msg: string; tone: "ok" | "error" }[]>([]);
 
   const refreshSession = useCallback(async () => {
+    if (adminMode === "misconfigured") {
+      setReady(true);
+      return;
+    }
     const src = getAdminSource();
     const s = await src.session().catch(() => null);
     setSession(s);

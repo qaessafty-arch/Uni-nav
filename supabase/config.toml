@@ -1,0 +1,29 @@
+# Supabase CLI local development config (`supabase start`).
+project_id = "campus-nav"
+
+[api]
+port = 54321
+schemas = ["public"]
+max_rows = 10000
+
+[db]
+port = 54322
+major_version = 16
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[auth]
+site_url = "http://localhost:3001"
+additional_redirect_urls = ["http://localhost:3000", "http://localhost:3001"]
+# Staff accounts are created by invitation; disable open sign-up in production if desired.
+enable_signup = true
+minimum_password_length = 10
+
+[auth.rate_limit]
+sign_in_sign_ups = 30
+token_verifications = 30
+
+[storage]
+file_size_limit = "2MiB"

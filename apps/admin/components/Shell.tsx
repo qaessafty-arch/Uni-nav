@@ -114,6 +114,15 @@ function Frame({ children }: { children: ReactNode }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   if (!ready) return <Spinner label="Loading…" />;
+  if (adminMode === "misconfigured")
+    return (
+      <div className="min-h-dvh grid place-items-center p-6">
+        <div className="max-w-md">
+          <h1 className="text-xl font-bold">Admin backend not configured</h1>
+          <p className="text-muted text-sm mt-2">Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY and rebuild. The local sandbox is disabled in production builds unless NEXT_PUBLIC_ALLOW_SANDBOX=true.</p>
+        </div>
+      </div>
+    );
   if (!session) return <Login />;
   if (!universityId) {
     return (

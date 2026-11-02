@@ -32,7 +32,7 @@ export function CheckpointResult({ token, then, onReset }: { token: string; then
 
   if (!res) return <Loading label={t("scan.resolving")} />;
   if (res.status === "ok") {
-    const safeThen = then && then.startsWith("/") && !then.startsWith("//") ? then : null;
+    const safeThen = then && /^\/[A-Za-z0-9]/.test(then) ? then : null;
     return (
       <View style={{ borderWidth: 1, borderColor: c.accent, padding: 16, gap: 12 }} accessibilityLiveRegion="polite">
         <T bold size="lg">{t("scan.ok", { place: lt(res.checkpoint.label, prefs.locale) })}</T>

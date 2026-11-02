@@ -40,3 +40,14 @@ test("admin app is not indexable and has no camera permission", async ({ request
   expect(h["x-robots-tag"]).toContain("noindex");
   expect(h["permissions-policy"]).toContain("camera=()");
 });
+
+test("checkpoint 'then' redirect only allows same-site paths", async ({ page }) => {
+  await page.goto(`${BASE}/offline`);
+  await page.evaluate(() => localStorage.setItem("campusnav.prefs", JSON.stringify({ locale: "en", universityId: "428a3a64-8fef-450d-824a-163e8f2fc957", onboarded: true })));
+  await page.goto(`${BASE}/scan?then=${encodeURIComponent("/\\evil.example")}`);
+  await page.getByPlaceholder("Code printed under the QR").fill("DEMOengMainEntrance01");
+  await page.getByRole("button", { name: "Use code" }).click();
+  // Unsafe target is ignored: the generic action is offered instead of "Continue".
+  await expect(page.getByRole("link", { name: "Navigate from here" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue" })).toHaveCount(0);
+});

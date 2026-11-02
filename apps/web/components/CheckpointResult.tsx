@@ -45,7 +45,7 @@ export function CheckpointResult({ token, then, onReset }: { token: string; then
   if (res.status === "ok") {
     const bundle = bundleState.status === "ready" ? bundleState.bundle : null;
     const node = bundle ? lookup(bundle).nodes.get(res.checkpoint.nodeId) : undefined;
-    const safeThen = then && then.startsWith("/") && !then.startsWith("//") ? then : null;
+    const safeThen = then && /^\/[A-Za-z0-9]/.test(then) ? then : null;
     return (
       <div className="border border-accent p-5" role="status">
         <p className="label-caps text-accent">{t("map.youAreHere")}</p>

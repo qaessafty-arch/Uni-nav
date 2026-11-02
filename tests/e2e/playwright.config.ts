@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * End-to-end tests against production builds of the student web app (:3000)
  * and admin dashboard (:3001), both in demo/sandbox mode (no Supabase needed).
- * Build first: pnpm --filter @campusnav/web build && pnpm --filter @campusnav/admin build
+ * Build first: pnpm --filter @campusnav/web build && NEXT_PUBLIC_ALLOW_SANDBOX=true pnpm --filter @campusnav/admin build
  */
 export default defineConfig({
   testDir: "./specs",
