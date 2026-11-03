@@ -171,8 +171,8 @@ function buildFloor(buildingKey: string, buildingId: string, buildingCode: strin
   floors.push({ id: floorId, universityId: U, buildingId, level, name: levelName(level), width: FLOOR_W, height: FLOOR_H, metersPerUnit: MPU, planAssetUrl: null });
 
   elements.push({ id: did(`${floorId}-corridor`), universityId: U, floorId, kind: "corridor", shape: { type: "rect", x: 40, y: 270, w: 920, h: 60 }, label: T("Corridor", "ڕاڕەو", "ممر") });
-  elements.push({ id: did(`${floorId}-stairs-el`), universityId: U, floorId, kind: "stairs", shape: { type: "rect", x: 40, y: 340, w: 60, h: 120 }, label: T("Stairs", "پەیژە", "درج") });
-  elements.push({ id: did(`${floorId}-lift-el`), universityId: U, floorId, kind: "elevator", shape: { type: "rect", x: 900, y: 340, w: 60, h: 80 }, label: T("Elevator", "بەرزکەرەوە", "مصعد") });
+  elements.push({ id: did(`${floorId}-stairs-el`), universityId: U, floorId, kind: "stairs", shape: { type: "rect", x: 40, y: 340, w: 60, h: 120 }, label: T("Stairs", "قادرمە", "درج") });
+  elements.push({ id: did(`${floorId}-lift-el`), universityId: U, floorId, kind: "elevator", shape: { type: "rect", x: 900, y: 340, w: 60, h: 80 }, label: T("Elevator", "مەسعەد", "مصعد") });
   elements.push({ id: did(`${floorId}-exit-el`), universityId: U, floorId, kind: "emergency_exit", shape: { type: "rect", x: 40, y: 140, w: 40, h: 60 }, label: T("Emergency exit", "دەرچەی فریاکەوتن", "مخرج طوارئ") });
 
   // Corridor spine
@@ -183,8 +183,8 @@ function buildFloor(buildingKey: string, buildingId: string, buildingCode: strin
   spine.push(east);
   for (let i = 0; i < spine.length - 1; i++) edge(spine[i]!, spine[i + 1]!, "corridor");
 
-  const stairs = node(`${floorId}-stairs`, floorId, 70, 400, "stairs", T(`${buildingCode} stairs`, "پەیژە", "الدرج"), `${buildingKey}-stairs`);
-  const lift = node(`${floorId}-lift`, floorId, 930, 380, "elevator", T(`${buildingCode} elevator`, "بەرزکەرەوە", "المصعد"), `${buildingKey}-lift`);
+  const stairs = node(`${floorId}-stairs`, floorId, 70, 400, "stairs", T(`${buildingCode} stairs`, "قادرمە", "الدرج"), `${buildingKey}-stairs`);
+  const lift = node(`${floorId}-lift`, floorId, 930, 380, "elevator", T(`${buildingCode} elevator`, "مەسعەد", "المصعد"), `${buildingKey}-lift`);
   edge(west, stairs, "corridor");
   edge(east, lift, "corridor");
 
@@ -216,7 +216,7 @@ function buildFloor(buildingKey: string, buildingId: string, buildingCode: strin
   });
 
   if (hasEntrance) {
-    const entrance = node(`${floorId}-entrance`, floorId, 500, 590, "building_entrance", T(`${buildingCode} main entrance`, "دەروازەی سەرەکی", "المدخل الرئيسي"));
+    const entrance = node(`${floorId}-entrance`, floorId, 500, 590, "building_entrance", T(`${buildingCode} main entrance`, "دەرگای سەرەکی", "المدخل الرئيسي"));
     const lobby = node(`${floorId}-lobby`, floorId, 500, CORRIDOR_Y, "corridor");
     // Splice lobby into the spine between 430 and 570
     const a = spine.find((n) => n.x === 430)!;
@@ -225,7 +225,7 @@ function buildFloor(buildingKey: string, buildingId: string, buildingCode: strin
     edge(a, lobby, "corridor");
     edge(lobby, b, "corridor");
     edge(lobby, entrance, "corridor");
-    elements.push({ id: did(`${floorId}-entrance-el`), universityId: U, floorId, kind: "entrance", shape: { type: "rect", x: 460, y: 560, w: 80, h: 40 }, label: T("Entrance", "دەروازە", "مدخل") });
+    elements.push({ id: did(`${floorId}-entrance-el`), universityId: U, floorId, kind: "entrance", shape: { type: "rect", x: 460, y: 560, w: 80, h: 40 }, label: T("Entrance", "دەرگا", "مدخل") });
   }
   return { floorId, stairs, lift, nodes: spine };
 }
@@ -246,7 +246,7 @@ const R = (code: string, en: string, type: RoomType, dept?: string, capacity?: n
 const engG = buildFloor("eng", ENG, "DEMO-ENG", 0, [
   R("G01", "Demo Lecture Hall G01", "lecture_hall", D_CE, 120, "هۆڵی وانەی G01", "قاعة المحاضرات G01"),
   R("G02", "Demo Classroom G02", "classroom", D_CE, 40),
-  R("G03", "Demo Student Services", "service", undefined, undefined, "خزمەتگوزاریی خوێندکاران", "خدمات الطلبة"),
+  R("G03", "Demo Student Services", "service", undefined, undefined, "خزمەتگوزاریی قوتابیان", "خدمات الطلبة"),
   R("G04", "Demo Cafeteria", "cafeteria", undefined, 80, "کافتریا", "الكافتيريا"),
   R("G05", "Demo Library Annex", "library", undefined, 60, "کتێبخانە", "المكتبة"),
   R("G06", "Demo Toilets G06", "toilet", undefined, undefined, "ئاودەست", "دورات المياه"),
@@ -336,10 +336,10 @@ export const demoNavEdges = edges;
 // ─── Checkpoints ───────────────────────────────────────────────────────────
 // Tokens are fixed so printed demo QR sheets stay valid across reseeds.
 export const demoCheckpoints: QrCheckpoint[] = [
-  { id: did("cp-eng-main"), universityId: U, token: "DEMOengMainEntrance01", nodeId: engEntrance.id, label: T("Demo Engineering — main entrance", "دەروازەی سەرەکیی ئەندازیاری", "مدخل الهندسة الرئيسي"), status: "active", expiresAt: null },
-  { id: did("cp-eng-1-stairs"), universityId: U, token: "DEMOengFloor1Stairs01", nodeId: eng1.stairs.id, label: T("Demo Engineering — floor 1 stairs", "پەیژەی نهۆمی ١", "درج الطابق 1"), status: "active", expiresAt: null },
+  { id: did("cp-eng-main"), universityId: U, token: "DEMOengMainEntrance01", nodeId: engEntrance.id, label: T("Demo Engineering — main entrance", "دەرگای سەرەکیی ئەندازیاری", "مدخل الهندسة الرئيسي"), status: "active", expiresAt: null },
+  { id: did("cp-eng-1-stairs"), universityId: U, token: "DEMOengFloor1Stairs01", nodeId: eng1.stairs.id, label: T("Demo Engineering — floor 1 stairs", "قادرمەی نهۆمی ١", "درج الطابق 1"), status: "active", expiresAt: null },
   { id: did("cp-eng-2-mid"), universityId: U, token: "DEMOengFloor2Middle01", nodeId: eng2.nodes[3]!.id, label: T("Demo Engineering — floor 2 corridor", "ڕاڕەوی نهۆمی ٢", "ممر الطابق 2"), status: "active", expiresAt: null },
-  { id: did("cp-sci-main"), universityId: U, token: "DEMOsciMainEntrance01", nodeId: sciEntrance.id, label: T("Demo Science — main entrance", "دەروازەی سەرەکیی زانست", "مدخل العلوم الرئيسي"), status: "active", expiresAt: null },
+  { id: did("cp-sci-main"), universityId: U, token: "DEMOsciMainEntrance01", nodeId: sciEntrance.id, label: T("Demo Science — main entrance", "دەرگای سەرەکیی زانست", "مدخل العلوم الرئيسي"), status: "active", expiresAt: null },
   { id: did("cp-disabled"), universityId: U, token: "DEMOdisabledCheckpoint", nodeId: eng1.lift.id, label: T("Demo disabled checkpoint"), status: "disabled", expiresAt: null },
   { id: did("cp-expired"), universityId: U, token: "DEMOexpiredCheckpoint1", nodeId: eng1.lift.id, label: T("Demo expired checkpoint"), status: "active", expiresAt: "2025-01-01T00:00:00Z" },
 ];
@@ -508,7 +508,7 @@ export function demoClosures(now = new Date()): Closure[] {
       universityId: U,
       targetType: "edge",
       targetId: did(`edge:${sciG.stairs.id}:${sci1.stairs.id}`),
-      reason: T("Demo: Science stairs closed for repainting — use the elevator", "نموونە: پەیژەی زانست بۆ بۆیەکردن داخراوە — بەرزکەرەوە بەکاربهێنە", "تجريبي: درج العلوم مغلق للطلاء — استخدم المصعد"),
+      reason: T("Demo: Science stairs closed for repainting — use the elevator", "نموونە: قادرمەی زانست بۆ بۆیەکردن داخراوە — مەسعەد بەکاربهێنە", "تجريبي: درج العلوم مغلق للطلاء — استخدم المصعد"),
       startsAt: new Date(now.getTime() + 2 * day).toISOString(),
       endsAt: new Date(now.getTime() + 9 * day).toISOString(),
     },
