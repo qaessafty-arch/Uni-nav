@@ -230,6 +230,12 @@ export interface NavEdge {
   accessible: boolean;
   bidirectional: boolean;
   blocked: boolean;
+  /**
+   * Real-world path of an outdoor walkway ([lng, lat] points from the
+   * from-node to the to-node), drawn or imported from OpenStreetMap by staff.
+   * When present and `distanceM` is not, the length is measured along it.
+   */
+  geometry?: LngLat[] | null;
   /** Free-form restriction label (e.g. "staff_only"); routes avoid restricted edges unless allowed. */
   restriction?: string | null;
 }

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { heatLevel, lt, outdoorMeters, planRoute, relevantClosures, routeOptionsFor, ROUTE_PREFERENCES, type PlanResult, type RoutePreference } from "@campusnav/core";
+import { heatLevel, lt, outdoorMeters, planRoute, routeOutdoorGeometry, relevantClosures, routeOptionsFor, ROUTE_PREFERENCES, type PlanResult, type RoutePreference } from "@campusnav/core";
 import { describeStep, formatDistance, formatDuration, formatNumber } from "@campusnav/i18n";
 import { FloorMap, routeSegmentsForFloor } from "@campusnav/map-web";
 import { Gate } from "@/components/Gate";
@@ -12,6 +12,11 @@ import { StartPicker, nodeName } from "@/components/LocationPicker";
 import { Icon } from "@/components/Icon";
 import { I } from "@/components/icons";
 import { RouteView3D } from "@/components/RouteView3D";
+import { CampusMap2D } from "@/components/CampusMap2D";
+import dynamic from "next/dynamic";
+import { Spinner } from "@/components/ui";
+
+const RouteRealMap = dynamic(() => import("@/components/map/RouteRealMap"), { ssr: false, loading: () => <div className="absolute inset-0 grid place-items-center"><Spinner label="Map" /></div> });
 import { ShareButton } from "@/components/ShareButton";
 import { formatTemp, useCampusWeather } from "@/lib/weather";
 import { webglAvailable } from "@/lib/three/support";
@@ -75,6 +80,8 @@ function NavigateInner() {
   const accessible = pref === "step_free";
   const [stepIdx, setStepIdx] = useState(0);
   const [view3d, setView3d] = useState(false);
+  /** null = follow the current step (outdoor steps show the outside view). */
+  const [outsideView, setOutsideView] = useState<boolean | null>(null);
   const [no3d, setNo3d] = useState(false);
   useEffect(() => setNo3d(!webglAvailable()), []);
   const [arrived, setArrived] = useState(false);
@@ -88,6 +95,7 @@ function NavigateInner() {
     setStepIdx(0);
     setArrived(false);
   }, [startId, pref, recalcKey, params]);
+  useEffect(() => setOutsideView(null), [stepIdx]);
 
   return (
     <Gate>
@@ -150,6 +158,12 @@ function NavigateInner() {
         const viewFloor = l.floors.get(viewFloorId)!;
         const startNode = l.nodes.get(startId)!;
         const routeFloors = plan.route.floorSequence;
+        const hasOutdoor = plan.route.legs.some((lg) => lg.edge.kind === "outdoor");
+        const showOutside = hasOutdoor && (outsideView ?? (step.kind === "enter_building" || step.kind === "outdoor"));
+        const outdoorGeo = routeOutdoorGeometry(plan.route.legs);
+        const campusGeo = bundle.campuses.find((c) => c.geo)?.geo ?? null;
+        const routeBuildingIds = routeFloors.map((fid) => l.floors.get(fid)?.buildingId ?? "").filter((b, i, a) => b && b !== a[i - 1]);
+        const campusForPicture = bundle.campuses.find((c) => bundle.buildings.some((b) => b.campusId === c.id && b.overview));
 
         if (arrived) {
           return (
@@ -177,29 +191,56 @@ function NavigateInner() {
                 <div role="tablist" aria-label={t("map.floors")} className="cn-scroll-x">
                   {routeFloors.map((fid, i) => {
                     const f = l.floors.get(fid);
+                    const prev = i > 0 ? l.floors.get(routeFloors[i - 1]!) : undefined;
                     const firstStep = steps.findIndex((s) => (s.toFloorId && s.kind !== "start" ? s.toFloorId : s.floorId) === fid);
-                    return (
+                    const active = !showOutside && fid === viewFloorId;
+                    const outsideTab =
+                      prev && f && prev.buildingId !== f.buildingId ? (
+                        <button key={`out-${i}`} role="tab" aria-selected={showOutside} onClick={() => setOutsideView(true)} className="cn-chip !min-h-9" data-testid="tab-outside">
+                          ☀ {t("navigate.outside")}
+                        </button>
+                      ) : null;
+                    return [
+                      outsideTab,
                       <button
                         key={`${fid}-${i}`}
                         role="tab"
-                        aria-selected={fid === viewFloorId}
-                        onClick={() => setStepIdx(Math.max(0, firstStep))}
-                        aria-current={fid === viewFloorId ? "true" : undefined}
+                        aria-selected={active}
+                        onClick={() => {
+                          setStepIdx(Math.max(0, firstStep));
+                          setOutsideView(false);
+                        }}
+                        aria-current={active ? "true" : undefined}
                         className="cn-chip !min-h-9"
                       >
                         {l.buildings.get(f?.buildingId ?? "")?.code} · {lt(f?.name, loc)}
-                      </button>
-                    );
+                      </button>,
+                    ];
                   })}
                 </div>
-                <div className="flex items-center justify-between gap-2">
+                <div className={cx("flex items-center justify-between gap-2", showOutside && "hidden")}>
                   <div className="cn-segment !p-1" role="radiogroup" aria-label={t("explore.viewMode")}>
                     <button type="button" role="radio" aria-checked={!view3d} onClick={() => setView3d(false)} className="!min-h-8 !px-3 mono">{t("explore.view2d")}</button>
                     <button type="button" role="radio" aria-checked={view3d} disabled={no3d} onClick={() => setView3d(true)} className="!min-h-8 !px-3 mono">{t("explore.view3d")}</button>
                   </div>
                   {view3d ? <span className="text-xs text-muted truncate">{t("explore.routeIn3d", { building: lt(l.buildings.get(viewFloor.buildingId)?.name, loc) })}</span> : no3d ? <span className="text-xs text-muted">{t("explore.no3d")}</span> : null}
                 </div>
-                {view3d && !no3d ? (
+                {showOutside ? (
+                  <div className="space-y-2" data-testid="outside-view">
+                    <div className="relative cn-mapframe border border-line overflow-hidden" style={{ height: "min(58vh, 560px)" }}>
+                      {campusGeo && outdoorGeo.parts.length ? (
+                        <RouteRealMap geo={campusGeo} buildings={bundle.buildings} parts={outdoorGeo.parts} labels={{ tilesFailed: t("explore.tilesFailed") }} />
+                      ) : campusForPicture ? (
+                        <CampusMap2D bundle={bundle} campusId={campusForPicture.id} selectedId={routeBuildingIds.at(-1) ?? null} onSelect={() => undefined} routeBuildingIds={routeBuildingIds} />
+                      ) : (
+                        <div className="absolute inset-0 grid place-items-center text-muted p-6 text-center">{t("navigate.outsideSchematic")}</div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted" role="note">
+                      {campusGeo && outdoorGeo.parts.length ? (outdoorGeo.missing ? t("navigate.outsidePartial") : t("navigate.outsideReal")) : t("navigate.outsideSchematic")}
+                    </p>
+                  </div>
+                ) : view3d && !no3d ? (
                   <div className="relative cn-mapframe border border-line" style={{ height: "min(58vh, 560px)" }}>
                     <RouteView3D bundle={bundle} route={plan.route} buildingId={viewFloor.buildingId} onUnavailable={() => { setNo3d(true); setView3d(false); }} />
                   </div>

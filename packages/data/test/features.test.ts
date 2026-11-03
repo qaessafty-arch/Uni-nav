@@ -93,3 +93,33 @@ describe("campus data health audit", () => {
     expect(codes).toContain("CHECKPOINT_DANGLING");
   });
 });
+
+import { planRouteToRoom, routeOptionsFor, nearestRooms, graphForBundle, outdoorMeters } from "@campusnav/core";
+
+describe("between buildings: library and cafeteria are their own buildings", () => {
+  const b = demoBundle(new Date("2026-10-30T00:00:00Z"));
+  const id = (code: string, building: string) => b.rooms.find((r) => r.id === did(`${building}-room-${code}`))!;
+  const lab = id("S001", "sci");
+  const reading = id("L001", "lib");
+
+  it("routes from a science lab to the library reading hall across the campus", () => {
+    const r = planRouteToRoom(b, lab.entranceNodeId!, reading.id, routeOptionsFor("shortest"));
+    if (!r.ok) throw new Error(r.error.code);
+    expect(outdoorMeters(r.plan.route.legs)).toBe(60); // the stepped shortcut
+    expect(r.plan.steps.some((s) => s.kind === "enter_building")).toBe(true);
+  });
+
+  it("step-free avoids the stepped shortcut and goes round via Engineering", () => {
+    const r = planRouteToRoom(b, lab.entranceNodeId!, reading.id, routeOptionsFor("step_free"));
+    if (!r.ok) throw new Error(r.error.code);
+    expect(outdoorMeters(r.plan.route.legs)).toBe(85 + 140);
+    expect(r.plan.route.legs.every((l) => l.edge.accessible)).toBe(true);
+  });
+
+  it("nearest cafeteria from Engineering is in the cafeteria building", () => {
+    const eng204 = id("204", "eng");
+    const [first] = nearestRooms(b, graphForBundle(b), eng204.entranceNodeId!, ["cafeteria"]);
+    expect(first!.room.buildingId).toBe(b.buildings.find((x) => x.code === "DEMO-CAF")!.id);
+    expect(b.rooms.filter((r) => r.type === "cafeteria" || r.type === "library").every((r) => ["DEMO-CAF", "DEMO-LIB"].includes(b.buildings.find((x) => x.id === r.buildingId)!.code))).toBe(true);
+  });
+});

@@ -15,3 +15,4 @@ export * from "./import/timetable-import";
 export * from "./auth/permissions";
 export * from "./assistant";
 export * from "./map/svg";
+export * from "./map/geo";

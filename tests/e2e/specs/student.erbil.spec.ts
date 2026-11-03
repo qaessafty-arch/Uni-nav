@@ -55,3 +55,17 @@ test("mild day: no heat warning", async ({ page }) => {
   await expect(page.getByTestId("outdoor-m")).toBeVisible();
   await expect(page.getByTestId("heat-notice")).toHaveCount(0);
 });
+
+test("library is its own building: route goes outside, with an Outside view and step-free detour", async ({ page }) => {
+  await enterDemo(page);
+  await page.goto(`${BASE}/q/DEMOsciMainEntrance01`);
+  await expect(page.getByText(/Location set/).first()).toBeVisible();
+  await page.goto(`${BASE}/navigate?to=${did("lib-room-L001")}`);
+  await expect(page.getByTestId("outdoor-m")).toContainText("60 m outdoors");
+  await page.getByTestId("tab-outside").click();
+  const view = page.getByTestId("outside-view");
+  await expect(view.getByTestId("schematic-route")).toBeVisible();
+  await expect(view).toContainText("Schematic: straight lines between buildings");
+  await page.getByRole("radio", { name: "Step-free" }).click();
+  await expect(page.getByTestId("outdoor-m")).toContainText("225 m outdoors");
+});

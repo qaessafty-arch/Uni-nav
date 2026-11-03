@@ -1,4 +1,5 @@
 import type { Floor, NavEdge, NavEdgeKind, NavNode } from "../model/types";
+import { polylineLengthM } from "../map/geo";
 
 export interface GraphEdge {
   edge: NavEdge;
@@ -45,7 +46,7 @@ export function buildGraph(nodes: NavNode[], edges: NavEdge[], floors: Floor[]):
       rejectedEdges.push({ edge, reason: "self_loop" });
       continue;
     }
-    const distanceM = edge.distanceM ?? planarDistanceM(from, to, floorMap);
+    const distanceM = edge.distanceM ?? planarDistanceM(from, to, floorMap) ?? (edge.geometry && edge.geometry.length >= 2 ? polylineLengthM(edge.geometry) : null);
     if (distanceM == null || !Number.isFinite(distanceM) || distanceM < 0) {
       rejectedEdges.push({ edge, reason: "unknown_distance" });
       continue;

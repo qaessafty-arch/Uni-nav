@@ -124,7 +124,7 @@ describe("public (anonymous) access", () => {
   });
   it("sees non-sensitive checkpoint info through the public view (no token column)", async () => {
     const res = await as(null, (q) => q("select * from public.public_checkpoints where university_id = $1", [A]));
-    expect(res.rowCount).toBe(4); // active, unexpired only
+    expect(res.rowCount).toBe(6); // active, unexpired only (ENG main, ENG floor 1 stairs, ENG floor 2, SCI, LIB, CAF)
     expect(res.fields.map((f) => f.name)).not.toContain("token");
   });
   it("cannot write anything", async () => {
@@ -310,6 +310,19 @@ describe("data integrity and audit", () => {
     });
     await as("studentA", async (q) => {
       expect((await q("update public.campuses set overview_image_url = 'https://evil.example/x.jpg' where id = $1", [campus])).rowCount).toBe(0);
+    });
+  });
+  it("walkway paths: map editors can draw them on outdoor edges only; students cannot", async () => {
+    const outdoor = (await pool.query("select id from public.navigation_edges where kind = 'outdoor' and university_id = $1 limit 1", [A])).rows[0].id;
+    const corridor = (await pool.query("select id from public.navigation_edges where kind = 'corridor' and university_id = $1 limit 1", [A])).rows[0].id;
+    const path = JSON.stringify([[44.02, 36.14], [44.021, 36.141], [44.022, 36.141]]);
+    await as("adminA", async (q) => {
+      expect((await q("update public.navigation_edges set geometry = $1::jsonb where id = $2", [path, outdoor])).rowCount).toBe(1);
+      await expectDenied(q("update public.navigation_edges set geometry = $1::jsonb where id = $2", [path, corridor]), /check constraint/i);
+      await expectDenied(q("update public.navigation_edges set geometry = '[[44.02, 36.14]]'::jsonb where id = $1", [outdoor]), /check constraint/i);
+    });
+    await as("studentA", async (q) => {
+      expect((await q("update public.navigation_edges set geometry = $1::jsonb where id = $2", [path, outdoor])).rowCount).toBe(0);
     });
   });
   it("records who changed what, readable only by the tenant's admins, with tokens redacted", async () => {

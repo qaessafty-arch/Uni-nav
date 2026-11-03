@@ -7,7 +7,7 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
-import { lt, type Building, type CampusGeo, type Locale } from "@campusnav/core";
+import { lt, type Building, type CampusGeo, type LngLat, type Locale } from "@campusnav/core";
 
 export const MAP_STYLE_URL = process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://tiles.openfreemap.org/styles/positron";
 
@@ -39,6 +39,8 @@ function bboxOf(points: [number, number][]): [[number, number], [number, number]
 export interface RealMapProps {
   geo: CampusGeo;
   buildings: Building[];
+  /** Walkway lines staff drew or imported (outdoor navigation edges). */
+  walkways?: LngLat[][];
   selectedId: string | null;
   locale: Locale;
   onSelect: (id: string) => void;
@@ -47,7 +49,7 @@ export interface RealMapProps {
   labels: { tilesFailed: string; zoomIn: string; zoomOut: string; reset: string };
 }
 
-export default function RealMap({ geo, buildings, selectedId, locale, onSelect, onUnavailable, padding, labels }: RealMapProps) {
+export default function RealMap({ geo, buildings, walkways = [], selectedId, locale, onSelect, onUnavailable, padding, labels }: RealMapProps) {
   const host = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
@@ -85,6 +87,8 @@ export default function RealMap({ geo, buildings, selectedId, locale, onSelect, 
     m.on("load", () => {
       didLoad = true;
       setTilesFailed(false);
+      m.addSource("walkways", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      m.addLayer({ id: "walkways", type: "line", source: "walkways", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": css("--cn-accent", "#1D4ED8"), "line-width": 2.5, "line-opacity": 0.55, "line-dasharray": [1.5, 1.2] } });
       m.addSource("buildings", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       m.addLayer({ id: "buildings-fill", type: "fill", source: "buildings", paint: { "fill-color": ["get", "fill"], "fill-opacity": ["get", "opacity"] } });
       m.addLayer({ id: "buildings-line", type: "line", source: "buildings", paint: { "line-color": ["get", "stroke"], "line-width": ["get", "width"] } });
@@ -111,6 +115,10 @@ export default function RealMap({ geo, buildings, selectedId, locale, onSelect, 
     if (!m || !loaded) return;
     const accent = css("--cn-accent", "#1D4ED8");
     const neutral = css("--cn-text-muted", "#4B5563");
+    (m.getSource("walkways") as maplibregl.GeoJSONSource | undefined)?.setData({
+      type: "FeatureCollection",
+      features: walkways.map((w) => ({ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: w } })),
+    });
     const src = m.getSource("buildings") as maplibregl.GeoJSONSource | undefined;
     src?.setData({
       type: "FeatureCollection",
@@ -136,7 +144,7 @@ export default function RealMap({ geo, buildings, selectedId, locale, onSelect, 
       return new maplibregl.Marker({ element: el }).setLngLat([(x0 + x1) / 2, (y0 + y1) / 2]).addTo(m);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, selectedId, locale, buildings]);
+  }, [loaded, selectedId, locale, buildings, walkways.length]);
 
   // Camera: fit the selected building, keeping it clear of the panel/sheet
   useEffect(() => {

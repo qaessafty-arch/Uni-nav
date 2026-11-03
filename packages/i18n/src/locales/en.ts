@@ -460,6 +460,11 @@ export const en = {
   "heat.source": "Weather: Open-Meteo",
   "navigate.prefIndoor": "Indoor first",
   "navigate.outdoor": "{distance} outdoors",
+  // ── between buildings ──
+  "navigate.outside": "Outside",
+  "navigate.outsideReal": "Real walking path on the campus map.",
+  "navigate.outsideSchematic": "Schematic: straight lines between buildings. The real walking path hasn't been drawn on the map yet.",
+  "navigate.outsidePartial": "Part of this outdoor route has no drawn path yet; only the drawn parts are shown.",
 } as const;
 
 export type MessageKey = keyof typeof en;

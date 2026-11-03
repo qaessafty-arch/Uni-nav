@@ -184,6 +184,7 @@ export const navEdgeSchema = z
     bidirectional: z.boolean(),
     blocked: z.boolean(),
     restriction: text(60).nullish(),
+    geometry: z.array(lngLatSchema).min(2, "path_needs_2_points").max(2000).nullish(),
   })
   .refine((e) => e.fromNodeId !== e.toNodeId, { message: "self_loop", path: ["toNodeId"] });
 

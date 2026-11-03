@@ -159,7 +159,7 @@ test("nearest facilities are ordered by walking distance from your location", as
   await expect(page.getByText(/Location set/)).toBeVisible();
   await page.goto(`${BASE}/nearby?type=toilet`);
   const list = page.getByRole("list", { name: "Nearest places" });
-  await expect(list.getByRole("listitem")).toHaveCount(5);
+  await expect(list.getByRole("listitem")).toHaveCount(8);
   const metres = await list.getByRole("listitem").allTextContents();
   const nums = metres.map((t) => Number(/(\d+) m walk/.exec(t)?.[1]));
   expect(nums).toEqual([...nums].sort((a, b) => a - b));

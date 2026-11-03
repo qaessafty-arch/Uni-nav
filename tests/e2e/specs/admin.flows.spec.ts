@@ -22,21 +22,21 @@ test("admin creates a building, a floor and a room (with validation feedback)", 
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByText("Required").first()).toBeVisible();
   await page.locator("#f-campusId").selectOption({ index: 1 });
-  await page.locator("#f-code").fill("DEMO-LIB");
-  await page.locator("#f-name").fill("Demo Library Building");
+  await page.locator("#f-code").fill("DEMO-ART");
+  await page.locator("#f-name").fill("Demo Arts Building");
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByRole("cell", { name: "DEMO-LIB" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "DEMO-ART" })).toBeVisible();
 
   await page.goto(`${ADMIN}/floors`);
   await page.getByRole("button", { name: "+ New floor" }).click();
-  await page.locator("#f-buildingId").selectOption({ label: "DEMO-LIB — Demo Library Building" });
+  await page.locator("#f-buildingId").selectOption({ label: "DEMO-ART — Demo Arts Building" });
   await page.locator("#f-name").fill("Demo Library Ground");
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("cell", { name: "Demo Library Ground" })).toBeVisible();
 
   await page.goto(`${ADMIN}/rooms`);
   await page.getByRole("button", { name: "+ New room" }).click();
-  await page.locator("#f-buildingId").selectOption({ label: "DEMO-LIB — Demo Library Building" });
+  await page.locator("#f-buildingId").selectOption({ label: "DEMO-ART — Demo Arts Building" });
   await page.locator("#f-floorId").selectOption({ index: 1 });
   await page.locator("#f-code").fill("L001");
   await page.locator("#f-name").fill("Demo Reading Room");
@@ -152,7 +152,7 @@ test("admin adds a campus picture and places buildings by drawing on the map", a
   await openSandbox(page);
   // 1) Campus picture + move an existing building on the Campus map page
   await page.goto(`${ADMIN}/campus-map`);
-  await expect(page.getByText("2 / 2 buildings placed")).toBeVisible();
+  await expect(page.getByText("4 / 4 buildings placed")).toBeVisible();
   const png = readFileSync(resolve(__dirname, "../../../apps/web/public/icons/icon-512.png"));
   await page.getByLabel("Campus picture").setInputFiles({ name: "campus.png", mimeType: "image/png", buffer: png });
   await expect(page.getByText(/Picture added/)).toBeVisible();
@@ -176,8 +176,8 @@ test("admin adds a campus picture and places buildings by drawing on the map", a
   await page.goto(`${ADMIN}/buildings`);
   await page.getByRole("button", { name: "+ New building" }).click();
   await page.locator("#f-campusId").selectOption({ index: 1 });
-  await page.locator("#f-code").fill("DEMO-LIB");
-  await page.locator("#f-name").fill("Demo Library Building");
+  await page.locator("#f-code").fill("DEMO-ART");
+  await page.locator("#f-name").fill("Demo Arts Building");
   const picker = page.locator('[role="dialog"] svg[aria-label="Campus map editor"]');
   await expect(picker.locator("image")).toHaveCount(1); // the campus picture shows in the form too
   await picker.scrollIntoViewIfNeeded();
@@ -188,10 +188,10 @@ test("admin adds a campus picture and places buildings by drawing on the map", a
   await page.mouse.up();
   await expect(page.getByText("Drag to move · handles to resize")).toBeVisible();
   await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByRole("cell", { name: "DEMO-LIB" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "DEMO-ART" })).toBeVisible();
 
   await page.goto(`${ADMIN}/campus-map`);
-  await expect(page.getByText("3 / 3 buildings placed")).toBeVisible();
+  await expect(page.getByText("5 / 5 buildings placed")).toBeVisible();
 });
 
 test("admin bars: grouped sidebar with report count, breadcrumb and jump-to search", async ({ page }) => {
@@ -261,7 +261,7 @@ test("admin traces a building outline on the real map", async ({ page }) => {
   await stubMapTiles(page);
   await openSandbox(page);
   await page.goto(`${ADMIN}/real-map`);
-  await expect(page.getByText("0 of 2 on the real map")).toBeVisible();
+  await expect(page.getByText("0 of 4 on the real map")).toBeVisible();
   await page.getByRole("list", { name: "Buildings on the real map" }).getByRole("button", { name: /DEMO-ENG/ }).click();
   await page.getByRole("button", { name: "Draw outline" }).click();
   const map = page.getByTestId("real-map-editor");
@@ -271,5 +271,5 @@ test("admin traces a building outline on the real map", async ({ page }) => {
   await expect(page.getByText(/click the corners \(4 points\)/)).toBeVisible();
   await page.getByRole("button", { name: "Finish & save" }).click();
   await expect(page.getByText("Outline saved for DEMO-ENG")).toBeVisible();
-  await expect(page.getByText("1 of 2 on the real map")).toBeVisible();
+  await expect(page.getByText("1 of 4 on the real map")).toBeVisible();
 });

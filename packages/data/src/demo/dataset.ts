@@ -96,6 +96,8 @@ export const demoCampuses: Campus[] = [
 
 const ENG = did("demo-building-eng");
 const SCI = did("demo-building-sci");
+const LIB = did("demo-building-lib");
+const CAF = did("demo-building-caf");
 export const demoBuildings: Building[] = [
   {
     id: ENG,
@@ -115,6 +117,26 @@ export const demoBuildings: Building[] = [
     name: T("Demo Science Building", "بینای زانستیی نموونە", "مبنى العلوم التجريبي"),
     description: T("Two-storey demonstration building connected to the Engineering building by an outdoor path."),
     overview: { x: 600, y: 300, w: 280, h: 200 },
+    dataStatus: "demo",
+  },
+  {
+    id: LIB,
+    universityId: U,
+    campusId: CAMPUS_ID,
+    code: "DEMO-LIB",
+    name: T("Demo Central Library", "کتێبخانەی ناوەندیی نموونە", "المكتبة المركزية التجريبية"),
+    description: T("Two-storey demonstration library, a separate building reached by outdoor paths."),
+    overview: { x: 600, y: 40, w: 300, h: 190 },
+    dataStatus: "demo",
+  },
+  {
+    id: CAF,
+    universityId: U,
+    campusId: CAMPUS_ID,
+    code: "DEMO-CAF",
+    name: T("Demo Student Cafeteria", "کافتریای قوتابیانی نموونە", "كافتيريا الطلبة التجريبية"),
+    description: T("Single-storey demonstration cafeteria building."),
+    overview: { x: 170, y: 470, w: 260, h: 160 },
     dataStatus: "demo",
   },
 ];
@@ -247,8 +269,8 @@ const engG = buildFloor("eng", ENG, "DEMO-ENG", 0, [
   R("G01", "Demo Lecture Hall G01", "lecture_hall", D_CE, 120, "هۆڵی وانەی G01", "قاعة المحاضرات G01"),
   R("G02", "Demo Classroom G02", "classroom", D_CE, 40),
   R("G03", "Demo Student Services", "service", undefined, undefined, "خزمەتگوزاریی قوتابیان", "خدمات الطلبة"),
-  R("G04", "Demo Cafeteria", "cafeteria", undefined, 80, "کافتریا", "الكافتيريا"),
-  R("G05", "Demo Library Annex", "library", undefined, 60, "کتێبخانە", "المكتبة"),
+  R("G04", "Demo Classroom G04", "classroom", D_CE, 40),
+  R("G05", "Demo Classroom G05", "classroom", D_CE, 40),
   R("G06", "Demo Toilets G06", "toilet", undefined, undefined, "ئاودەست", "دورات المياه"),
   R("G07", "Demo Civil Lab G07", "laboratory", D_CE, 30, "تاقیگەی شارستانی", "مختبر المدني"),
   R("G08", "Demo Classroom G08", "classroom", D_CE, 40),
@@ -280,7 +302,7 @@ const eng2 = buildFloor("eng", ENG, "DEMO-ENG", 2, [
   R("206", "Demo Toilets 206", "toilet"),
   R("207", "Demo Lecture Hall 207", "lecture_hall", D_CE, 140),
   R("208", "Demo Lecturer Office 208", "office", D_CS),
-  R("209", "Demo Study Room 209", "library", undefined, 30),
+  R("209", "Demo Study Room 209", "other", undefined, 30),
   R("210", "Demo Room 210", "classroom", D_CS, 40),
   R("211", "Demo Room 211", "classroom", D_CE, 40),
   R("212", "Demo Meeting Room 212", "other", undefined, 12),
@@ -311,9 +333,44 @@ const sci1 = buildFloor("sci", SCI, "DEMO-SCI", 1, [
   null, null, null, null, null, null,
 ], false);
 
+// Library: ground, 1 — its own building.
+const libG = buildFloor("lib", LIB, "DEMO-LIB", 0, [
+  R("L001", "Demo Main Reading Hall", "library", undefined, 200, "هۆڵی سەرەکیی خوێندنەوە", "قاعة المطالعة الرئيسية"),
+  R("L002", "Demo Circulation Desk", "service", undefined, undefined, "مێزی خواستنی کتێب", "مكتب الإعارة"),
+  R("L003", "Demo E-Library", "library", undefined, 60, "کتێبخانەی ئەلیکترۆنی", "المكتبة الإلكترونية"),
+  R("L004", "Demo Group Study Room L004", "other", undefined, 10),
+  R("L005", "Demo Toilets L005", "toilet", undefined, undefined, "ئاودەست", "دورات المياه"),
+  R("L006", "Demo Group Study Room L006", "other", undefined, 10),
+  R("L007", "Demo Periodicals Room", "library", undefined, 40, "ژووری گۆڤارەکان", "قاعة الدوريات"),
+  R("L008", "Demo Prayer Room L008", "prayer_room", undefined, 15, "نوێژخانە", "مصلى"),
+  null,
+  R("L010", "Demo Librarian Office", "office"),
+  R("L011", "Demo Book Store L011", "storage"),
+  R("L012", "Demo Group Study Room L012", "other", undefined, 10),
+], true);
+const lib1 = buildFloor("lib", LIB, "DEMO-LIB", 1, [
+  R("L101", "Demo Quiet Reading Room", "library", undefined, 120, "ژووری خوێندنەوەی بێدەنگ", "قاعة المطالعة الهادئة"),
+  R("L102", "Demo Thesis Archive", "library", undefined, 20),
+  R("L103", "Demo Study Room L103", "other", undefined, 12),
+  R("L104", "Demo Study Room L104", "other", undefined, 12),
+  R("L105", "Demo Toilets L105", "toilet"),
+  null, null, null, null, null, null, null,
+], false);
+
+// Cafeteria: ground only — its own building.
+const cafG = buildFloor("caf", CAF, "DEMO-CAF", 0, [
+  R("C001", "Demo Main Cafeteria", "cafeteria", undefined, 250, "کافتریای سەرەکی", "الكافتيريا الرئيسية"),
+  R("C002", "Demo Coffee Corner", "cafeteria", undefined, 40, "گۆشەی قاوە", "ركن القهوة"),
+  R("C003", "Demo Food Court", "cafeteria", undefined, 120, "شوێنی خواردن", "ساحة الطعام"),
+  R("C004", "Demo Toilets C004", "toilet", undefined, undefined, "ئاودەست", "دورات المياه"),
+  R("C005", "Demo Prayer Room C005", "prayer_room", undefined, 25, "نوێژخانە", "مصلى"),
+  R("C006", "Demo Kitchen Store", "storage"),
+  null, null, null, null, null, null,
+], true);
+
 // Vertical connections. Stair lengths are demo configuration values, not measurements.
 const STAIR_FLIGHT_M = 12;
-for (const [a, b] of [[engG, eng1], [eng1, eng2], [sciG, sci1]] as const) {
+for (const [a, b] of [[engG, eng1], [eng1, eng2], [sciG, sci1], [libG, lib1]] as const) {
   edge(a.stairs, b.stairs, "stairs", { distanceM: STAIR_FLIGHT_M, accessible: false });
   edge(a.lift, b.lift, "elevator", { distanceM: 0, accessible: true });
 }
@@ -321,7 +378,18 @@ for (const [a, b] of [[engG, eng1], [eng1, eng2], [sciG, sci1]] as const) {
 // Outdoor path between building entrances (demo value).
 const engEntrance = nodes.find((n) => n.id === did(`${engG.floorId}-entrance`))!;
 const sciEntrance = nodes.find((n) => n.id === did(`${sciG.floorId}-entrance`))!;
+const libEntrance = nodes.find((n) => n.id === did(`${libG.floorId}-entrance`))!;
+const cafEntrance = nodes.find((n) => n.id === did(`${cafG.floorId}-entrance`))!;
+// Outdoor walkway network between building entrances. Demo lengths only — the
+// demo buildings are not placed on the real map, so these edges carry no
+// real-world geometry. Real campuses draw or import each walkway in the admin
+// "Walkways" page and the length is measured along the real path.
 edge(engEntrance, sciEntrance, "outdoor", { distanceM: 85, accessible: true });
+edge(engEntrance, cafEntrance, "outdoor", { distanceM: 70, accessible: true });
+edge(cafEntrance, sciEntrance, "outdoor", { distanceM: 110, accessible: true });
+edge(engEntrance, libEntrance, "outdoor", { distanceM: 140, accessible: true });
+// Short cut with steps: fastest on foot, skipped by step-free routes.
+edge(sciEntrance, libEntrance, "outdoor", { distanceM: 60, accessible: false });
 
 // Staff-only shortcut example (restricted edge) on ENG floor 1: from office 110 door straight to stairs.
 const office110Door = nodes.find((n) => n.id === did(`${did("eng-room-110")}-door`))!;
@@ -340,6 +408,8 @@ export const demoCheckpoints: QrCheckpoint[] = [
   { id: did("cp-eng-1-stairs"), universityId: U, token: "DEMOengFloor1Stairs01", nodeId: eng1.stairs.id, label: T("Demo Engineering — floor 1 stairs", "قادرمەی نهۆمی ١", "درج الطابق 1"), status: "active", expiresAt: null },
   { id: did("cp-eng-2-mid"), universityId: U, token: "DEMOengFloor2Middle01", nodeId: eng2.nodes[3]!.id, label: T("Demo Engineering — floor 2 corridor", "ڕاڕەوی نهۆمی ٢", "ممر الطابق 2"), status: "active", expiresAt: null },
   { id: did("cp-sci-main"), universityId: U, token: "DEMOsciMainEntrance01", nodeId: sciEntrance.id, label: T("Demo Science — main entrance", "دەرگای سەرەکیی زانست", "مدخل العلوم الرئيسي"), status: "active", expiresAt: null },
+  { id: did("cp-lib-main"), universityId: U, token: "DEMOlibMainEntrance01", nodeId: libEntrance.id, label: T("Demo Library — main entrance", "دەرگای سەرەکیی کتێبخانە", "مدخل المكتبة الرئيسي"), status: "active", expiresAt: null },
+  { id: did("cp-caf-main"), universityId: U, token: "DEMOcafMainEntrance01", nodeId: cafEntrance.id, label: T("Demo Cafeteria — main entrance", "دەرگای سەرەکیی کافتریا", "مدخل الكافتيريا الرئيسي"), status: "active", expiresAt: null },
   { id: did("cp-disabled"), universityId: U, token: "DEMOdisabledCheckpoint", nodeId: eng1.lift.id, label: T("Demo disabled checkpoint"), status: "disabled", expiresAt: null },
   { id: did("cp-expired"), universityId: U, token: "DEMOexpiredCheckpoint1", nodeId: eng1.lift.id, label: T("Demo expired checkpoint"), status: "active", expiresAt: "2025-01-01T00:00:00Z" },
 ];

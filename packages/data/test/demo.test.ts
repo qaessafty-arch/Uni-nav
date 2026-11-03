@@ -88,9 +88,11 @@ describe("student flows on demo data", () => {
 
   it("assistant answers from campus data only", () => {
     const p = new RuleBasedIntentParser();
-    const a = executeIntent(p.parse("Where is the Demo Cafeteria?"), bundle);
+    const a = executeIntent(p.parse("Where is the Demo Main Cafeteria?"), bundle);
     expect(a.kind).toBe("results");
     expect(executeIntent(p.parse("Where is the swimming pool?"), bundle).kind).toBe("not_found");
+    // Several cafeterias now exist (a whole building plus rooms), so a vague question asks which one.
+    expect(executeIntent(p.parse("Where is the cafeteria?"), bundle).kind).toMatch(/clarify|results/);
   });
 });
 

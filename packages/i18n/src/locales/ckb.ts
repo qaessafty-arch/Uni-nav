@@ -442,4 +442,9 @@ export const ckb: Record<MessageKey, string> = {
   "heat.source": "کەشوهەوا: Open-Meteo",
   "navigate.prefIndoor": "زیاتر لە ناوەوە",
   "navigate.outdoor": "{distance} لە دەرەوە",
+  // ── between buildings ──
+  "navigate.outside": "دەرەوە",
+  "navigate.outsideReal": "ڕێگای ڕاستەقینەی ڕۆیشتن لەسەر نەخشەی کەمپەس.",
+  "navigate.outsideSchematic": "نەخشەی سادەکراو: هێڵی ڕاست لە نێوان بیناکان. ڕێگای ڕاستەقینەی ڕۆیشتن هێشتا لەسەر نەخشە نەکێشراوە.",
+  "navigate.outsidePartial": "بەشێک لەم ڕێگایەی دەرەوە هێشتا نەکێشراوە؛ تەنها بەشە کێشراوەکان پیشان دەدرێن.",
 };

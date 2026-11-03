@@ -18,6 +18,7 @@ import { lookup, floorsOf } from "@/lib/lookup";
 import { webglAvailable } from "@/lib/three/support";
 import type { PickData } from "@/lib/three/viewer";
 import { MapSearch } from "./MapSearch";
+import { CampusMap2D } from "./CampusMap2D";
 import { mapLabels } from "./MapLabels";
 import { FACILITIES } from "./Blocks";
 import { LectureCard } from "./LectureCard";
@@ -169,12 +170,14 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
 
   // ── Map area ──────────────────────────────────────────────────────────
   let mapArea: React.ReactNode;
+  const walkways = bundle.navEdges.filter((e) => e.kind === "outdoor" && e.geometry && e.geometry.length >= 2).map((e) => e.geometry!);
   if (!inside && view === "map" && campus?.geo) {
     mapArea = (
       <RealMap
         geo={campus.geo}
         buildings={bundle.buildings.filter((b) => b.campusId === campus.id)}
         selectedId={building?.id ?? null}
+        walkways={walkways}
         locale={loc}
         onSelect={(id) => set({ b: id, f: null, r: null, inside: false })}
         onUnavailable={() => setNoMap(true)}
@@ -493,32 +496,3 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
 }
 
 /** 2D campus overview (also the fallback when 3D is unavailable). */
-function CampusMap2D({ bundle, campusId, selectedId, onSelect }: { bundle: CampusBundle; campusId: string; selectedId: string | null; onSelect: (id: string) => void }) {
-  const { prefs, t } = useApp();
-  const campus = bundle.campuses.find((c) => c.id === campusId)!;
-  const w = campus.overviewWidth ?? 1000;
-  const h = campus.overviewHeight ?? 700;
-  const buildings = bundle.buildings.filter((b) => b.campusId === campusId && b.overview);
-  const fs = Math.max(22, w * 0.036); // readable on phones, where the campus is scaled down
-  return (
-    <svg viewBox={`${-w * 0.05} ${-h * 0.05} ${w * 1.1} ${h * 1.1}`} className="absolute inset-0 w-full h-full" role="img" aria-label={t("map.campus")} direction="ltr" preserveAspectRatio="xMidYMid meet">
-      <rect x={0} y={0} width={w} height={h} fill="var(--cn-surface)" stroke="var(--cn-border-strong)" />
-      {campus.overviewImageUrl ? <image href={campus.overviewImageUrl} x={0} y={0} width={w} height={h} preserveAspectRatio="none" opacity={0.9} /> : null}
-      {buildings.map((b) => {
-        const r = b.overview!;
-        const sel = b.id === selectedId;
-        return (
-          <g key={b.id} role="button" tabIndex={0} aria-label={lt(b.name, prefs.locale)} aria-pressed={sel} className="cursor-pointer" onClick={() => onSelect(b.id)} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(b.id)}>
-            <rect x={r.x} y={r.y} width={r.w} height={r.h} fill={sel ? "var(--cn-accent)" : campus.overviewImageUrl ? "color-mix(in srgb, var(--cn-accent) 18%, transparent)" : "var(--cn-map-room)"} stroke={sel ? "var(--cn-accent)" : "var(--cn-border-strong)"} strokeWidth={2} />
-            <text x={r.x + fs * 0.6} y={r.y + fs * 1.4} fill={sel ? "var(--cn-accent-text)" : "var(--cn-text)"} fontSize={fs} fontFamily="IBM Plex Mono, monospace" fontWeight={600}>
-              {b.code}
-            </text>
-            <text x={r.x + fs * 0.6} y={r.y + fs * 2.5} fill={sel ? "var(--cn-accent-text)" : "var(--cn-text-muted)"} fontSize={fs * 0.72}>
-              {lt(b.name, prefs.locale)}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}

@@ -442,4 +442,9 @@ export const ar: Record<MessageKey, string> = {
   "heat.source": "الطقس: Open-Meteo",
   "navigate.prefIndoor": "داخلي أولاً",
   "navigate.outdoor": "{distance} في الخارج",
+  // ── between buildings ──
+  "navigate.outside": "في الخارج",
+  "navigate.outsideReal": "مسار المشي الحقيقي على خريطة الحرم الجامعي.",
+  "navigate.outsideSchematic": "مخطط تقريبي: خطوط مستقيمة بين المباني. لم يُرسم مسار المشي الحقيقي على الخريطة بعد.",
+  "navigate.outsidePartial": "جزء من هذا المسار الخارجي لم يُرسم بعد؛ تُعرض الأجزاء المرسومة فقط.",
 };
