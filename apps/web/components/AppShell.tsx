@@ -24,6 +24,7 @@ const GROUPS: { key: "nav.group.explore" | "nav.group.academic" | "nav.group.you
       { href: "/search", key: "nav.search", icon: I.search },
       { href: "/map", key: "nav.map", icon: I.map },
       { href: "/nearby", key: "nav.nearby", icon: I.nearby },
+      { href: "/free-rooms", key: "nav.freeRooms", icon: I.hall },
       { href: "/scan", key: "nav.scan", icon: I.scan },
     ],
   },

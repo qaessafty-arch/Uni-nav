@@ -147,13 +147,15 @@ function shapeOf(el: MapElement, mpu: number, ox: number, oz: number): THREE.Sha
   return new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x * mpu - ox, -(y * mpu - oz))));
 }
 
-export function buildBuilding(bundle: CampusBundle, o: BuildingSceneOptions): SceneContent & { floorBoxes: Map<string, THREE.Box3>; floorsWithPlan: Set<string> } {
+export function buildBuilding(bundle: CampusBundle, o: BuildingSceneOptions): SceneContent & { floorBoxes: Map<string, THREE.Box3>; floorsWithPlan: Set<string>; routePath: THREE.Vector3[] } {
   const c = palette();
   const floors = bundle.floors.filter((f) => f.buildingId === o.buildingId).sort((a, b) => a.level - b.level);
   const root = new THREE.Group();
   const pickables: THREE.Object3D[] = [];
   const labels: LabelSpec[] = [];
   const floorBoxes = new Map<string, THREE.Box3>();
+  /** Every in-building route point in walking order, for the fly-through. */
+  const routePath: THREE.Vector3[] = [];
   const floorsWithPlan = new Set<string>();
   const gap = o.exploded ? 10 : 4.2;
   const ref = floors[0];
@@ -255,8 +257,10 @@ export function buildBuilding(bundle: CampusBundle, o: BuildingSceneOptions): Sc
       run = [];
     };
     for (const n of o.route.nodes) {
-      if (inBuilding(n)) run.push(toV(n));
-      else flush();
+      if (inBuilding(n)) {
+        run.push(toV(n));
+        routePath.push(toV(n));
+      } else flush();
     }
     flush();
     const marker = (n: NavNode | undefined, color: THREE.Color, cone: boolean) => {
@@ -299,5 +303,5 @@ export function buildBuilding(bundle: CampusBundle, o: BuildingSceneOptions): Sc
   const bounds = new THREE.Box3();
   for (const b of floorBoxes.values()) bounds.union(b);
   if (bounds.isEmpty()) bounds.set(new THREE.Vector3(-5, 0, -5), new THREE.Vector3(5, 3, 5));
-  return { root, pickables, labels, bounds, floorBoxes, floorsWithPlan, dispose: () => faded.forEach((m) => m.dispose()) };
+  return { root, pickables, labels, bounds, floorBoxes, floorsWithPlan, routePath, dispose: () => faded.forEach((m) => m.dispose()) };
 }

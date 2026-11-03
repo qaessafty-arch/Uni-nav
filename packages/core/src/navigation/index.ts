@@ -83,3 +83,4 @@ export function nearestNode(nodes: NavNode[], floorId: string, x: number, y: num
 export function startCandidates(bundle: CampusBundle): NavNode[] {
   return bundle.navNodes.filter((n) => n.kind !== "corridor" && n.kind !== "outdoor");
 }
+export * from "./audit";

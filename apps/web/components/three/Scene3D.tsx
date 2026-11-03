@@ -17,7 +17,7 @@ export interface Scene3DProps {
   focusKey: string;
   onPick: (p: PickData | null) => void;
   onUnavailable: () => void;
-  labels: { zoomIn: string; zoomOut: string; rotate: string; reset: string; canvas: string };
+  labels: { zoomIn: string; zoomOut: string; rotate: string; reset: string; canvas: string; play?: string; stop?: string };
   /** Pixels covered by UI on the start side / bottom; the camera centres on the rest. */
   insets?: { start: number; bottom: number };
 }
@@ -30,6 +30,10 @@ export default function Scene3D({ bundle, spec, focusKey, onPick, onUnavailable,
   const boxes = useRef<{ building?: Map<string, import("three").Box3>; floor?: Map<string, import("three").Box3>; all?: import("three").Box3 }>({});
   const [ready, setReady] = useState(false);
   const lastFocus = useRef<string | null>(null);
+  const routePath = useRef<import("three").Vector3[]>([]);
+  const [hasRoute, setHasRoute] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
     if (!host.current) return;
@@ -39,6 +43,7 @@ export default function Scene3D({ bundle, spec, focusKey, onPick, onUnavailable,
     }
     try {
       const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+      setReduced(reduced);
       viewer.current = new Viewer(host.current, { onPick: (p) => pickRef.current(p), reducedMotion: reduced, onContextLost: onUnavailable });
       setReady(true);
     } catch {
@@ -70,7 +75,10 @@ export default function Scene3D({ bundle, spec, focusKey, onPick, onUnavailable,
         if (b) v.focus(b.clone().expandByScalar(6), { tilt: 0.9 });
       }
     } else {
+      v.stopPath();
       const content = buildBuilding(bundle, spec);
+      routePath.current = content.routePath ?? [];
+      setHasRoute(routePath.current.length >= 2);
       boxes.current = { floor: content.floorBoxes, all: content.bounds };
       v.setContent(content, refocus && !spec.floorId ? "fit" : "keep");
       if (refocus && spec.floorId) {
@@ -89,6 +97,25 @@ export default function Scene3D({ bundle, spec, focusKey, onPick, onUnavailable,
         <button type="button" className={btn} onClick={() => viewer.current?.zoom(1.33)} aria-label={labels.zoomOut} title={labels.zoomOut}>−</button>
         <button type="button" className={btn} onClick={() => viewer.current?.rotate(Math.PI / 4)} aria-label={labels.rotate} title={labels.rotate}>⟳</button>
         <button type="button" className={btn} onClick={() => boxes.current.all && viewer.current?.focus(boxes.current.all)} aria-label={labels.reset} title={labels.reset}>⌂</button>
+        {hasRoute && labels.play && !reduced ? (
+          <button
+            type="button"
+            className={btn}
+            aria-pressed={playing}
+            data-testid="route-play"
+            onClick={() => {
+              const v = viewer.current;
+              if (!v) return;
+              if (v.playing) return v.stopPath();
+              setPlaying(true);
+              v.playPath(routePath.current, () => setPlaying(false));
+            }}
+            aria-label={playing ? labels.stop : labels.play}
+            title={playing ? labels.stop : labels.play}
+          >
+            {playing ? "■" : "▶"}
+          </button>
+        ) : null}
       </div>
     </div>
   );

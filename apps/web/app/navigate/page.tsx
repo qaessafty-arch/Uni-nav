@@ -12,6 +12,7 @@ import { StartPicker, nodeName } from "@/components/LocationPicker";
 import { Icon } from "@/components/Icon";
 import { I } from "@/components/icons";
 import { RouteView3D } from "@/components/RouteView3D";
+import { ShareButton } from "@/components/ShareButton";
 import { webglAvailable } from "@/lib/three/support";
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
@@ -45,30 +46,6 @@ function PreferencePicker({ value, onChange }: { value: RoutePreference; onChang
         ))}
       </div>
     </div>
-  );
-}
-
-function ShareButton({ path }: { path: string }) {
-  const { t } = useApp();
-  const [copied, setCopied] = useState(false);
-  return (
-    <Button
-      onClick={async () => {
-        const url = `${window.location.origin}${path}`;
-        try {
-          if (navigator.share) await navigator.share({ url });
-          else {
-            await navigator.clipboard.writeText(url);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-          }
-        } catch {
-          /* user cancelled */
-        }
-      }}
-    >
-      <Icon d={I.share} className="size-4" /> {copied ? t("navigate.copied") : t("navigate.share")}
-    </Button>
   );
 }
 

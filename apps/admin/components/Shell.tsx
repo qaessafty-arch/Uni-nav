@@ -29,6 +29,7 @@ const IC = {
   block: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM5.6 5.6l12.8 12.8",
   users: "M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0zM4 21a8 8 0 0 1 16 0",
   shield: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z",
+  pulse: "M3 12h4l3-7 4 14 3-7h4",
   swap: "M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4",
   list: "M8 6h13M8 12h13M8 18h13M3 6h.5M3 12h.5M3 18h.5",
   gear: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12l2-1-1-3-2 .2-1.3-1.3L17 5l-3-1-1 2h-2L10 4 7 5l.3 2L6 8.2 4 8 3 11l2 1-2 1 1 3 2-.2 1.3 1.3L7 19l3 1 1-2h2l1 2 3-1-.3-2 1.3-1.3 2 .3 1-3z",
@@ -67,6 +68,7 @@ const NAV: { group: string; items: NavItem[] }[] = [
       { href: "/map-editor", label: "Map editor", icon: IC.pen, perm: "map.edit" },
       { href: "/rooms", label: "Rooms", icon: IC.door, perm: "room.manage" },
       { href: "/checkpoints", label: "QR checkpoints", icon: IC.qr, perm: "checkpoint.manage" },
+      { href: "/health", label: "Data health", icon: IC.pulse, perm: "map.edit" },
       { href: "/verification", label: "Verification & publishing", icon: IC.shield, perm: "building.manage" },
     ],
   },
@@ -101,6 +103,7 @@ const QUICK: { href: string; label: string; perm: Permission }[] = [
   { href: "/map-editor", label: "Edit a floor map", perm: "map.edit" },
   { href: "/campus-map", label: "Place buildings on the campus map", perm: "building.manage" },
   { href: "/checkpoints", label: "Create a QR checkpoint", perm: "checkpoint.manage" },
+  { href: "/health", label: "Check campus data health", perm: "map.edit" },
   { href: "/announcements", label: "Post an announcement", perm: "announcement.manage" },
 ];
 

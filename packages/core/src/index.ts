@@ -4,6 +4,7 @@ export * from "./model/localized";
 export * from "./navigation";
 export * from "./timetable/time";
 export * from "./timetable/schedule";
+export * from "./timetable/planner";
 export * from "./qr/checkpoint";
 export * from "./map/validate";
 export * from "./map/viewport";

@@ -21,6 +21,8 @@ import { MapSearch } from "./MapSearch";
 import { mapLabels } from "./MapLabels";
 import { FACILITIES } from "./Blocks";
 import { LectureCard } from "./LectureCard";
+import { LeaveBy } from "./LeaveBy";
+import { ShareButton } from "./ShareButton";
 import { nodeName } from "./LocationPicker";
 import { Icon } from "./Icon";
 import { I } from "./icons";
@@ -344,8 +346,17 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
           <div>
             <div className="label-caps mb-2">{cn.current ? t("home.currentLecture") : t("home.nextLecture")}</div>
             <LectureCard bundle={bundle} occ={(cn.current ?? cn.next)!} emphasis showDate={!cn.current} />
+            {!cn.current && cn.next ? <LeaveBy bundle={bundle} occ={cn.next} /> : null}
           </div>
         ) : null}
+        <div className="grid grid-cols-2 gap-2">
+          <ButtonLink href="/free-rooms" className="!min-h-10">
+            <Icon d={I.hall} className="size-4 text-accent" /> {t("free.homeLink")}
+          </ButtonLink>
+          {start ? (
+            <ShareButton path={`/navigate?to=${encodeURIComponent(`node:${start.nodeId}`)}`} label={t("share.myLocation")} title={t("share.myLocationHint")} className="!min-h-10" />
+          ) : null}
+        </div>
         {recent.length || savedRooms.length ? (
           <div>
             <div className="label-caps mb-1">{recent.length ? t("home.recent") : t("home.savedPlaces")}</div>

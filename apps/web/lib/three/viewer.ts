@@ -30,6 +30,8 @@ export interface SceneContent {
   labels: LabelSpec[];
   /** Default framing for "overview". */
   bounds: THREE.Box3;
+  /** Route points in walking order (building scenes with a route). */
+  routePath?: THREE.Vector3[];
   /** Called when the viewer is done with this content. */
   dispose?: () => void;
 }
@@ -60,6 +62,7 @@ export class Viewer {
   private raycaster = new THREE.Raycaster();
   private disposed = false;
   private insets = { start: 0, bottom: 0, rtl: false };
+  private walk: { pts: THREE.Vector3[]; cum: number[]; total: number; t0: number; ms: number; dot: THREE.Mesh; halo: THREE.Mesh; onEnd: () => void } | null = null;
 
   constructor(
     private readonly container: HTMLElement,
@@ -97,7 +100,10 @@ export class Viewer {
     container.appendChild(this.labelLayer);
 
     const el = this.renderer.domElement;
-    el.addEventListener("pointerdown", (e) => (this.down = { x: e.clientX, y: e.clientY }));
+    el.addEventListener("pointerdown", (e) => {
+      this.down = { x: e.clientX, y: e.clientY };
+      if (this.walk) this.stopPath(); // the user takes the camera back
+    });
     el.addEventListener("pointerup", (e) => {
       if (!this.down || Math.hypot(e.clientX - this.down.x, e.clientY - this.down.y) > 6) return;
       this.down = null;
@@ -188,6 +194,75 @@ export class Viewer {
     this.requestRender();
   }
 
+  /**
+   * Fly-through: a walker moves along the route at a steady pace while the
+   * camera glides after it, keeping the user's chosen angle. Duration scales
+   * with route length (5–16 s) so long routes don't crawl or short ones flash.
+   */
+  playPath(points: THREE.Vector3[], onEnd: () => void) {
+    this.stopPath();
+    if (points.length < 2) return onEnd();
+    const cum = [0];
+    for (let i = 1; i < points.length; i++) cum.push(cum[i - 1]! + points[i]!.distanceTo(points[i - 1]!));
+    const total = cum.at(-1)!;
+    if (!total) return onEnd();
+    const color = cssColor("--cn-accent", "#1D4ED8");
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(1.1, 24, 16), new THREE.MeshBasicMaterial({ color }));
+    const halo = new THREE.Mesh(new THREE.RingGeometry(1.7, 2.5, 40), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, side: THREE.DoubleSide }));
+    halo.rotation.x = -Math.PI / 2;
+    dot.add(halo);
+    dot.position.copy(points[0]!);
+    this.scene.add(dot);
+    this.anim = null;
+    this.walk = { pts: points, cum, total, t0: performance.now(), ms: THREE.MathUtils.clamp(total * 90, 5000, 16000), dot, halo, onEnd };
+    this.requestRender();
+  }
+
+  stopPath() {
+    const w = this.walk;
+    if (!w) return;
+    this.walk = null;
+    this.scene.remove(w.dot);
+    w.dot.geometry.dispose();
+    (w.dot.material as THREE.Material).dispose();
+    w.halo.geometry.dispose();
+    (w.halo.material as THREE.Material).dispose();
+    w.onEnd();
+    this.requestRender();
+  }
+
+  get playing() {
+    return !!this.walk;
+  }
+
+  private stepWalk(now: number): boolean {
+    const w = this.walk!;
+    const k = Math.min(1, (now - w.t0) / w.ms);
+    const ease = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const d = ease * w.total;
+    let i = 1;
+    while (i < w.cum.length - 1 && w.cum[i]! < d) i++;
+    const seg = w.cum[i]! - w.cum[i - 1]! || 1;
+    const p = new THREE.Vector3().lerpVectors(w.pts[i - 1]!, w.pts[i]!, (d - w.cum[i - 1]!) / seg);
+    w.dot.position.copy(p).add(new THREE.Vector3(0, 0.8, 0));
+    const pulse = 1 + 0.25 * Math.sin(now / 160);
+    w.halo.scale.set(pulse, pulse, pulse);
+    // Glide the camera: move target toward the walker and carry the camera with it.
+    const delta = p.clone().sub(this.controls.target).multiplyScalar(0.08);
+    this.controls.target.add(delta);
+    this.camera.position.add(delta);
+    // Ease in to a walking-scale view (keeps the user's angle).
+    const off = this.camera.position.clone().sub(this.controls.target);
+    const want = THREE.MathUtils.clamp(off.length(), 22, 38);
+    off.setLength(off.length() + (want - off.length()) * 0.05);
+    this.camera.position.copy(this.controls.target).add(off);
+    if (k >= 1) {
+      this.stopPath();
+      return false;
+    }
+    return true;
+  }
+
   zoom(factor: number) {
     const dir = this.camera.position.clone().sub(this.controls.target);
     const len = THREE.MathUtils.clamp(dir.length() * factor, this.controls.minDistance, this.controls.maxDistance);
@@ -222,6 +297,7 @@ export class Viewer {
       if (k >= 1) this.anim = null;
       else more = true;
     }
+    if (this.walk && this.stepWalk(performance.now())) more = true;
     if (this.controls.update()) more = true; // damping still moving
     this.renderer.render(this.scene, this.camera);
     this.placeLabels();
@@ -281,6 +357,7 @@ export class Viewer {
   }
 
   dispose() {
+    this.walk = null;
     this.disposed = true;
     cancelAnimationFrame(this.raf);
     this.resizeObs.disconnect();

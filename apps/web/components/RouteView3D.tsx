@@ -39,7 +39,7 @@ export function RouteView3D({ bundle, route, buildingId, onUnavailable }: { bund
       focusKey={buildingId}
       onPick={() => undefined}
       onUnavailable={onUnavailable}
-      labels={{ zoomIn: t("map.zoomIn"), zoomOut: t("map.zoomOut"), rotate: t("explore.rotate"), reset: t("map.reset"), canvas: t("explore.canvas") }}
+      labels={{ zoomIn: t("map.zoomIn"), zoomOut: t("map.zoomOut"), rotate: t("explore.rotate"), reset: t("map.reset"), canvas: t("explore.canvas"), play: t("explore.playRoute"), stop: t("explore.stopRoute") }}
     />
   );
 }
