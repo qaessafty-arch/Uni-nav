@@ -1,0 +1,256 @@
+
+===== Cover / بەرگ =====
+[0.01] NULL-TECH · CAMPUS NAV
+[0.02] SUL NAV Campus navigation for Salahaddin University-Erbil
+[0.03] A proposal to give every student, lecturer and visitor a simple way to find any building, room or office — on their phone, in Kurdish, Arabic or English, and even without internet.
+[0.04] Prepared for Presidency, Salahaddin University-Erbil
+[0.05] Prepared by NULL-TECH (project owner)
+[0.06] Status Working prototype · pilot proposal · November 2026
+
+===== 1 · Summary / پوختە =====
+[1.01] 1 · Summary
+[1.02] What we are asking for, in one page
+[1.03] New students, visitors and even staff lose time every day looking for lecture halls, offices and services. SUL NAV is a campus navigation app that shows where things are and how to walk there, step by step, indoors and across floors.
+[1.04] Find Search any room, lecturer office, department or building in Kurdish, Arabic or English.
+[1.05] Walk there Turn-by-turn directions, including stairs, elevators and step-free routes.
+[1.06] Stay informed Timetable, room changes, closures and announcements in one place.
+[1.07] Where the project is today
+[1.08] The software is built and tested: student web app (works on any phone, installable, offline), staff administration dashboard, secure database design, 2D/3D maps, real-world map, QR checkpoints, timetable and three languages. Automated tests cover the routes, security rules and the main user journeys.
+[1.09] It currently runs on fictional demonstration data. No Salahaddin University buildings, rooms or timetables have been entered, because that must be done with the university's official information and permission.
+[1.10] It has not yet been used by real students or tested at full university scale. This proposal includes the plan to do that safely.
+[1.11] What we need from the university
+[1.12] Official approval and one coordinator from the university who can open doors to the right offices.
+[1.13] Campus information: official building and room lists, floor plans, and confirmation of building locations.
+[1.14] Permission to put small QR signs at entrances and stairwells, and a short field survey to check every route.
+[1.15] IT support: an official web address (for example nav.su.edu.krd ) and agreement on hosting and data policy.
+[1.16] Proposed next step
+[1.17] A pilot in one building (chosen by the university), then the whole campus once the pilot is approved. Section 5 shows the steps; section 9 lists the decisions we ask the university to make.
+
+===== 2 · What students and staff get =====
+[2.01] 2 · What students and staff get
+[2.02] A map-first app that works on every phone
+[2.03] Find a room and see it on its floor.
+[2.04] Directions with route options.
+[2.05] For students and visitors
+[2.06] Search rooms, lecturers' offices, departments and buildings — Kurdish (Sorani), Arabic and English, including Kurdish/Arabic digits.
+[2.07] Real campus map (OpenStreetMap) with building outlines, plus 3D building view with floors and rooms.
+[2.08] Directions through corridors, stairs and elevators. Choose Shortest , Fewer stairs or Step-free .
+[2.09] "Where am I?" by scanning a QR sign on the wall, choosing a place, or tapping the floor plan. No GPS tracking.
+[2.10] Nearest toilets, prayer room, cafeteria, library, by real walking distance.
+[2.11] Timetable by student group, with room changes and cancellations.
+[2.12] Works offline after the first visit — important in basements and busy Wi-Fi times.
+[2.13] Report a problem (wrong room, locked door) in two taps; no name needed.
+[2.14] For the university
+[2.15] A staff dashboard to keep buildings, rooms, maps, timetables and announcements up to date.
+[2.16] Temporary closures (works, exams, broken elevator) that routes avoid automatically.
+[2.17] Verification : only data the team checked on site is shown as "Verified".
+
+===== 3 · How it works =====
+[3.01] 3 · How it works
+[3.02] Simple for students, controlled by the university
+[3.03] University staff
+[3.04] Admin dashboard
+[3.05] Secure database
+[3.06] roles · audit log
+[3.07] Campus data file
+[3.08] cached worldwide (CDN)
+[3.09] Student phones
+[3.10] search · route · offline
+[3.11] QR signs on walls
+[3.12] "you are here"
+[3.13] Maps and directions
+[3.14] Outdoors: the real map (OpenStreetMap). Staff trace each building's outline on it, so position and scale are true to life.
+[3.15] Indoors: each floor plan becomes a network of corridors, doors, stairs and elevators. The app finds the shortest valid path through that network.
+[3.16] Floor plans are scaled from a measured distance (the dashboard has a calibration tool), so distances and walking times are realistic.
+[3.17] Walking time is always shown as an estimate .
+[3.18] Knowing where you are
+[3.19] GPS does not work reliably inside concrete buildings, so the app uses QR signs : scan the sign at an entrance or stairwell and the route starts there.
+[3.20] Students can also pick a place from a list or tap the floor plan.
+[3.21] The app does not track students and does not need their location permission.
+[3.22] Keeping data correct
+[3.23] Every change by staff is recorded (who, what, when).
+[3.24] Students report mistakes; staff fix them and mark them resolved.
+[3.25] A verification page shows which buildings are complete and checked.
+
+===== 4 · What the university needs to provide =====
+[4.01] 4 · What the university needs to provide
+[4.02] Information and help we need to install the data
+[4.03] "Essential" items are needed before the pilot. Formats are flexible — paper plans can be scanned; Excel lists are fine.
+[4.04] Item
+[4.05] Why it is needed
+[4.06] Who can usually provide it
+[4.07] Priority
+[4.08] Official approval and a named coordinator
+[4.09] To use university names and data, and to reach the right offices quickly.
+[4.10] Presidency
+[4.11] Essential
+[4.12] List of buildings with official codes and names (Kurdish, Arabic, English)
+[4.13] What students search for must match the signs on the buildings.
+[4.14] Planning / Engineering office
+[4.15] Essential
+[4.16] Floor plans for each building (CAD, PDF or paper)
+[4.17] The basis for indoor maps and routes. The biggest piece of work.
+[4.18] Engineering / Projects department
+[4.19] Essential
+[4.20] Room lists : number, name, type, department, capacity
+[4.21] Search results and the timetable link to rooms.
+[4.22] Colleges / Registration
+[4.23] Essential
+[4.24] Confirmation of building locations on the map, and the campus boundary/gates
+[4.25] So buildings appear at their true place. We trace outlines over OpenStreetMap; the university confirms.
+[4.26] Planning office
+[4.27] Essential
+[4.28] Permission to install QR signs at entrances, stairwells and junctions
+[4.29] Lets students start a route from where they stand.
+[4.30] Services / Facilities
+[4.31] Essential
+[4.32] Staff time for a field check (walk each route once)
+[4.33] To confirm that doors, stairs and routes on the map match reality.
+[4.34] Coordinator + 1–2 helpers
+[4.35] Essential
+[4.36] Restricted areas and opening hours (labs, offices, women-only areas, gates)
+[4.37] Routes must never send people through closed areas.
+[4.38] Security / Facilities
+[4.39] Essential
+[4.40] Accessibility information : elevators, ramps, step-free entrances
+[4.41] For correct step-free routes. Ideally tested with students who use wheelchairs.
+[4.42] Facilities / Student affairs
+[4.43] Important
+[4.44] Timetable export (Excel/CSV) and update schedule
+[4.45] "Where is my next lecture?" and room-change notices.
+[4.46] Registration / Colleges
+[4.47] Important
+[4.48] Lecturer public information (name, office, office hours) with consent
+[4.49] Finding a lecturer's office. Only approved, public information.
+[4.50] Colleges / HR
+[4.51] Optional
+[4.52] Official web address and IT contact; hosting/data policy
+[4.53] Trust, and QR signs printed with a permanent address.
+[4.54] IT department
+[4.55] Essential
+[4.56] Data owner per college after launch
+[4.57] Someone must update rooms and closures when things change.
+[4.58] Each college
+[4.59] Important
+[4.60] We will not publish any university information that has not been provided or approved by the university, and anything not yet checked on site is clearly labelled in the app.
+
+===== 5 · How the data gets installed =====
+[5.01] 5 · How the data gets installed
+[5.02] From approval to the whole campus
+[5.03] Step 1 Set up Approval, coordinator, web address, staff accounts.
+[5.04] Step 2 Pilot building Enter one building fully and place QR signs.
+[5.05] Step 3 Field check Walk every route; students try it; fix reports.
+[5.06] Step 4 Whole campus Repeat building by building; launch.
+[5.07] Setup. The university appoints a coordinator and approves the project. IT provides the web address. We create staff accounts with the right permissions (e.g. college editors can edit only their own rooms).
+[5.08] Place the campus on the real map. We confirm the campus location and trace each building's outline over the map, then the planning office checks them.
+[5.09] Pilot building. We draw its floor plans in the dashboard (or import from CAD), calibrate the scale with a tape-measured distance, add rooms, doors, stairs and elevators, and print QR signs.
+[5.10] Field check. Two people walk every route with the app, write down problems and fix them. Only then is the building marked "Verified".
+[5.11] Student test. A small group of students uses the app for one or two weeks and sends feedback through "Report a problem".
+[5.12] Campus roll-out. Repeat for every building, college by college. Timetables are imported each semester.
+[5.13] Maintenance. Each college keeps its data current; closures and announcements are posted by staff; reports are reviewed weekly.
+[5.14] Time
+[5.15] The time depends mostly on floor-plan availability and the number of buildings. As a planning guide (to be confirmed after the pilot): setup and the pilot building take a few weeks; each further building takes days to a few weeks depending on size and plan quality. We will give a firm schedule once we know the number of buildings and the plan formats.
+[5.16] Staff dashboard — verification shows what is still missing before a building can be marked "Verified". (Demonstration data.)
+
+===== 6 · Serving all students =====
+[6.01] 6 · Serving all students
+[6.02] Built so that thousands of students can use it at the same time
+[6.03] The busiest moment is predictable: the start of the semester and the minutes before morning lectures. The design keeps that load away from the database.
+[6.04] How the load is handled
+[6.05] One small data file per university. When a student opens the app, the phone downloads the campus data once. Search and route calculation then run on the phone itself — no server work per search or per route.
+[6.06] Served from a CDN. That file and the app itself are cached by a content-delivery network close to the user. The database is asked at most about once every few minutes per university, no matter how many students open the app.
+[6.07] Offline after first use. Returning students load from their phone's storage; the app updates in the background.
+[6.08] No student accounts needed for normal use — nothing to sign in to, nothing to overload.
+[6.09] Only staff edits and problem reports reach the database, and both are protected and rate-limited.
+[6.10] Measured so far (lab tests)
+[6.11] Route calculation on a building-sized map: well under a millisecond; a synthetic map with 14,400 points: about 29 ms.
+[6.12] App start on a slow mobile connection (simulated): about 2 seconds the first time, a fraction of a second afterwards.
+[6.13] Before launch we will
+[6.14] Run a load test that simulates the expected peak (number of students to be agreed with the university) against the real setup.
+[6.15] Test on ordinary Android phones over campus Wi-Fi.
+[6.16] Set up uptime and error monitoring with alerts.
+[6.17] These are laboratory measurements on test data, not results from real campus use.
+[6.18] Hosting options
+[6.19] Part
+[6.20] Proposed
+[6.21] Alternative if the university requires local hosting
+[6.22] Student app and campus data file
+[6.23] Global CDN hosting (e.g. Vercel / Cloudflare)
+[6.24] University web server behind a CDN
+[6.25] Database and staff login
+[6.26] Managed PostgreSQL (Supabase) in a nearby region
+[6.27] Self-hosted Supabase / PostgreSQL on university servers
+[6.28] Map background
+[6.29] OpenFreeMap (free OpenStreetMap tiles)
+[6.30] Self-hosted map tiles for the Erbil area
+[6.31] Costs depend on the chosen option and usage and will be quoted separately; the free tiers are usually enough for a pilot.
+
+===== 7 · Privacy and security =====
+[7.01] 7 · Privacy and security
+[7.02] Safe for students, controlled for staff
+[7.03] Students
+[7.04] No account, no tracking, no advertising, no analytics by default.
+[7.05] No GPS or location permission. Position is only what the student chooses (QR sign or a place on the map), and it stays on their phone.
+[7.06] Saved places and history stay on the student's own phone; history is off by default.
+[7.07] Problem reports contain no name or contact details.
+[7.08] Lecturers
+[7.09] Only approved public information (name, office, office hours) is shown, with consent.
+[7.10] Staff and data
+[7.11] Staff sign in; roles decide who can change what (e.g. a college editor cannot change another college's rooms).
+[7.12] The database enforces these rules itself, so they cannot be bypassed from the app.
+[7.13] Every change is recorded in an audit log.
+[7.14] Sensitive areas (server rooms, hazardous labs) can be kept off public maps — the university decides what is public.
+[7.15] Security headers, rate limiting and safe handling of uploaded plans are in place and tested.
+[7.16] Students can report a wrong room or a locked door without giving any personal information.
+
+===== 8 · Honest status =====
+[8.01] 8 · Honest status
+[8.02] What is ready, and what still depends on the pilot
+[8.03] Area
+[8.04] Status
+[8.05] Notes
+[8.06] Student web app (search, maps, directions, timetable, offline, 3 languages)
+[8.07] Built & tested
+[8.08] Automated tests; demonstration data only.
+[8.09] Staff dashboard (data entry, map editor, real-map outlines, QR, closures, reports, verification)
+[8.10] Built & tested
+[8.11] Tested in a local sandbox.
+[8.12] Database security rules
+[8.13] Built & tested
+[8.14] Tested on PostgreSQL; not yet on the production database service.
+[8.15] Salahaddin University data
+[8.16] Not started
+[8.17] Needs the items in section 4.
+[8.18] Accuracy of routes on the real campus
+[8.19] Not yet proven
+[8.20] Will be measured in the field check; we make no accuracy claims before that.
+[8.21] Full-scale load test
+[8.22] Planned
+[8.23] Before launch, with the expected student numbers.
+[8.24] Native phone app (Android / iOS)
+[8.25] Prototype
+[8.26] The web app already works on all phones; store apps can follow.
+[8.27] GPS "blue dot" outdoors, live tracking
+[8.28] Not included
+[8.29] Possible later if the university wants it.
+[8.30] "Nearest" list ordered by real walking distance from the student's position. (Demonstration data.)
+
+===== 9 · Decisions requested =====
+[9.01] 9 · Decisions requested
+[9.02] What we ask the university to decide
+[9.03] Approve a SUL NAV pilot and name a coordinator.
+[9.04] Choose the pilot building (ideally a busy teaching building with several floors).
+[9.05] Share the building list, the pilot building's floor plans and room list.
+[9.06] Allow QR signs in the pilot building and one field-check day.
+[9.07] IT: provide the official web address and confirm the hosting option (section 6).
+[9.08] Agree who maintains the data after launch, and which areas must stay off the public map.
+[9.09] What the university gets: a multilingual campus guide for every student and visitor, aimed at reducing time lost looking for rooms and offices; one place for room changes, closures and announcements; and a maintained digital record of the campus layout.
+[9.10] Contact
+[9.11] NULL-TECH — project owner of SUL NAV. Contact details: to be added by the project owner .
+[9.12] For Salahaddin University-Erbil — name, position, date
+[9.13] For NULL-TECH — name, date
+[9.14] All screenshots in this document show fictional demonstration data, not Salahaddin University information. Map background: © OpenStreetMap contributors.
+
+===== Page footer / پێپەڕە (on every page) =====
+[10.01] SUL NAV — Campus navigation proposal · NULL-TECH
+[10.02] Page X of Y
