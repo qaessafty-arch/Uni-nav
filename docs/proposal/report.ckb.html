@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<title>SUL NAV — پێشنیاری ڕێنیشاندەری کەمپەس بۆ زانکۆی سەڵاحەددین-هەولێر</title>
+<style>
+  @font-face { font-family: "Noto Sans Arabic"; font-weight: 400; src: url("fonts/noto-sans-arabic-arabic-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Noto Sans Arabic"; font-weight: 600; src: url("fonts/noto-sans-arabic-arabic-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Noto Sans Arabic"; font-weight: 700; src: url("fonts/noto-sans-arabic-arabic-700-normal.woff2") format("woff2"); }
+  @page { size: A4; margin: 18mm 16mm 20mm 16mm; }
+  :root { --ink: #111827; --muted: #4B5563; --faint: #6B7280; --line: #E2E5EA; --soft: #F3F5F8; --blue: #1D4ED8; --blue-soft: #EAF0FD; --amber: #B45309; --amber-soft: #FDF3E6; --green: #047857; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: "Noto Sans Arabic", "Inter", system-ui, sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.75; margin: 0; }
+  .ltr { direction: ltr; unicode-bidi: isolate; font-family: "Inter", system-ui, sans-serif; }
+  h1, h2, h3 { line-height: 1.35; margin: 0; font-weight: 700; }
+  h2 { font-size: 16.5pt; margin: 0 0 4mm; }
+  h3 { font-size: 11.5pt; margin: 4.5mm 0 1.5mm; }
+  p { margin: 0 0 3mm; }
+  ul, ol { margin: 0 0 3mm; padding-inline-start: 5mm; }
+  li { margin-bottom: 1mm; }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .eyebrow { color: var(--blue); font-weight: 700; font-size: 9.5pt; margin-bottom: 1.5mm; }
+  .muted { color: var(--muted); }
+  .small { font-size: 9pt; }
+  .cover { height: 255mm; display: flex; flex-direction: column; }
+  .cover .brand { display: flex; align-items: center; gap: 3mm; font-weight: 700; letter-spacing: 0.06em; font-size: 10pt; direction: ltr; justify-content: flex-end; font-family: "Inter", system-ui, sans-serif; }
+  .logo { width: 9mm; height: 9mm; border: 0.7mm solid var(--ink); position: relative; }
+  .logo::before { content: ""; position: absolute; left: 2mm; top: 2mm; width: 3mm; height: 3.4mm; border-left: 0.9mm solid var(--blue); border-top: 0.9mm solid var(--blue); }
+  .logo::after { content: ""; position: absolute; right: 1.5mm; bottom: 1.5mm; width: 1.4mm; height: 1.4mm; background: var(--blue); }
+  .cover h1 { font-size: 26pt; margin-top: 34mm; line-height: 1.45; }
+  .cover .lead { font-size: 12.5pt; color: var(--muted); margin-top: 5mm; max-width: 155mm; }
+  .cover .meta { margin-top: auto; border-top: 1px solid var(--line); padding-top: 5mm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; font-size: 9.5pt; }
+  .cover .meta b { display: block; color: var(--faint); font-weight: 600; font-size: 8.5pt; margin-bottom: 1mm; }
+  .shot-hero { margin-top: 10mm; border: 1px solid var(--line); border-radius: 3mm; overflow: hidden; box-shadow: 0 2mm 6mm rgba(16,24,40,.08); }
+  .shot-hero img { display: block; width: 100%; }
+  .box { border: 1px solid var(--line); border-radius: 2.5mm; padding: 3.5mm 5mm; margin: 0 0 4mm; background: #fff; }
+  .box.blue { background: var(--blue-soft); border-color: #C9D7FA; }
+  .box.amber { background: var(--amber-soft); border-color: #F2D9B8; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+  .kpi { border: 1px solid var(--line); border-radius: 2.5mm; padding: 3mm 4mm; }
+  .kpi b { display: block; font-size: 12pt; }
+  .kpi span { color: var(--muted); font-size: 9pt; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.6pt; margin: 2mm 0 3mm; }
+  th { text-align: right; font-weight: 600; color: var(--faint); font-size: 8.5pt; border-bottom: 1.2px solid var(--ink); padding: 1.5mm 0 1.5mm 2mm; }
+  td { border-bottom: 1px solid var(--line); padding: 1.1mm 0 1.1mm 2mm; vertical-align: top; line-height: 1.45; }
+  tr { page-break-inside: avoid; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 600; padding: 0 2mm; border-radius: 10mm; background: var(--soft); color: var(--muted); white-space: nowrap; }
+  .tag.req { background: var(--blue-soft); color: var(--blue); }
+  .tag.ok { background: #E6F4EF; color: var(--green); }
+  .tag.warn { background: var(--amber-soft); color: var(--amber); }
+  figure { margin: 0 0 4mm; }
+  figure img { width: 100%; border: 1px solid var(--line); border-radius: 2mm; display: block; }
+  section > figure img { max-height: 82mm; object-fit: cover; object-position: top left; }
+  section > figure.short img { max-height: 42mm; }
+  figcaption { color: var(--faint); font-size: 8.5pt; margin-top: 1.5mm; }
+  .phones { display: grid; grid-template-columns: 0.9fr 0.9fr 1.6fr; gap: 5mm; align-items: start; font-size: 9.8pt; line-height: 1.65; }
+  .phones li { margin-bottom: 0.6mm; }
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin: 2mm 0 4mm; }
+  .flow div { border: 1px solid var(--line); border-radius: 2mm; padding: 2.5mm 3mm; font-size: 9pt; background: #fff; line-height: 1.6; }
+  .flow div b { display: block; font-size: 9.5pt; }
+  .flow .n { color: var(--blue); font-weight: 700; font-size: 8.5pt; }
+  .steps { counter-reset: s; list-style: none; padding: 0; }
+  .steps > li { counter-increment: s; position: relative; padding-inline-start: 9mm; margin-bottom: 2.2mm; }
+  .steps > li::before { content: counter(s, arabic-indic); position: absolute; inset-inline-start: 0; top: 0.6mm; width: 6mm; height: 6mm; border-radius: 50%; background: var(--blue); color: #fff; font-size: 9pt; font-weight: 700; display: grid; place-items: center; line-height: 1; }
+  .diagram { width: 100%; height: auto; margin: 2mm 0 3mm; }
+  .tight { font-size: 9.6pt; line-height: 1.6; }
+  .sign { margin-top: 8mm; display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; font-size: 9pt; }
+  .sign div { border-top: 1px solid var(--ink); padding-top: 2mm; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ───────────── بەرگ ───────────── -->
+<section class="page cover">
+  <div class="brand">NULL-TECH · CAMPUS NAV <span class="logo"></span></div>
+  <h1><span class="ltr">SUL NAV</span><br />ڕێنیشاندەری کەمپەس بۆ<br />زانکۆی سەڵاحەددین-هەولێر</h1>
+  <p class="lead">پێشنیارێک بۆ ئەوەی هەموو خوێندکار، مامۆستا و میوانێک بە ئاسانی هەر بینا، ژوور یان نووسینگەیەک بدۆزێتەوە — لەسەر مۆبایلەکەی، بە کوردی، عەرەبی یان ئینگلیزی، تەنانەت بێ ئینتەرنێتیش.</p>
+  <div class="shot-hero"><img src="img/room.png" alt="" /></div>
+  <div class="meta">
+    <div><b>ئامادەکراوە بۆ</b>سەرۆکایەتیی زانکۆی سەڵاحەددین-هەولێر</div>
+    <div><b>ئامادەکراوە لەلایەن</b><span class="ltr">NULL-TECH</span> (خاوەنی پرۆژە)</div>
+    <div><b>دۆخ</b>نموونەی کارا · پێشنیاری تاقیکردنەوەی سەرەتایی · تشرینی دووەمی ٢٠٢٦</div>
+  </div>
+</section>
+
+<!-- ───────────── ١. پوختە ───────────── -->
+<section class="page">
+  <div class="eyebrow">١ · پوختە</div>
+  <h2>ئەوەی داوای دەکەین، لە یەک پەڕەدا</h2>
+  <p>خوێندکارە نوێیەکان، میوانان و تەنانەت فەرمانبەرانیش ڕۆژانە کات بەفیڕۆ دەدەن بۆ دۆزینەوەی هۆڵی وانە، نووسینگە و خزمەتگوزارییەکان. <b class="ltr">SUL NAV</b> ئەپێکی ڕێنیشاندەری کەمپەسە کە پیشان دەدات شتەکان لە کوێن و چۆن هەنگاو بە هەنگاو بە پێ بگەیتە ئەوێ، لە ناو بیناکان و لە نێوان نهۆمەکاندا.</p>
+  <div class="grid3">
+    <div class="kpi"><b>بدۆزەرەوە</b><span>گەڕان بۆ هەر ژوور، نووسینگەی مامۆستا، بەش یان بینایەک بە کوردی، عەرەبی یان ئینگلیزی.</span></div>
+    <div class="kpi"><b>بڕۆ بۆ ئەوێ</b><span>ڕێنمایی هەنگاو بە هەنگاو، لەگەڵ پەیژە، بەرزکەرەوە و ڕێگای بێ پەیژە.</span></div>
+    <div class="kpi"><b>ئاگادار بە</b><span>خشتەی وانەکان، گۆڕینی ژوور، داخستنەکان و ڕاگەیاندنەکان لە یەک شوێندا.</span></div>
+  </div>
+  <h3>پرۆژەکە ئێستا لە چ قۆناغێکدایە</h3>
+  <div class="box">
+    <ul>
+      <li><b>نەرمەکاڵاکە دروستکراوە و تاقیکراوەتەوە:</b> ئەپی وێبی خوێندکار (لەسەر هەموو مۆبایلێک کار دەکات، دادەمەزرێت، بێ ئینتەرنێت)، داشبۆردی بەڕێوەبردنی فەرمانبەران، دیزاینی بنکەدراوەی پارێزراو، نەخشەی 2D/3D، نەخشەی ڕاستەقینە، خاڵی پشکنینی QR، خشتەی وانە و سێ زمان. تاقیکردنەوەی خۆکار ڕێگاکان، یاساکانی ئاسایش و گەشتە سەرەکییەکانی بەکارهێنەر دەگرێتەوە.</li>
+      <li><b>ئێستا لەسەر داتای نموونەی خەیاڵی کار دەکات.</b> هیچ بینا، ژوور یان خشتەیەکی زانکۆی سەڵاحەددین تێنەکراوە، چونکە ئەوە دەبێت بە زانیاری فەرمی و ڕەزامەندیی زانکۆ ئەنجام بدرێت.</li>
+      <li><b>هێشتا لەلایەن خوێندکارانی ڕاستەقینەوە بەکارنەهاتووە و بە قەبارەی تەواوی زانکۆ تاقی نەکراوەتەوە.</b> ئەم پێشنیارە پلانی ئەنجامدانی ئەوە بە سەلامەتی لەخۆ دەگرێت.</li>
+    </ul>
+  </div>
+  <h3>ئەوەی لە زانکۆ پێویستمانە</h3>
+  <div class="box blue">
+    <ol>
+      <li><b>ڕەزامەندیی فەرمی</b> و یەک <b>هەماهەنگکار</b> لە زانکۆ کە بتوانێت دەرگای نووسینگە پەیوەندیدارەکان بکاتەوە.</li>
+      <li><b>زانیاریی کەمپەس:</b> لیستی فەرمیی بینا و ژوورەکان، نەخشەی نهۆمەکان، و پشتڕاستکردنەوەی شوێنی بیناکان.</li>
+      <li><b>مۆڵەت</b> بۆ دانانی نیشانەی بچووکی QR لە دەروازە و پەیژەکان، و پشکنینێکی کورتی مەیدانی بۆ هەموو ڕێگاکان.</li>
+      <li><b>پشتگیریی تەکنەلۆجیای زانیاری:</b> ناونیشانێکی وێبی فەرمی (بۆ نموونە <span class="ltr">nav.su.edu.krd</span>) و ڕێککەوتن لەسەر شێوازی هۆستکردن و سیاسەتی داتا.</li>
+    </ol>
+  </div>
+  <h3>هەنگاوی داهاتووی پێشنیارکراو</h3>
+  <p><b>تاقیکردنەوەی سەرەتایی لە یەک بینادا</b> (کە زانکۆ هەڵیدەبژێرێت)، پاشان هەموو کەمپەس دوای پەسەندکردنی تاقیکردنەوەکە. بەشی ٥ هەنگاوەکان پیشان دەدات؛ بەشی ٩ ئەو بڕیارانە ڕیز دەکات کە داوا لە زانکۆ دەکەین.</p>
+</section>
+
+<!-- ───────────── ٢. سوودەکان ───────────── -->
+<section class="page">
+  <div class="eyebrow">٢ · خوێندکاران و فەرمانبەران چی وەردەگرن</div>
+  <h2>ئەپێکی نەخشە-تەوەر کە لەسەر هەموو مۆبایلێک کار دەکات</h2>
+  <div class="phones">
+    <figure><img src="img/m-room.png" alt="" /><figcaption>ژوورێک بدۆزەرەوە و لەسەر نهۆمەکەی ببینە.</figcaption></figure>
+    <figure><img src="img/m-nav.png" alt="" /><figcaption>ڕێنمایی لەگەڵ هەڵبژاردەی جۆری ڕێگا.</figcaption></figure>
+    <div>
+      <h3 style="margin-top:0">بۆ خوێندکاران و میوانان</h3>
+      <ul>
+        <li><b>گەڕان</b> بۆ ژوور، نووسینگەی مامۆستا، بەش و بینا — بە کوردیی سۆرانی، عەرەبی و ئینگلیزی، بە ژمارەی کوردی/عەرەبیشەوە.</li>
+        <li><b>نەخشەی ڕاستەقینەی کەمپەس</b> (<span class="ltr">OpenStreetMap</span>) لەگەڵ سنووری بیناکان، و <b>بینینی بینا بە 3D</b> لەگەڵ نهۆم و ژوورەکان.</li>
+        <li><b>ڕێنمایی</b> بە ناو ڕاڕەو، پەیژە و بەرزکەرەوەدا. هەڵبژاردن لە نێوان <i>کورتترین</i>، <i>پەیژەی کەمتر</i> یان <i>بێ پەیژە</i>.</li>
+        <li><b>«من لە کوێم؟»</b> بە سکانکردنی نیشانەیەکی QR لەسەر دیوار، هەڵبژاردنی شوێنێک، یان کرتەکردن لەسەر نەخشەی نهۆم. هیچ چاودێرییەکی <span class="ltr">GPS</span> نییە.</li>
+        <li><b>نزیکترین</b> ئاودەست، نوێژخانە، کافتریا و کتێبخانە، بەپێی دووریی ڕاستەقینەی ڕۆیشتن.</li>
+        <li><b>خشتەی وانە</b> بەپێی گرووپی خوێندکار، لەگەڵ گۆڕینی ژوور و هەڵوەشاندنەوەی وانە.</li>
+        <li><b>بێ ئینتەرنێت کار دەکات</b> دوای یەکەم سەردان — گرنگە لە ژێرزەمینەکان و کاتی قەرەباڵغیی وای‌فای.</li>
+        <li><b>ڕاپۆرتکردنی کێشە</b> (ژووری هەڵە، دەرگای داخراو) بە دوو کرتە؛ پێویست بە ناو ناکات.</li>
+      </ul>
+      <h3>بۆ زانکۆ</h3>
+      <ul>
+        <li><b>داشبۆردێکی فەرمانبەران</b> بۆ نوێکردنەوەی بینا، ژوور، نەخشە، خشتەی وانە و ڕاگەیاندنەکان.</li>
+        <li><b>داخستنی کاتی</b> (کارکردن، تاقیکردنەوە، بەرزکەرەوەی تێکچوو) کە ڕێگاکان خۆکارانە خۆیانی لێ لادەدەن.</li>
+        <li><b>پشتڕاستکردنەوە:</b> تەنها ئەو داتایەی تیمەکە لە شوێنی خۆیدا پشکنیویەتی وەک «پشتڕاستکراوە» پیشان دەدرێت.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────── ٣. چۆن کار دەکات ───────────── -->
+<section class="page">
+  <div class="eyebrow">٣ · چۆن کار دەکات</div>
+  <h2>ئاسان بۆ خوێندکاران، لە ژێر کۆنترۆڵی زانکۆدا</h2>
+  <svg class="diagram" viewBox="0 0 700 210" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans Arabic, sans-serif" font-size="13" direction="rtl">
+    <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1D4ED8"/></marker></defs>
+    <rect x="530" y="20" width="160" height="80" rx="8" fill="#EAF0FD" stroke="#C9D7FA"/>
+    <text x="610" y="52" text-anchor="middle" font-weight="700">فەرمانبەرانی زانکۆ</text>
+    <text x="610" y="74" text-anchor="middle" fill="#4B5563">داشبۆردی بەڕێوەبردن</text>
+    <rect x="270" y="20" width="160" height="80" rx="8" fill="#fff" stroke="#CBD1D9"/>
+    <text x="350" y="52" text-anchor="middle" font-weight="700">بنکەدراوەی پارێزراو</text>
+    <text x="350" y="74" text-anchor="middle" fill="#4B5563">ڕۆڵەکان · تۆماری گۆڕانکاری</text>
+    <rect x="10" y="20" width="160" height="80" rx="8" fill="#fff" stroke="#CBD1D9"/>
+    <text x="90" y="52" text-anchor="middle" font-weight="700">فایلی داتای کەمپەس</text>
+    <text x="90" y="74" text-anchor="middle" fill="#4B5563">لە سەرانسەری جیهان (CDN)</text>
+    <rect x="10" y="130" width="160" height="70" rx="8" fill="#fff" stroke="#CBD1D9"/>
+    <text x="90" y="160" text-anchor="middle" font-weight="700">مۆبایلی خوێندکاران</text>
+    <text x="90" y="182" text-anchor="middle" fill="#4B5563">گەڕان · ڕێگا · بێ ئینتەرنێت</text>
+    <rect x="270" y="130" width="160" height="70" rx="8" fill="#fff" stroke="#CBD1D9"/>
+    <text x="350" y="160" text-anchor="middle" font-weight="700">نیشانەی QR لەسەر دیوار</text>
+    <text x="350" y="182" text-anchor="middle" fill="#4B5563">«تۆ لێرەی»</text>
+    <line x1="530" y1="60" x2="434" y2="60" stroke="#1D4ED8" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="270" y1="60" x2="174" y2="60" stroke="#1D4ED8" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="90" y1="100" x2="90" y2="126" stroke="#1D4ED8" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="270" y1="165" x2="174" y2="165" stroke="#1D4ED8" stroke-width="2" marker-end="url(#a)"/>
+  </svg>
+  <div class="grid2">
+    <div>
+      <h3>نەخشە و ڕێنمایی</h3>
+      <ul>
+        <li><b>دەرەوە:</b> نەخشەی ڕاستەقینە (<span class="ltr">OpenStreetMap</span>). فەرمانبەران سنووری هەر بینایەک لەسەری دەکێشن، بۆیە شوێن و پێوەرەکەی وەک ڕاستییە.</li>
+        <li><b>ناوەوە:</b> نەخشەی هەر نهۆمێک دەبێتە تۆڕێک لە ڕاڕەو، دەرگا، پەیژە و بەرزکەرەوە. ئەپەکە کورتترین ڕێگای دروست بە ناو ئەو تۆڕەدا دەدۆزێتەوە.</li>
+        <li>نەخشەی نهۆمەکان <b>بە پێوانەیەکی ڕاستەقینە</b> ڕێک دەخرێن (داشبۆردەکە ئامرازی ڕێکخستنی پێوەری هەیە)، بۆیە دووری و کاتی ڕۆیشتن واقیعین.</li>
+        <li>کاتی ڕۆیشتن هەمیشە وەک <b>خەمڵاندن</b> پیشان دەدرێت.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>زانینی شوێنی خۆت</h3>
+      <ul>
+        <li><span class="ltr">GPS</span> لە ناو بینای کۆنکرێتیدا بە باشی کار ناکات، بۆیە ئەپەکە <b>نیشانەی QR</b> بەکاردەهێنێت: نیشانەکە لە دەروازە یان پەیژە سکان بکە و ڕێگاکە لەوێوە دەست پێدەکات.</li>
+        <li>خوێندکاران دەتوانن شوێنێکیش لە لیستێک هەڵبژێرن یان لەسەر نەخشەی نهۆم کرتە بکەن.</li>
+        <li>ئەپەکە <b>چاودێریی خوێندکاران ناکات</b> و پێویستی بە مۆڵەتی شوێن نییە.</li>
+      </ul>
+      <h3>دروست هێشتنەوەی داتا</h3>
+      <ul>
+        <li>هەموو گۆڕانکارییەکی فەرمانبەران تۆمار دەکرێت (کێ، چی، کەی).</li>
+        <li>خوێندکاران هەڵەکان ڕاپۆرت دەکەن؛ فەرمانبەران چاکیان دەکەن و وەک چارەسەرکراو نیشانیان دەکەن.</li>
+        <li>پەڕەیەکی پشتڕاستکردنەوە پیشان دەدات کام بینا تەواوە و پشکنراوە.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────── ٤. پێداویستییەکان ───────────── -->
+<section class="page">
+  <div class="eyebrow">٤ · ئەوەی زانکۆ دەبێت دابینی بکات</div>
+  <h2>زانیاری و یارمەتییەک کە بۆ تێکردنی داتا پێویستمانە</h2>
+  <p class="muted small">بڕگە «پێویست»ەکان پێش تاقیکردنەوەی سەرەتایی پێویستن. شێوازەکان نەرمن — نەخشەی کاغەزی دەتوانرێت سکان بکرێت؛ لیستی ئێکسڵ گونجاوە.</p>
+  <table>
+    <thead><tr><th style="width:27%">بڕگە</th><th style="width:38%">بۆچی پێویستە</th><th style="width:22%">کێ بەزۆری دەتوانێت دابینی بکات</th><th>گرنگی</th></tr></thead>
+    <tbody>
+      <tr><td><b>ڕەزامەندیی فەرمی</b> و ناوی <b>هەماهەنگکار</b></td><td>بۆ بەکارهێنانی ناو و داتای زانکۆ، و گەیشتنی خێرا بە نووسینگە پەیوەندیدارەکان.</td><td>سەرۆکایەتیی زانکۆ</td><td><span class="tag req">پێویست</span></td></tr>
+      <tr><td><b>لیستی بیناکان</b> لەگەڵ کۆد و ناوی فەرمی (کوردی، عەرەبی، ئینگلیزی)</td><td>ئەوەی خوێندکاران بۆی دەگەڕێن دەبێت لەگەڵ تابلۆی سەر بیناکان یەک بگرێتەوە.</td><td>نووسینگەی پلاندانان / ئەندازیاری</td><td><span class="tag req">پێویست</span></td></tr>
+      <tr><td><b>نەخشەی نهۆمەکان</b> بۆ هەر بینایەک (<span class="ltr">CAD</span>، <span class="ltr">PDF</span> یان کاغەز)</td><td>بنەمای نەخشە و ڕێگاکانی ناوەوەیە. گەورەترین بەشی کارەکەیە.</td><td>بەشی ئەندازیاری / پرۆژەکان</td><td><span class="tag req">پێویست</span></td></tr>
+      <tr><td><b>لیستی ژوورەکان</b>: ژمارە، ناو، جۆر، بەش، توانا</td><td>ئەنجامەکانی گەڕان و خشتەی وانە بە ژوورەکانەوە بەستراون.</td><td>کۆلێژەکان / تۆمارکردن</td><td><span class="tag req">پێویست</span></td></tr>
+      <tr><td><b>پشتڕاستکردنەوەی شوێنی بیناکان</b> لەسەر نەخشە، و سنووری کەمپەس/دەروازەکان</td><td>بۆ ئەوەی بیناکان لە شوێنی ڕاستەقینەی خۆیان دەربکەون. ئێمە سنوورەکان لەسەر <span class="ltr">OpenStreetMap</span> دەکێشین؛ زانکۆ پشتڕاستیان دەکاتەوە.</td><td>نووسینگەی پلاندانان</td><td><span class="tag req">پێویست</span></td></tr>
+      <tr><td><b>مۆڵەتی دانانی نیشانەی QR</b> لە دەروازە، پەیژە و یەکتربڕەکان</td><td>ڕێگە بە خوێندکاران دەدات ڕێگا لەو شوێنەوە دەست پێبکەن کە لێی ڕاوەستاون.</td><td>خزمەتگوزاری / ئامرازەکان</td><td><span class="tag req">پێویست</span></td></tr>
+      <tr><td><b>کاتی فەرمانبەران بۆ پشکنینی مەیدانی</b> (هەر ڕێگایەک یەک جار بە پێ)</td><td>بۆ پشتڕاستکردنەوەی ئەوەی دەرگا، پەیژە و ڕێگاکانی سەر نەخشە لەگەڵ ڕاستیدا یەک دەگرنەوە.</td><td>هەماهەنگکار + ١–٢ یارمەتیدەر</td><td><span class="tag req">پێویست</span></td></tr>
+      <tr><td><b>ناوچە سنووردارەکان</b> و کاتی کرانەوە (تاقیگە، نووسینگە، ناوچەی تایبەت بە ئافرەتان، دەروازەکان)</td><td>ڕێگاکان هەرگیز نابێت خەڵک بە ناوچەی داخراودا ببەن.</td><td>ئاسایش / ئامرازەکان</td><td><span class="tag req">پێویست</span></td></tr>
+      <tr><td><b>زانیاریی دەستڕاگەیشتن</b>: بەرزکەرەوە، ڕێڕەوی لێژ، دەروازەی بێ پەیژە</td><td>بۆ ڕێگای بێ پەیژەی دروست. باشترە لەگەڵ ئەو خوێندکارانەی کورسیی بەرزکەرەوە بەکاردەهێنن تاقی بکرێتەوە.</td><td>ئامرازەکان / کاروباری خوێندکاران</td><td><span class="tag">گرنگ</span></td></tr>
+      <tr><td><b>دەرهێنانی خشتەی وانە</b> (<span class="ltr">Excel/CSV</span>) و کاتی نوێکردنەوە</td><td>بۆ «وانەی داهاتووم لە کوێیە؟» و ئاگاداریی گۆڕینی ژوور.</td><td>تۆمارکردن / کۆلێژەکان</td><td><span class="tag">گرنگ</span></td></tr>
+      <tr><td><b>زانیاریی گشتیی مامۆستایان</b> (ناو، نووسینگە، کاتی بەردەستبوون) بە ڕەزامەندی</td><td>دۆزینەوەی نووسینگەی مامۆستا. تەنها زانیاریی گشتی و پەسەندکراو.</td><td>کۆلێژەکان / سەرچاوە مرۆییەکان</td><td><span class="tag">ئارەزوومەندانە</span></td></tr>
+      <tr><td><b>ناونیشانی وێبی فەرمی</b> و پەیوەندیی بەشی <span class="ltr">IT</span>؛ سیاسەتی هۆست/داتا</td><td>متمانە، و چاپکردنی نیشانەی QR بە ناونیشانێکی هەمیشەیی.</td><td>بەشی تەکنەلۆجیای زانیاری</td><td><span class="tag req">پێویست</span></td></tr>
+      <tr><td><b>بەرپرسی داتا بۆ هەر کۆلێژێک</b> دوای دەستپێکردن</td><td>کەسێک دەبێت ژوور و داخستنەکان نوێ بکاتەوە کاتێک شتەکان دەگۆڕێن.</td><td>هەر کۆلێژێک</td><td><span class="tag">گرنگ</span></td></tr>
+    </tbody>
+  </table>
+  <div class="box amber small"><b>هیچ زانیارییەکی زانکۆ بڵاو ناکەینەوە</b> کە لەلایەن زانکۆوە دابین یان پەسەند نەکرابێت، و هەر شتێک هێشتا لە شوێنی خۆیدا نەپشکنرابێت، لە ئەپەکەدا بە ڕوونی نیشانە دەکرێت.</div>
+</section>
+
+<!-- ───────────── ٥. هەنگاوەکان ───────────── -->
+<section class="page">
+  <div class="eyebrow">٥ · داتاکان چۆن تێدەکرێن</div>
+  <h2>لە ڕەزامەندییەوە تا هەموو کەمپەس</h2>
+  <div class="flow">
+    <div><span class="n">هەنگاوی ١</span><b>ئامادەکردن</b>ڕەزامەندی، هەماهەنگکار، ناونیشانی وێب، هەژماری فەرمانبەران.</div>
+    <div><span class="n">هەنگاوی ٢</span><b>بینای تاقیکردنەوە</b>تێکردنی تەواوی یەک بینا و دانانی نیشانەی QR.</div>
+    <div><span class="n">هەنگاوی ٣</span><b>پشکنینی مەیدانی</b>پشکنینی هەموو ڕێگاکان؛ تاقیکردنەوەی خوێندکاران؛ چاککردنی ڕاپۆرتەکان.</div>
+    <div><span class="n">هەنگاوی ٤</span><b>هەموو کەمپەس</b>دووبارەکردنەوە بینا بە بینا؛ دەستپێکردن.</div>
+  </div>
+  <ol class="steps">
+    <li><b>ئامادەکردن.</b> زانکۆ هەماهەنگکارێک دیاری دەکات و پرۆژەکە پەسەند دەکات. بەشی <span class="ltr">IT</span> ناونیشانی وێب دابین دەکات. ئێمە هەژماری فەرمانبەران بە مۆڵەتی گونجاو دروست دەکەین (بۆ نموونە، دەستکاریکەری کۆلێژ تەنها دەتوانێت ژوورەکانی کۆلێژی خۆی دەستکاری بکات).</li>
+    <li><b>دانانی کەمپەس لەسەر نەخشەی ڕاستەقینە.</b> شوێنی کەمپەس پشتڕاست دەکەینەوە و سنووری هەر بینایەک لەسەر نەخشەکە دەکێشین، پاشان نووسینگەی پلاندانان پشکنینیان بۆ دەکات.</li>
+    <li><b>بینای تاقیکردنەوە.</b> نەخشەی نهۆمەکانی لە داشبۆردەکەدا دەکێشین (یان لە <span class="ltr">CAD</span>ەوە هاوردەی دەکەین)، پێوەرەکەی بە دوورییەکی پێوانەکراو ڕێک دەخەین، ژوور، دەرگا، پەیژە و بەرزکەرەوە زیاد دەکەین، و نیشانەی QR چاپ دەکەین.</li>
+    <li><b>پشکنینی مەیدانی.</b> دوو کەس بە ئەپەکەوە هەموو ڕێگاکان دەڕۆن، کێشەکان دەنووسن و چاکیان دەکەن. تەنها دوای ئەوە بیناکە وەک «پشتڕاستکراوە» نیشانە دەکرێت.</li>
+    <li><b>تاقیکردنەوەی خوێندکاران.</b> گرووپێکی بچووکی خوێندکاران بۆ یەک یان دوو هەفتە ئەپەکە بەکاردەهێنن و ڕاوبۆچوونەکانیان لە ڕێگەی «ڕاپۆرتکردنی کێشە»وە دەنێرن.</li>
+    <li><b>بڵاوکردنەوە بە هەموو کەمپەس.</b> دووبارەکردنەوە بۆ هەموو بیناکان، کۆلێژ بە کۆلێژ. خشتەی وانەکان هەموو وەرزێک هاوردە دەکرێن.</li>
+    <li><b>چاودێری و نوێکردنەوە.</b> هەر کۆلێژێک داتاکانی خۆی نوێ دەهێڵێتەوە؛ داخستن و ڕاگەیاندنەکان لەلایەن فەرمانبەرانەوە بڵاو دەکرێنەوە؛ ڕاپۆرتەکان هەفتانە پێداچوونەوەیان بۆ دەکرێت.</li>
+  </ol>
+  <h3>کات</h3>
+  <p>کاتەکە بەپێی بەردەستبوونی نەخشەی نهۆمەکان و ژمارەی بیناکان دەگۆڕێت. وەک ڕێنماییەکی پلاندانان (کە دوای تاقیکردنەوەی سەرەتایی پشتڕاست دەکرێتەوە): ئامادەکردن و بینای تاقیکردنەوە چەند هەفتەیەک دەخایەنن؛ هەر بینایەکی تر لە چەند ڕۆژێکەوە تا چەند هەفتەیەک، بەپێی قەبارە و کوالیتیی نەخشەکان. کاتێک ژمارەی بیناکان و شێوازی نەخشەکان بزانین، خشتەیەکی کاتیی دیاریکراو پێشکەش دەکەین.</p>
+  <figure class="short"><img src="img/admin-verify.png" alt="" /><figcaption>داشبۆردی فەرمانبەران — پەڕەی پشتڕاستکردنەوە پیشان دەدات چی ماوە پێش ئەوەی بینایەک وەک «پشتڕاستکراوە» نیشانە بکرێت. (داتای نموونە.)</figcaption></figure>
+</section>
+
+<!-- ───────────── ٦. خزمەتکردنی هەموو خوێندکاران ───────────── -->
+<section class="page">
+  <div class="eyebrow">٦ · خزمەتکردنی هەموو خوێندکاران</div>
+  <h2>دروستکراوە بۆ ئەوەی هەزاران خوێندکار لە یەک کاتدا بەکاری بهێنن</h2>
+  <p>قەرەباڵغترین کات پێشبینیکراوە: سەرەتای وەرز و ئەو خولەکانەی پێش وانەکانی بەیانی. دیزاینەکە ئەو فشارە لە بنکەدراوەکە دوور دەخاتەوە.</p>
+  <div class="grid2 tight">
+    <div class="box">
+      <h3 style="margin-top:0">فشارەکە چۆن چارەسەر دەکرێت</h3>
+      <ul>
+        <li><b>یەک فایلی داتای بچووک بۆ هەر زانکۆیەک.</b> کاتێک خوێندکار ئەپەکە دەکاتەوە، مۆبایلەکە یەک جار داتای کەمپەس دادەگرێت. گەڕان و دۆزینەوەی ڕێگا پاشان <b>لەسەر مۆبایلەکە خۆی</b> ئەنجام دەدرێن — هیچ کارێکی سێرڤەر بۆ هەر گەڕان یان ڕێگایەک نییە.</li>
+        <li><b>لە ڕێگەی <span class="ltr">CDN</span>ەوە.</b> ئەو فایلە و خودی ئەپەکە لە تۆڕێکی گەیاندنی ناوەڕۆک (<span class="ltr">CDN</span>) نزیک لە بەکارهێنەر هەڵدەگیرێن. بنکەدراوەکە نزیکەی هەر چەند خولەکێک جارێک بۆ هەر زانکۆیەک پرسیاری لێدەکرێت، هەرچەندە خوێندکارێک ئەپەکە بکەنەوە.</li>
+        <li><b>بێ ئینتەرنێت دوای یەکەم بەکارهێنان.</b> خوێندکارانی گەڕاوە لە بیرگەی مۆبایلەکەیانەوە باری دەکەن؛ ئەپەکە لە پاشبنەمادا نوێ دەبێتەوە.</li>
+        <li><b>پێویست بە هەژماری خوێندکار ناکات</b> بۆ بەکارهێنانی ئاسایی — هیچ چوونەژوورەوەیەک نییە، هیچ شتێک نییە کە فشاری زۆری بکەوێتە سەر.</li>
+        <li>تەنها دەستکارییەکانی فەرمانبەران و ڕاپۆرتی کێشەکان دەگەنە بنکەدراوە، و هەردووکیان پارێزراون و سنووری داواکارییان بۆ دانراوە.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3 style="margin-top:0">ئەوەی تا ئێستا پێوانە کراوە (تاقیگە)</h3>
+      <ul>
+        <li>دۆزینەوەی ڕێگا لەسەر نەخشەیەکی قەبارەی بینا: زۆر کەمتر لە یەک میلیچرکە؛ نەخشەیەکی دەستکرد بە ١٤٬٤٠٠ خاڵ: نزیکەی ٢٩ میلیچرکە.</li>
+        <li>کردنەوەی ئەپ لەسەر پەیوەندیی مۆبایلی خاو (لاساییکراوە): نزیکەی ٢ چرکە بۆ یەکەم جار، و بەشێکی چرکەیەک دواتر.</li>
+      </ul>
+      <h3>پێش دەستپێکردن ئەمانە دەکەین</h3>
+      <ul>
+        <li><b>تاقیکردنەوەی فشار</b> کە لاسایی لوتکەی چاوەڕوانکراو دەکاتەوە (ژمارەی خوێندکاران لەگەڵ زانکۆ ڕێکدەخرێت) لەسەر ڕێکخستنی ڕاستەقینە.</li>
+        <li>تاقیکردنەوە لەسەر مۆبایلی ئەندرۆیدی ئاسایی بە وای‌فای کەمپەس.</li>
+        <li>ڕێکخستنی چاودێریی کارکردن و هەڵەکان لەگەڵ ئاگادارکردنەوە.</li>
+      </ul>
+      <p class="small muted">ئەمانە پێوانەی تاقیگەن لەسەر داتای تاقیکردنەوە، نەک ئەنجامی بەکارهێنانی ڕاستەقینە لە کەمپەسدا.</p>
+    </div>
+  </div>
+  <h3>هەڵبژاردەکانی هۆستکردن</h3>
+  <table>
+    <thead><tr><th>بەش</th><th>پێشنیارکراو</th><th>جێگرەوە ئەگەر زانکۆ هۆستکردنی ناوخۆیی پێویست بێت</th></tr></thead>
+    <tbody>
+      <tr><td>ئەپی خوێندکار و فایلی داتای کەمپەس</td><td>هۆستی <span class="ltr">CDN</span>ی جیهانی (بۆ نموونە <span class="ltr">Vercel / Cloudflare</span>)</td><td>سێرڤەری وێبی زانکۆ لە پشت <span class="ltr">CDN</span>ێکەوە</td></tr>
+      <tr><td>بنکەدراوە و چوونەژوورەوەی فەرمانبەران</td><td><span class="ltr">PostgreSQL</span>ی بەڕێوەبراو (<span class="ltr">Supabase</span>) لە ناوچەیەکی نزیک</td><td><span class="ltr">Supabase / PostgreSQL</span> لەسەر سێرڤەرەکانی زانکۆ</td></tr>
+      <tr><td>پاشبنەمای نەخشە</td><td><span class="ltr">OpenFreeMap</span> (نەخشەی بێبەرامبەری <span class="ltr">OpenStreetMap</span>)</td><td>نەخشەی خۆهۆستکراو بۆ ناوچەی هەولێر</td></tr>
+    </tbody>
+  </table>
+  <p class="small muted">تێچووەکان بەپێی هەڵبژاردە و ئاستی بەکارهێنان دەگۆڕێن و بە جیا نرخیان بۆ دادەنرێت؛ ئاستە بێبەرامبەرەکان بەزۆری بۆ تاقیکردنەوەی سەرەتایی بەسن.</p>
+</section>
+
+<!-- ───────────── ٧. تایبەتمەندی و ئاسایش ───────────── -->
+<section class="page">
+  <div class="eyebrow">٧ · تایبەتمەندی و ئاسایش</div>
+  <h2>سەلامەت بۆ خوێندکاران، کۆنترۆڵکراو بۆ فەرمانبەران</h2>
+  <div class="grid2">
+    <div>
+      <h3>خوێندکاران</h3>
+      <ul>
+        <li>هیچ هەژمار، چاودێری، ڕیکلام یان شیکاریی بەکارهێنان بە شێوەی بنەڕەتی نییە.</li>
+        <li>هیچ <span class="ltr">GPS</span> یان مۆڵەتی شوێن نییە. شوێن تەنها ئەوەیە کە خوێندکار خۆی هەڵیدەبژێرێت (نیشانەی QR یان شوێنێک لەسەر نەخشە)، و لەسەر مۆبایلەکەی خۆی دەمێنێتەوە.</li>
+        <li>شوێنە پاشەکەوتکراوەکان و مێژوو لەسەر مۆبایلی خوێندکار دەمێننەوە؛ مێژوو بە شێوەی بنەڕەتی کوژاوەتەوە.</li>
+        <li>ڕاپۆرتی کێشەکان هیچ ناو یان زانیاریی پەیوەندییەک لەخۆ ناگرن.</li>
+      </ul>
+      <h3>مامۆستایان</h3>
+      <ul><li>تەنها زانیاریی گشتیی پەسەندکراو (ناو، نووسینگە، کاتی بەردەستبوون) پیشان دەدرێت، بە ڕەزامەندی.</li></ul>
+    </div>
+    <div>
+      <h3>فەرمانبەران و داتا</h3>
+      <ul>
+        <li>فەرمانبەران دەچنە ژوورەوە؛ ڕۆڵەکان دیاری دەکەن کێ دەتوانێت چی بگۆڕێت (بۆ نموونە، دەستکاریکەری کۆلێژێک ناتوانێت ژوورەکانی کۆلێژێکی تر بگۆڕێت).</li>
+        <li>بنکەدراوەکە خۆی ئەم یاسایانە جێبەجێ دەکات، بۆیە لە ئەپەکەوە ناتوانرێت تێیان بپەڕێنرێت.</li>
+        <li>هەموو گۆڕانکارییەک لە تۆمارێکی پشکنیندا تۆمار دەکرێت.</li>
+        <li>ناوچە هەستیارەکان (ژووری سێرڤەر، تاقیگەی مەترسیدار) دەتوانرێت لە نەخشە گشتییەکان دوور بخرێنەوە — زانکۆ بڕیار دەدات چی گشتییە.</li>
+        <li>سەردێڕەکانی ئاسایش، سنووردانانی داواکاری و مامەڵەی سەلامەت لەگەڵ نەخشە بارکراوەکان دانراون و تاقیکراونەتەوە.</li>
+      </ul>
+    </div>
+  </div>
+  <figure><img src="img/report.png" alt="" /><figcaption>خوێندکاران دەتوانن ژوورێکی هەڵە یان دەرگایەکی داخراو ڕاپۆرت بکەن بەبێ پێدانی هیچ زانیارییەکی کەسی.</figcaption></figure>
+</section>
+
+<!-- ───────────── ٨. دۆخی ڕاستەقینە ───────────── -->
+<section class="page">
+  <div class="eyebrow">٨ · دۆخی ڕاستگۆیانە</div>
+  <h2>چی ئامادەیە، و چی هێشتا بەستراوە بە تاقیکردنەوەی سەرەتایی</h2>
+  <table>
+    <thead><tr><th style="width:40%">بوار</th><th style="width:17%">دۆخ</th><th>تێبینی</th></tr></thead>
+    <tbody>
+      <tr><td>ئەپی وێبی خوێندکار (گەڕان، نەخشە، ڕێنمایی، خشتەی وانە، بێ ئینتەرنێت، ٣ زمان)</td><td><span class="tag ok">دروستکراو و تاقیکراو</span></td><td>تاقیکردنەوەی خۆکار؛ تەنها داتای نموونە.</td></tr>
+      <tr><td>داشبۆردی فەرمانبەران (تێکردنی داتا، دەستکاریکەری نەخشە، سنووری بینا لەسەر نەخشەی ڕاستەقینە، QR، داخستن، ڕاپۆرت، پشتڕاستکردنەوە)</td><td><span class="tag ok">دروستکراو و تاقیکراو</span></td><td>لە ژینگەیەکی ناوخۆییدا تاقیکراوەتەوە.</td></tr>
+      <tr><td>یاساکانی ئاسایشی بنکەدراوە</td><td><span class="tag ok">دروستکراو و تاقیکراو</span></td><td>لەسەر <span class="ltr">PostgreSQL</span> تاقیکراوەتەوە؛ هێشتا لەسەر خزمەتگوزاریی بنکەدراوەی بەرهەمهێنان نا.</td></tr>
+      <tr><td>داتای زانکۆی سەڵاحەددین</td><td><span class="tag warn">دەستی پێنەکردووە</span></td><td>پێویستی بە بڕگەکانی بەشی ٤ هەیە.</td></tr>
+      <tr><td>وردیی ڕێگاکان لە کەمپەسی ڕاستەقینەدا</td><td><span class="tag warn">هێشتا نەسەلمێنراوە</span></td><td>لە پشکنینی مەیدانیدا پێوانە دەکرێت؛ پێش ئەوە هیچ بانگەشەیەکی وردی ناکەین.</td></tr>
+      <tr><td>تاقیکردنەوەی فشار بە قەبارەی تەواو</td><td><span class="tag warn">پلانی بۆ دانراوە</span></td><td>پێش دەستپێکردن، بە ژمارەی چاوەڕوانکراوی خوێندکاران.</td></tr>
+      <tr><td>ئەپی مۆبایلی ڕەسەن (<span class="ltr">Android / iOS</span>)</td><td><span class="tag">نموونەی سەرەتایی</span></td><td>ئەپی وێب هەر ئێستا لەسەر هەموو مۆبایلێک کار دەکات؛ ئەپی فرۆشگاکان دەتوانن دواتر بێن.</td></tr>
+      <tr><td>خاڵی شینی <span class="ltr">GPS</span> لە دەرەوە، چاودێریی زیندوو</td><td><span class="tag">لەخۆ نەگیراوە</span></td><td>ئەگەر زانکۆ بیەوێت، دواتر دەکرێت.</td></tr>
+    </tbody>
+  </table>
+  <figure><img src="img/nearby.png" alt="" /><figcaption>لیستی «نزیکترین» بەپێی دووریی ڕاستەقینەی ڕۆیشتن لە شوێنی خوێندکارەوە ڕیزکراوە. (داتای نموونە.)</figcaption></figure>
+</section>
+
+<!-- ───────────── ٩. بڕیارەکان ───────────── -->
+<section class="page">
+  <div class="eyebrow">٩ · بڕیارە داواکراوەکان</div>
+  <h2>ئەوەی داوا لە زانکۆ دەکەین بڕیاری لەسەر بدات</h2>
+  <ol class="steps">
+    <li><b>پەسەندکردنی</b> تاقیکردنەوەی سەرەتایی <span class="ltr">SUL NAV</span> و دیاریکردنی هەماهەنگکارێک.</li>
+    <li><b>هەڵبژاردنی بینای تاقیکردنەوە</b> (باشترە بینایەکی وانەوتنەوەی قەرەباڵغ بێت بە چەند نهۆمێک).</li>
+    <li><b>هاوبەشکردنی</b> لیستی بیناکان، نەخشەی نهۆمەکانی بینای تاقیکردنەوە و لیستی ژوورەکانی.</li>
+    <li><b>ڕێگەدان</b> بە نیشانەی QR لە بینای تاقیکردنەوەدا و یەک ڕۆژی پشکنینی مەیدانی.</li>
+    <li><b>بەشی <span class="ltr">IT</span>:</b> دابینکردنی ناونیشانی وێبی فەرمی و پشتڕاستکردنەوەی هەڵبژاردەی هۆستکردن (بەشی ٦).</li>
+    <li><b>ڕێککەوتن</b> لەسەر ئەوەی کێ دوای دەستپێکردن داتاکان نوێ دەکاتەوە، و کام ناوچانە دەبێت لە نەخشەی گشتی دوور بن.</li>
+  </ol>
+  <div class="box blue" style="margin-top:6mm">
+    <b>ئەوەی زانکۆ وەری دەگرێت:</b> ڕێنمایەکی فرەزمانی کەمپەس بۆ هەموو خوێندکار و میوانێک، بە ئامانجی کەمکردنەوەی ئەو کاتەی بۆ دۆزینەوەی ژوور و نووسینگەکان بەفیڕۆ دەچێت؛ یەک شوێن بۆ گۆڕینی ژوور، داخستن و ڕاگەیاندنەکان؛ و تۆمارێکی دیجیتاڵیی نوێکراوەی نەخشەی کەمپەس.
+  </div>
+  <h3>پەیوەندی</h3>
+  <p><span class="ltr">NULL-TECH</span> — خاوەنی پرۆژەی <span class="ltr">SUL NAV</span>. زانیاریی پەیوەندی: <i>لەلایەن خاوەنی پرۆژەوە زیاد دەکرێت</i>.</p>
+  <div class="sign">
+    <div>بۆ زانکۆی سەڵاحەددین-هەولێر — ناو، پۆست، بەروار</div>
+    <div>بۆ <span class="ltr">NULL-TECH</span> — ناو، بەروار</div>
+  </div>
+  <p class="small muted" style="margin-top:10mm">هەموو وێنەکانی ئەم بەڵگەنامەیە داتای نموونەی خەیاڵی پیشان دەدەن، نەک زانیاریی زانکۆی سەڵاحەددین. پاشبنەمای نەخشە: © بەشداربووانی <span class="ltr">OpenStreetMap</span>. ئەم وەشانە وەرگێڕانی وەشانی ئینگلیزییە؛ لە کاتی جیاوازیدا وەشانی ئینگلیزی بنەمایە.</p>
+</section>
+
+</body>
+</html>
