@@ -103,6 +103,35 @@ export function UniversityForm({ mode }: { mode: "profile" | "settings" }) {
                 <Field label="Seconds per floor (elevator)" htmlFor="spe"><input id="spe" type="number" className={inputCls} value={s.elevatorSecondsPerFloor} onChange={(e) => setS({ elevatorSecondsPerFloor: Number(e.target.value) })} /></Field>
               </div>
             </Section>
+            <Section title="Prayer times & summer heat">
+              <p className="text-xs text-muted mb-3">
+                Prayer times are calculated on each phone from the campus location — no internet needed. Pick the convention your campus mosque follows; the app labels the times as calculated. Most Kurdish Muslims follow the Shafi&apos;i school (standard Asr).
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Show prayer times" htmlFor="pe">
+                  <select id="pe" className={inputCls} value={s.prayer?.enabled === false ? "no" : "yes"} onChange={(e) => setS({ prayer: { ...s.prayer, enabled: e.target.value === "yes" } })}>
+                    <option value="yes">Yes</option><option value="no">No</option>
+                  </select>
+                </Field>
+                <Field label="Calculation method" htmlFor="pm">
+                  <select id="pm" className={inputCls} value={s.prayer?.method ?? "mwl"} onChange={(e) => setS({ prayer: { ...s.prayer, method: e.target.value as "mwl" } })}>
+                    <option value="mwl">Muslim World League (Fajr 18°, Isha 17°)</option>
+                    <option value="egypt">Egyptian authority (19.5°, 17.5°)</option>
+                    <option value="karachi">Karachi (18°, 18°)</option>
+                    <option value="umm_al_qura">Umm al-Qura (18.5°, Isha +90 min)</option>
+                    <option value="isna">ISNA (15°, 15°)</option>
+                  </select>
+                </Field>
+                <Field label="Asr" htmlFor="pa">
+                  <select id="pa" className={inputCls} value={s.prayer?.asr ?? "standard"} onChange={(e) => setS({ prayer: { ...s.prayer, asr: e.target.value as "standard" } })}>
+                    <option value="standard">Standard — Shafi&apos;i, Maliki, Hanbali</option>
+                    <option value="hanafi">Hanafi</option>
+                  </select>
+                </Field>
+                <Field label="Maghrib after sunset (min)" htmlFor="pmo"><input id="pmo" type="number" min={0} max={15} className={inputCls} value={s.prayer?.maghribOffsetMin ?? 0} onChange={(e) => setS({ prayer: { ...s.prayer, maghribOffsetMin: Number(e.target.value) } })} /></Field>
+                <Field label="Heat warning from (°C, feels-like)" htmlFor="hw"><input id="hw" type="number" min={25} max={60} className={inputCls} value={s.heatWarningC ?? 38} onChange={(e) => setS({ heatWarningC: Number(e.target.value) })} /></Field>
+              </div>
+            </Section>
           </>
         )}
       </fieldset>

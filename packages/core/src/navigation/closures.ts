@@ -44,12 +44,27 @@ export function closuresOnRoute(bundle: Pick<CampusBundle, "closures">, edges: N
  * - shortest: physical distance only
  * - fewer_stairs: stairs cost an extra 40 m-equivalent per flight, so a nearby elevator/ramp wins (distances stay physical)
  * - step_free: only accessible edges (no stairs)
+ * - indoor_first: outdoor paths count ×4, so a slightly longer indoor route wins in summer heat
  */
-export type RoutePreference = "shortest" | "fewer_stairs" | "step_free";
-export const ROUTE_PREFERENCES: readonly RoutePreference[] = ["shortest", "fewer_stairs", "step_free"];
+export type RoutePreference = "shortest" | "fewer_stairs" | "step_free" | "indoor_first";
+export const ROUTE_PREFERENCES: readonly RoutePreference[] = ["shortest", "fewer_stairs", "step_free", "indoor_first"];
 
 export function routeOptionsFor(pref: RoutePreference): RouteOptions {
   if (pref === "step_free") return { accessibleOnly: true };
+  if (pref === "indoor_first") return { kindCostFactor: { outdoor: 4 } satisfies Partial<Record<NavEdgeKind, number>> };
   if (pref === "fewer_stairs") return { kindPenaltyM: { stairs: 40 } satisfies Partial<Record<NavEdgeKind, number>> };
   return {};
+}
+
+/** Metres of a route walked outdoors (sun / rain exposure). */
+export function outdoorMeters(legs: { edge: NavEdge; distanceM: number }[]): number {
+  return legs.reduce((s, l) => s + (l.edge.kind === "outdoor" ? l.distanceM : 0), 0);
+}
+
+export type HeatLevel = "none" | "hot" | "extreme";
+/** "hot" from the university's threshold (default 38 °C feels-like), "extreme" 7 °C above it. */
+export function heatLevel(apparentC: number | null | undefined, thresholdC = 38): HeatLevel {
+  if (apparentC == null || !Number.isFinite(apparentC)) return "none";
+  if (apparentC >= thresholdC + 7) return "extreme";
+  return apparentC >= thresholdC ? "hot" : "none";
 }

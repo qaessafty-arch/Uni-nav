@@ -50,6 +50,15 @@ export const universitySettingsSchema = z.object({
   accessibleWalkingSpeedMps: z.number().min(0.2).max(3),
   stairsSecondsPerFloor: z.number().min(0).max(600),
   elevatorSecondsPerFloor: z.number().min(0).max(600),
+  prayer: z
+    .object({
+      enabled: z.boolean().optional(),
+      method: z.enum(["mwl", "egypt", "karachi", "umm_al_qura", "isna"]).optional(),
+      asr: z.enum(["standard", "hanafi"]).optional(),
+      maghribOffsetMin: z.number().int().min(0).max(15).optional(),
+    })
+    .nullish(),
+  heatWarningC: z.number().min(25).max(60).nullish(),
 });
 
 export const universitySchema = z.object({

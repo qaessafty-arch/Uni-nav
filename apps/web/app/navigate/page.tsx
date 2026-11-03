@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { lt, planRoute, relevantClosures, routeOptionsFor, ROUTE_PREFERENCES, type PlanResult, type RoutePreference } from "@campusnav/core";
+import { heatLevel, lt, outdoorMeters, planRoute, relevantClosures, routeOptionsFor, ROUTE_PREFERENCES, type PlanResult, type RoutePreference } from "@campusnav/core";
 import { describeStep, formatDistance, formatDuration, formatNumber } from "@campusnav/i18n";
 import { FloorMap, routeSegmentsForFloor } from "@campusnav/map-web";
 import { Gate } from "@/components/Gate";
@@ -13,6 +13,7 @@ import { Icon } from "@/components/Icon";
 import { I } from "@/components/icons";
 import { RouteView3D } from "@/components/RouteView3D";
 import { ShareButton } from "@/components/ShareButton";
+import { formatTemp, useCampusWeather } from "@/lib/weather";
 import { webglAvailable } from "@/lib/three/support";
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
@@ -25,10 +26,11 @@ function parseTarget(to: string | null): Target | null {
   return { kind: "room", id: to };
 }
 
-const PREF_KEY: Record<RoutePreference, "navigate.prefShortest" | "navigate.prefFewerStairs" | "navigate.prefStepFree"> = {
+const PREF_KEY: Record<RoutePreference, "navigate.prefShortest" | "navigate.prefFewerStairs" | "navigate.prefStepFree" | "navigate.prefIndoor"> = {
   shortest: "navigate.prefShortest",
   fewer_stairs: "navigate.prefFewerStairs",
   step_free: "navigate.prefStepFree",
+  indoor_first: "navigate.prefIndoor",
 };
 
 function PreferencePicker({ value, onChange }: { value: RoutePreference; onChange: (p: RoutePreference) => void }) {
@@ -38,7 +40,7 @@ function PreferencePicker({ value, onChange }: { value: RoutePreference; onChang
       <div className="label-caps mb-2" id="pref-label">
         {t("navigate.preference")}
       </div>
-      <div className="cn-segment" role="radiogroup" aria-labelledby="pref-label">
+      <div className="cn-segment max-sm:!grid-flow-row max-sm:grid-cols-2" role="radiogroup" aria-labelledby="pref-label">
         {ROUTE_PREFERENCES.map((p) => (
           <button key={p} type="button" role="radio" aria-checked={value === p} onClick={() => onChange(p)}>
             {t(PREF_KEY[p])}
@@ -79,6 +81,8 @@ function NavigateInner() {
   const [recalcKey, setRecalcKey] = useState(0);
   const startId = fromOverride ?? start?.nodeId ?? null;
   const returnTo = `/navigate?${params.toString()}`;
+  const { bundleState } = useApp();
+  const weather = useCampusWeather(bundleState.status === "ready" ? bundleState.bundle.campuses.find((c) => c.geo)?.geo : null);
 
   useEffect(() => {
     setStepIdx(0);
@@ -123,6 +127,8 @@ function NavigateInner() {
         const now = new Date();
         const res = planRoute(bundle, startId, destNodeId, routeOptionsFor(pref), now);
         const activeClosures = relevantClosures(bundle, now).active.filter((c) => c.targetType !== "room");
+        const outM = res.ok ? outdoorMeters(res.plan.route.legs) : 0;
+        const heat = heatLevel(weather?.feelsC, bundle.university.settings.heatWarningC ?? 38);
         if (!res.ok) {
           return (
             <div className="max-w-2xl space-y-4">
@@ -227,8 +233,24 @@ function NavigateInner() {
                     </div>
                     <div className="cn-figure text-3xl md:text-4xl mt-2">≈ {formatDuration(loc, plan.estimate.seconds)}</div>
                   </div>
-                  <p className="col-span-2 border-t border-line px-4 py-2 text-xs text-muted">{t("navigate.timeNote", { speed: formatNumber(loc, plan.estimate.assumptions.speedMps) })}</p>
+                  <p className="col-span-2 border-t border-line px-4 py-2 text-xs text-muted">
+                    {t("navigate.timeNote", { speed: formatNumber(loc, plan.estimate.assumptions.speedMps) })}
+                    {outM > 0 ? <span className="block mt-0.5" data-testid="outdoor-m">☀ {t("navigate.outdoor", { distance: formatDistance(loc, outM) })}</span> : null}
+                  </p>
                 </div>
+                {outM > 0 && heat !== "none" && weather ? (
+                  <div className={`cn-card p-3 border-s-4 ${heat === "extreme" ? "border-danger" : "border-warn"}`} role="note" data-testid="heat-notice">
+                    <p className="text-sm">
+                      {t(heat === "extreme" ? "heat.extreme" : "heat.hot", { temp: formatTemp(loc, weather.tempC), feels: formatTemp(loc, weather.feelsC), distance: formatDistance(loc, outM) })}
+                    </p>
+                    <div className="flex items-center gap-3 mt-2">
+                      {pref !== "indoor_first" ? (
+                        <Button className="!min-h-9 text-sm" onClick={() => setPref("indoor_first")}>{t("heat.useIndoor")}</Button>
+                      ) : null}
+                      <span className="text-xs text-faint ms-auto">{t("heat.source")}</span>
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="text-sm text-muted flex items-center justify-between gap-2">
                   <span>

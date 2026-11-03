@@ -22,6 +22,8 @@ import { mapLabels } from "./MapLabels";
 import { FACILITIES } from "./Blocks";
 import { LectureCard } from "./LectureCard";
 import { LeaveBy } from "./LeaveBy";
+import { PrayerCard } from "./PrayerCard";
+import { SafeBoundary } from "./SafeBoundary";
 import { ShareButton } from "./ShareButton";
 import { nodeName } from "./LocationPicker";
 import { Icon } from "./Icon";
@@ -342,11 +344,12 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
             <span className="block text-muted">{lt((closures.active[0] ?? closures.upcoming[0])!.reason, loc)}</span>
           </div>
         ) : null}
+        <SafeBoundary><PrayerCard bundle={bundle} /></SafeBoundary>
         {cn?.current || cn?.next ? (
           <div>
             <div className="label-caps mb-2">{cn.current ? t("home.currentLecture") : t("home.nextLecture")}</div>
             <LectureCard bundle={bundle} occ={(cn.current ?? cn.next)!} emphasis showDate={!cn.current} />
-            {!cn.current && cn.next ? <LeaveBy bundle={bundle} occ={cn.next} /> : null}
+            {!cn.current && cn.next ? <SafeBoundary><LeaveBy bundle={bundle} occ={cn.next} /></SafeBoundary> : null}
           </div>
         ) : null}
         <div className="grid grid-cols-2 gap-2">

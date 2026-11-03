@@ -69,6 +69,11 @@ export interface RouteOptions {
    * route — reported distances stay physical.
    */
   kindPenaltyM?: Partial<Record<NavEdgeKind, number>>;
+  /**
+   * Cost multiplier per edge kind (≥ 1), e.g. outdoor × 4 to prefer indoor
+   * routes in summer heat. Only affects the choice of route.
+   */
+  kindCostFactor?: Partial<Record<NavEdgeKind, number>>;
 }
 
 export function edgeUsable(e: NavEdge, opts: NormalizedOptions): boolean {
@@ -86,6 +91,7 @@ export interface NormalizedOptions {
   avoidEdgeKinds: Set<NavEdgeKind>;
   allowedRestrictions: Set<string>;
   kindPenaltyM: Partial<Record<NavEdgeKind, number>>;
+  kindCostFactor: Partial<Record<NavEdgeKind, number>>;
 }
 
 export function normalizeOptions(o: RouteOptions = {}): NormalizedOptions {
@@ -95,5 +101,6 @@ export function normalizeOptions(o: RouteOptions = {}): NormalizedOptions {
     avoidEdgeKinds: new Set(o.avoidEdgeKinds ?? []),
     allowedRestrictions: new Set(o.allowedRestrictions ?? []),
     kindPenaltyM: o.kindPenaltyM ?? {},
+    kindCostFactor: o.kindCostFactor ?? {},
   };
 }

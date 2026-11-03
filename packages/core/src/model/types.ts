@@ -43,6 +43,10 @@ export interface UniversitySettings {
   /** Seconds added per floor transition by stairs / elevator. */
   stairsSecondsPerFloor: number;
   elevatorSecondsPerFloor: number;
+  /** Prayer-time convention for the campus (calculated on the device). */
+  prayer?: { enabled?: boolean; method?: "mwl" | "egypt" | "karachi" | "umm_al_qura" | "isna"; asr?: "standard" | "hanafi"; maghribOffsetMin?: number } | null;
+  /** Feels-like temperature (°C) from which students get a heat warning on outdoor routes. */
+  heatWarningC?: number | null;
 }
 
 export interface University {

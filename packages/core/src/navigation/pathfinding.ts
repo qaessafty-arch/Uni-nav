@@ -61,7 +61,9 @@ export function findRoute(graph: NavGraph, startId: string, goalId: string, opti
     for (const ge of graph.adjacency.get(current) ?? []) {
       if (closed.has(ge.to) || !edgeUsable(ge.edge, opts)) continue;
       const penalty = opts.kindPenaltyM[ge.edge.kind] ?? 0;
-      const tentative = gCur + ge.distanceM + penalty;
+      // Factors are clamped to ≥ 1 so the straight-line heuristic stays admissible.
+      const factor = Math.max(1, opts.kindCostFactor[ge.edge.kind] ?? 1);
+      const tentative = gCur + ge.distanceM * factor + penalty;
       if (tentative < (gScore.get(ge.to) ?? Infinity)) {
         gScore.set(ge.to, tentative);
         came.set(ge.to, { prev: current, edge: ge.edge, distanceM: ge.distanceM });

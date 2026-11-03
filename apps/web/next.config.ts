@@ -4,7 +4,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 // Real-world base map (vector tiles). Default: OpenFreeMap (free, no key, OpenStreetMap data).
 const mapStyleUrl = process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://tiles.openfreemap.org/styles/positron";
 const mapOrigin = new URL(mapStyleUrl).origin;
-const connectSrc = ["'self'", supabaseUrl, supabaseUrl.replace(/^http/, "ws"), mapOrigin].filter(Boolean).join(" ");
+// Live temperature for the heat warning (free, no key, no personal data sent — only the campus coordinates).
+const weatherOrigin = "https://api.open-meteo.com";
+const connectSrc = ["'self'", supabaseUrl, supabaseUrl.replace(/^http/, "ws"), mapOrigin, weatherOrigin].filter(Boolean).join(" ");
 
 const securityHeaders = [
   {
