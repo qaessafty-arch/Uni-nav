@@ -56,6 +56,23 @@ export interface University {
   settings: UniversitySettings;
 }
 
+/** [longitude, latitude] in WGS84 (GeoJSON order). */
+export type LngLat = [number, number];
+
+/** Where a campus is on the real map. */
+export interface CampusGeo {
+  center: LngLat;
+  zoom: number;
+  bearing?: number;
+  /** Where the location came from, e.g. "OpenStreetMap" or "University survey". */
+  source?: string | null;
+}
+
+/** A building outline on the real map (closed ring, first point not repeated). */
+export interface BuildingGeo {
+  footprint: LngLat[];
+}
+
 export interface Campus {
   id: string;
   universityId: string;
@@ -69,6 +86,8 @@ export interface Campus {
    * campus plan). Stretched over the overview canvas; building footprints are drawn on top.
    */
   overviewImageUrl?: string | null;
+  /** Real-world location; enables the real map. */
+  geo?: CampusGeo | null;
 }
 
 export interface Building {
@@ -80,6 +99,8 @@ export interface Building {
   description?: LocalizedText | null;
   /** Footprint on the campus overview canvas */
   overview?: { x: number; y: number; w: number; h: number } | null;
+  /** Outline on the real map (drawn by staff in the admin Campus map). */
+  geo?: BuildingGeo | null;
   dataStatus: DataStatus;
 }
 

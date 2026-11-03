@@ -216,7 +216,7 @@ test("3D explorer: building → floor → room → navigate, with schematic/demo
 
 test("without WebGL the explorer falls back to the 2D map and keeps working", async ({ page }) => {
   await enterDemo(page);
-  await page.goto(`${BASE}/?no3d=1`);
+  await page.goto(`${BASE}/?no3d=1&v=3d`);
   await expect(page.getByText("3D isn't available on this device")).toBeVisible();
   await expect(page.locator(".cn3d canvas")).toHaveCount(0);
   await expect(page.getByRole("radio", { name: "3D" })).toBeDisabled();
@@ -239,10 +239,16 @@ test("directions can be shown in 3D from the router's own route", async ({ page 
   await expect(page.locator(".cn3d canvas")).toHaveCount(0);
 });
 
-test("phones open the 2D map by default; the choice is kept in the URL", async ({ page }) => {
+test("the real map opens by default when the campus is placed on it; the view choice is kept in the URL", async ({ page }) => {
   await enterDemo(page);
   await page.goto(BASE);
-  await expect(page.getByRole("radio", { name: "2D" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByRole("radio", { name: "Map" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByTestId("real-map")).toBeVisible();
+  await expect(page.getByText("University buildings haven't been drawn on the real map yet.")).toBeVisible();
+  await page.getByRole("list", { name: "Buildings" }).getByRole("button", { name: /DEMO-ENG/ }).click();
+  await expect(page.getByText("Not on the real map yet").first()).toBeVisible();
+  await page.getByRole("radio", { name: "Plan" }).click();
+  await expect(page).toHaveURL(/v=2d/);
   await expect(page.locator(".cn3d canvas")).toHaveCount(0);
   await page.getByRole("radio", { name: "3D" }).click();
   await expect(page).toHaveURL(/v=3d/);

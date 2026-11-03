@@ -384,4 +384,10 @@ export const ckb: Record<MessageKey, string> = {
   "explore.today": "ئەمڕۆ",
   "explore.expand": "زیاتر پیشان بدە",
   "explore.collapse": "کەمتر پیشان بدە",
+  // ── real map ──
+  "explore.viewMap": "نەخشە",
+  "explore.viewPlan": "پلان",
+  "explore.notOnRealMap": "هێشتا لەسەر نەخشەی ڕاستەقینە نییە",
+  "explore.noneOnRealMap": "بیناکانی زانکۆ هێشتا لەسەر نەخشەی ڕاستەقینە نەکێشراون.",
+  "explore.tilesFailed": "نەخشەکە بار نەبوو. پەیوەندیی ئینتەرنێت بپشکنە، یان پلان بەکاربهێنە.",
 };

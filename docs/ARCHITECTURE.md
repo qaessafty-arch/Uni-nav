@@ -90,6 +90,11 @@ Indoor space is a graph:
 - **Honesty:** the 3D view is labelled "Schematic 3D generated from the map data"; demo/unverified status, "not placed on the campus map" and "floor plan unavailable" are shown from the data. No geometry is invented: unplaced buildings are listed but not drawn; floors without map elements show only a slab.
 - **Performance/fallback:** three.js is a lazy chunk (`next/dynamic`, ~594 KB uncompressed) loaded only when a 3D view is shown; phones and Data Saver default to 2D. Detailed interiors are built only for the building being explored. No real-time shadows. If WebGL is missing or the context is lost, the explorer switches to the SVG 2D maps (`?no3d=1` forces this for testing).
 
+## Real map and scaling
+
+- **Real map:** campuses can have `geo` (centre, zoom) and buildings a `geo.footprint` (WGS84 outline). The student map uses MapLibre GL with OpenStreetMap-based vector tiles (default OpenFreeMap "positron"; override with `NEXT_PUBLIC_MAP_STYLE_URL`). Staff trace outlines in Admin → Real map. Arabic/Kurdish map labels use the self-hosted RTL text plugin (`public/vendor`). Buildings without an outline are listed, never guessed. Indoors still uses floor plans (2D/3D).
+- **Scaling:** `GET /api/bundle/:universityId` serves the public campus bundle with `Cache-Control: s-maxage=300, stale-while-revalidate=3600` and an ETag, so a CDN answers repeat requests and the database sees about one query set per university per cache window. The client prefers it and falls back to direct Supabase queries. Routing and search run on the device.
+
 ## QR checkpoint positioning
 
 Indoor GPS is unreliable, so position comes from scanning signs:

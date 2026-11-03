@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { selectByText } from "../fixtures/select";
+import { stubMapTiles } from "../fixtures/maptiles";
 import { expect, test, type Page } from "@playwright/test";
 
 const ADMIN = "http://localhost:3001";
@@ -254,4 +255,21 @@ test("verification page shows what blocks verification and refuses demo building
   await expect(page.getByRole("list", { name: "Checks for DEMO-ENG" })).toContainText("Placed on the campus map");
   await expect(page.getByRole("button", { name: "Mark verified" }).first()).toBeDisabled();
   await expect(page.getByText("Demo buildings cannot be marked verified.").first()).toBeVisible();
+});
+
+test("admin traces a building outline on the real map", async ({ page }) => {
+  await stubMapTiles(page);
+  await openSandbox(page);
+  await page.goto(`${ADMIN}/real-map`);
+  await expect(page.getByText("0 of 2 on the real map")).toBeVisible();
+  await page.getByRole("list", { name: "Buildings on the real map" }).getByRole("button", { name: /DEMO-ENG/ }).click();
+  await page.getByRole("button", { name: "Draw outline" }).click();
+  const map = page.getByTestId("real-map-editor");
+  await map.locator("canvas").waitFor();
+  const box = (await map.boundingBox())!;
+  for (const [fx, fy] of [[0.4, 0.4], [0.6, 0.4], [0.6, 0.6], [0.4, 0.6]] as const) await page.mouse.click(box.x + box.width * fx, box.y + box.height * fy);
+  await expect(page.getByText(/click the corners \(4 points\)/)).toBeVisible();
+  await page.getByRole("button", { name: "Finish & save" }).click();
+  await expect(page.getByText("Outline saved for DEMO-ENG")).toBeVisible();
+  await expect(page.getByText("1 of 2 on the real map")).toBeVisible();
 });

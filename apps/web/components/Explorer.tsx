@@ -27,9 +27,10 @@ import { I } from "./icons";
 import { Badge, ButtonLink, Button, Spinner, cx } from "./ui";
 import type { Scene3DSpec } from "./three/Scene3D";
 
+const RealMap = dynamic(() => import("./map/RealMap"), { ssr: false, loading: () => <div className="absolute inset-0 grid place-items-center"><Spinner label="Map" /></div> });
 const Scene3D = dynamic(() => import("./three/Scene3D"), { ssr: false, loading: () => <div className="absolute inset-0 grid place-items-center"><Spinner label="3D" /></div> });
 
-type View = "3d" | "2d";
+type View = "map" | "3d" | "2d";
 
 function floorShort(f: Floor): string {
   return f.level === 0 ? "G" : f.level < 0 ? `B${-f.level}` : String(f.level);
@@ -50,7 +51,7 @@ function useExplorerState() {
     setDefaultView(window.matchMedia("(min-width: 768px)").matches && !saveData ? "3d" : "2d");
   }, []);
   const v = params.get("v");
-  const state = { b: get("b"), f: get("f"), r: get("r"), inside: params.get("in") === "1", view: (v === "2d" || v === "3d" ? v : defaultView) as View };
+  const state = { b: get("b"), f: get("f"), r: get("r"), inside: params.get("in") === "1", view: (v === "2d" || v === "3d" || v === "map" ? v : null) as View | null, defaultView };
   const set = useCallback(
     (patch: Partial<{ b: string | null; f: string | null; r: string | null; inside: boolean; view: View }>) => {
       const next = new URLSearchParams(params.toString());
@@ -91,12 +92,19 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
   const insets = useMemo(() => (panelBox.sheet ? { start: 0, bottom: panelBox.h } : { start: panelBox.w + 16, bottom: 0 }), [panelBox]);
   const loc = prefs.locale;
   const l = lookup(bundle);
-  const view: View = no3d ? "2d" : s.view;
+  const [noMap, setNoMap] = useState(false);
+  const hasRealMap = !!(bundle.campuses.find((c) => c.id === (s.b ? l.buildings.get(s.b)?.campusId : undefined)) ?? bundle.campuses[0])?.geo && !noMap;
+  // Default: the real map when the campus is placed on it; otherwise 3D on large screens and the plan on phones.
+  const requested: View = s.view ?? (hasRealMap ? "map" : s.defaultView);
+  let view: View = requested === "map" && !hasRealMap ? s.defaultView : requested;
+  if (view === "3d" && no3d) view = "2d";
   const building = s.b ? l.buildings.get(s.b) : undefined;
   const floors = building ? floorsOf(bundle, building.id) : [];
   const room = s.r ? l.rooms.get(s.r) : undefined;
   const floor = s.f ? l.floors.get(s.f) : room ? l.floors.get(room.floorId) : undefined;
   const inside = !!building && (s.inside || !!room);
+  // Indoors there is no real-map layer yet: the map view shows the floor plan.
+  const indoorView: View = view === "3d" ? "3d" : "2d";
   const campus = bundle.campuses.find((c) => c.id === building?.campusId) ?? bundle.campuses[0];
   const isDemo = bundle.university.dataStatus === "demo";
   const startNode = start ? l.nodes.get(start.nodeId) : undefined;
@@ -157,7 +165,20 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
 
   // ── Map area ──────────────────────────────────────────────────────────
   let mapArea: React.ReactNode;
-  if (view === "3d" && spec) {
+  if (!inside && view === "map" && campus?.geo) {
+    mapArea = (
+      <RealMap
+        geo={campus.geo}
+        buildings={bundle.buildings.filter((b) => b.campusId === campus.id)}
+        selectedId={building?.id ?? null}
+        locale={loc}
+        onSelect={(id) => set({ b: id, f: null, r: null, inside: false })}
+        onUnavailable={() => setNoMap(true)}
+        padding={insets}
+        labels={{ tilesFailed: t("explore.tilesFailed"), zoomIn: t("map.zoomIn"), zoomOut: t("map.zoomOut"), reset: t("map.reset") }}
+      />
+    );
+  } else if ((inside ? indoorView : view) === "3d" && spec) {
     mapArea = <Scene3D bundle={bundle} spec={spec} focusKey={focusKey} onPick={onPick} onUnavailable={() => setNo3d(true)} labels={labels3d} insets={insets} />;
   } else if (inside && building) {
     const f = floor ?? floors.find((x) => x.level === 0) ?? floors[0];
@@ -199,7 +220,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
   const statusBadges = (b: Building) => (
     <div className="flex flex-wrap gap-1.5 mt-2">
       {isDemo || b.dataStatus === "demo" ? <Badge tone="warn">{t("data.demo")}</Badge> : b.dataStatus === "verified" ? <Badge tone="accent">{t("data.verified")}</Badge> : <Badge tone="warn">{t("explore.locationNotVerified")}</Badge>}
-      {!b.overview ? <Badge>{t("explore.notPlaced")}</Badge> : null}
+      {hasRealMap ? (!b.geo ? <Badge>{t("explore.notOnRealMap")}</Badge> : null) : !b.overview ? <Badge>{t("explore.notPlaced")}</Badge> : null}
     </div>
   );
 
@@ -214,7 +235,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
         </button>
         <div>
           <div className="label-caps">{t(`roomType.${room.type}`)}</div>
-          <h2 className="cn-figure text-5xl mt-1">{room.code}</h2>
+          <h2 className="cn-figure text-3xl mt-1">{room.code}</h2>
           <p className="text-lg mt-1">{lt(room.name, loc)}</p>
           <p className="text-sm text-muted">{lt(building.name, loc)} · {lt(f?.name, loc)}</p>
           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -348,7 +369,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
                 <button type="button" className="w-full text-start py-2.5 flex items-center gap-3 hover:text-accent" onClick={() => set({ b: b.id, f: null, r: null, inside: false })}>
                   <span className="mono font-semibold w-20 shrink-0 truncate">{b.code}</span>
                   <span className="truncate text-sm flex-1">{lt(b.name, loc)}</span>
-                  {!b.overview ? <Badge>{t("explore.notPlaced")}</Badge> : null}
+                  {hasRealMap ? (!b.geo ? <Badge>{t("explore.notOnRealMap")}</Badge> : null) : !b.overview ? <Badge>{t("explore.notPlaced")}</Badge> : null}
                 </button>
               </li>
             ))}
@@ -361,18 +382,22 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
 
   return (
     <div className="cn-explorer" style={{ ["--cn-sheet-h" as string]: panelBox.sheet ? `${panelBox.h}px` : "0px" }}>
-      <div className="cn-explorer-map">{mapArea}</div>
+      {/* Plans (SVG) fit themselves to their box, so on phones the box stops above the bottom sheet;
+          the 3D view and real map instead shift their camera (they stay full-bleed behind the sheet). */}
+      <div className="cn-explorer-map" style={(inside ? indoorView : view) === "2d" ? { bottom: "var(--cn-sheet-h, 0px)" } : undefined}>
+        {mapArea}
+      </div>
 
       {/* Top-end: view switch + honesty badges */}
-      <div className="cn-float top-3 end-3 flex flex-col items-end gap-2 max-w-[60%]">
+      <div className="cn-float top-3 end-3 flex flex-col items-end gap-2 max-w-[60%] max-md:end-auto max-md:start-3 max-md:items-start max-md:max-w-[75%]">
         <div className="cn-segment !p-1 shadow-lg" role="radiogroup" aria-label={t("explore.viewMode")}>
-          {(["3d", "2d"] as const).map((v) => (
-            <button key={v} type="button" role="radio" aria-checked={view === v} disabled={v === "3d" && no3d} onClick={() => set({ view: v })} className="!min-h-8 !px-3 mono">
-              {v === "3d" ? t("explore.view3d") : t("explore.view2d")}
+          {((hasRealMap && !inside ? ["map", "3d", "2d"] : ["3d", "2d"]) as View[]).map((v) => (
+            <button key={v} type="button" role="radio" aria-checked={(inside ? indoorView : view) === v} disabled={v === "3d" && no3d} onClick={() => set({ view: v })} className="!min-h-8 !px-3">
+              {v === "map" ? t("explore.viewMap") : v === "3d" ? t("explore.view3d") : t("explore.viewPlan")}
             </button>
           ))}
         </div>
-        {no3d ? <span className="cn-mapbadge" role="status">{t("explore.no3d")}</span> : view === "3d" ? <span className="cn-mapbadge hidden md:inline-flex">{t("explore.schematic")}</span> : null}
+        {no3d && (inside ? indoorView : view) !== "map" ? <span className="cn-mapbadge" role="status">{t("explore.no3d")}</span> : (inside ? indoorView : view) === "3d" ? <span className="cn-mapbadge hidden md:inline-flex">{t("explore.schematic")}</span> : !inside && view === "map" && !bundle.buildings.some((b) => b.geo) ? <span className="cn-mapbadge">{t("explore.noneOnRealMap")}</span> : null}
         {isDemo ? <span className="cn-mapbadge !text-warn max-md:!hidden">{t("data.demo")}</span> : null}
       </div>
 
@@ -385,7 +410,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
                 {floorShort(f)}
               </button>
             ))}
-            {view === "3d" ? (
+            {indoorView === "3d" ? (
               <button type="button" aria-pressed={!floor} onClick={() => set({ f: null, r: null })} title={t("explore.allFloors")} aria-label={t("explore.allFloors")}>
                 ≡
               </button>
@@ -397,7 +422,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
       {/* Building view options */}
       {inside ? (
         <div className="cn-float end-16 flex flex-wrap justify-end gap-1.5" style={{ bottom: "calc(var(--cn-sheet-h, 0px) + 12px)" }}>
-          {view === "3d" ? (
+          {indoorView === "3d" ? (
             <>
               <button type="button" className="cn-chip !min-h-9 shadow" aria-pressed={exploded} onClick={() => setExploded(!exploded)}>
                 {t("explore.exploded")}

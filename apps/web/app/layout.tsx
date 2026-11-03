@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0B0C0D",
+  themeColor: "#F6F7F9",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -22,7 +22,7 @@ const PREPAINT = `try{var p=JSON.parse(localStorage.getItem("campusnav.prefs")||
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" dir="ltr" data-theme="dark" data-style="minimal" suppressHydrationWarning>
+    <html lang="en" dir="ltr" data-theme="light" data-style="minimal" suppressHydrationWarning>
       <head>
         {/* Apply the saved visual style/theme before first paint (presentation only). */}
         <script dangerouslySetInnerHTML={{ __html: PREPAINT }} />

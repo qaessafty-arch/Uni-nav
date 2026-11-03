@@ -218,7 +218,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         {fullBleed ? (
-          <main id="main" className="flex-1 min-h-0 relative pb-[calc(62px+env(safe-area-inset-bottom))] md:pb-0">
+          <main id="main" className="flex-1 min-h-0 relative pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
             {children}
           </main>
         ) : (
@@ -229,20 +229,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <nav className="cn-tabbar2 md:hidden" aria-label="Primary">
-        {TABS.map((n) =>
-          n.href === "/scan" ? (
-            <Link key={n.href} href={n.href} aria-current={isActive(n.href) ? "page" : undefined} className="cn-tab2" aria-label={t(n.key)}>
-              <span className="cn-tab2-fab">
-                <IconBase d={n.icon} className="size-6" />
-              </span>
-            </Link>
-          ) : (
-            <Link key={n.href} href={n.href} aria-current={isActive(n.href) ? "page" : undefined} className="cn-tab2">
-              <IconBase d={n.icon} />
-              <span>{t(n.key)}</span>
-            </Link>
-          ),
-        )}
+        {TABS.map((n) => (
+          <Link key={n.href} href={n.href} aria-current={isActive(n.href) ? "page" : undefined} className="cn-tab2">
+            <IconBase d={n.icon} />
+            <span>{t(n.key)}</span>
+          </Link>
+        ))}
         <button type="button" className="cn-tab2" onClick={() => setDrawer(true)} aria-expanded={drawer}>
           <IconBase d={I.menu} />
           <span>{t("nav.more")}</span>

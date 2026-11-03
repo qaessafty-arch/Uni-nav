@@ -1,8 +1,10 @@
 import type { Page } from "@playwright/test";
 import { DEMO_UNIVERSITY_ID } from "@campusnav/data";
+import { stubMapTiles } from "./maptiles";
 
 /** Skip onboarding and select the demo university by seeding preferences. */
 export async function enterDemo(page: Page, prefs: Record<string, unknown> = {}) {
+  await stubMapTiles(page);
   await page.goto("http://localhost:3000/offline");
   await page.evaluate(
     ([uid, extra]) => {

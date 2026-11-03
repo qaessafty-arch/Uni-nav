@@ -60,7 +60,8 @@ const NAV: { group: string; items: NavItem[] }[] = [
     items: [
       { href: "/university", label: "University", icon: IC.uni, perm: "university.update" },
       { href: "/campuses", label: "Campuses", icon: IC.campus, perm: "campus.manage" },
-      { href: "/campus-map", label: "Campus map", icon: IC.map, perm: "building.manage" },
+      { href: "/real-map", label: "Real map", icon: IC.map, perm: "building.manage" },
+      { href: "/campus-map", label: "Campus picture", icon: IC.layers, perm: "building.manage" },
       { href: "/buildings", label: "Buildings", icon: IC.building, perm: "building.manage" },
       { href: "/floors", label: "Floors", icon: IC.layers, perm: "floor.manage" },
       { href: "/map-editor", label: "Map editor", icon: IC.pen, perm: "map.edit" },

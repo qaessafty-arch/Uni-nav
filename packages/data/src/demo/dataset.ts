@@ -88,6 +88,9 @@ export const demoCampuses: Campus[] = [
     description: T("Fictional campus used for demonstration only."),
     overviewWidth: 1000,
     overviewHeight: 700,
+    // Pilot preview: centre the real map on the Salahaddin University-Erbil main campus as recorded in
+    // OpenStreetMap (way 686923804). The fictional demo buildings are NOT placed on the real map.
+    geo: { center: [44.0249844, 36.1439009], zoom: 16, source: "OpenStreetMap — Salahaddin University-Erbil main campus (pilot preview location)" },
   },
 ];
 

@@ -5,8 +5,8 @@ insert into public.universities (id, slug, name, short_name, data_status, publis
   ('428a3a64-8fef-450d-824a-163e8f2fc957', 'demo', '{"en":"Demo University","ckb":"زانکۆی نموونە","ar":"الجامعة التجريبية"}'::jsonb, 'DEMO', 'demo', true, '{"primaryColor":"#2BFF88","logoUrl":null,"productName":"DEMO NAV"}'::jsonb, '{"timezone":"Asia/Baghdad","weekendDays":[5,6],"defaultLocale":"en","enabledLocales":["en","ckb","ar"],"timetableVisibility":"public","walkingSpeedMps":1.2,"accessibleWalkingSpeedMps":0.8,"stairsSecondsPerFloor":20,"elevatorSecondsPerFloor":45}'::jsonb)
 on conflict (id) do nothing;
 
-insert into public.campuses (id, university_id, name, description, overview_width, overview_height) values
-  ('cc59dafd-5fd4-4823-9a87-28ec890afa32', '428a3a64-8fef-450d-824a-163e8f2fc957', '{"en":"Demo Main Campus","ckb":"کەمپەسی سەرەکیی نموونە","ar":"الحرم الرئيسي التجريبي"}'::jsonb, '{"en":"Fictional campus used for demonstration only."}'::jsonb, 1000, 700)
+insert into public.campuses (id, university_id, name, description, overview_width, overview_height, geo) values
+  ('cc59dafd-5fd4-4823-9a87-28ec890afa32', '428a3a64-8fef-450d-824a-163e8f2fc957', '{"en":"Demo Main Campus","ckb":"کەمپەسی سەرەکیی نموونە","ar":"الحرم الرئيسي التجريبي"}'::jsonb, '{"en":"Fictional campus used for demonstration only."}'::jsonb, 1000, 700, '{"center":[44.0249844,36.1439009],"zoom":16,"source":"OpenStreetMap — Salahaddin University-Erbil main campus (pilot preview location)"}'::jsonb)
 on conflict (id) do nothing;
 
 insert into public.buildings (id, university_id, campus_id, code, name, description, overview, data_status) values

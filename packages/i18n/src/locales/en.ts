@@ -402,6 +402,12 @@ export const en = {
   "explore.today": "Today",
   "explore.expand": "Show more",
   "explore.collapse": "Show less",
+  // ── real map ──
+  "explore.viewMap": "Map",
+  "explore.viewPlan": "Plan",
+  "explore.notOnRealMap": "Not on the real map yet",
+  "explore.noneOnRealMap": "University buildings haven't been drawn on the real map yet.",
+  "explore.tilesFailed": "The map couldn't load. Check your internet connection, or use the Plan view.",
 } as const;
 
 export type MessageKey = keyof typeof en;

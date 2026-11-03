@@ -1,84 +1,90 @@
 /**
  * NULL-TECH / CAMPUS NAV design tokens.
- * Restrained brutalist palette: deep charcoal surfaces, off-white text, one
- * electric-green accent used for primary actions, routes and "you are here".
  * Shared by web (CSS variables / Tailwind) and React Native (StyleSheet).
  */
 
 export const palette = {
-  charcoal950: "#0B0C0D",
-  charcoal900: "#111315",
-  charcoal850: "#16191C",
-  charcoal800: "#1C2024",
-  charcoal700: "#272C31",
-  charcoal600: "#353B42",
-  gray500: "#6B737C",
-  gray400: "#8C949C",
-  gray300: "#B4BAC0",
-  offwhite100: "#EDEDE8",
-  offwhite50: "#F6F6F2",
-  green500: "#B7FF35",
-  green600: "#9FE620",
-  green700: "#4F7A00",
-  green950: "#1E2A08",
-  amber500: "#FFB547",
-  red500: "#FF5A5A",
-  blue400: "#6CB4FF",
+  ink950: "#0F1115",
+  ink900: "#161A20",
+  ink850: "#1C2128",
+  ink800: "#12151A",
+  ink700: "#262C35",
+  ink600: "#343C47",
+  gray500: "#6B7280",
+  gray400: "#9AA3AE",
+  gray300: "#C9CED6",
+  white: "#FFFFFF",
+  paper: "#F6F7F9",
+  blue600: "#1D4ED8",
+  blue500: "#2F6BEA",
+  blue400: "#6B9BF2",
+  blue50: "#EAF0FD",
+  blue950: "#16233F",
+  amber600: "#B45309",
+  amber400: "#F2B04A",
+  red600: "#B91C1C",
+  red400: "#F07171",
+  teal600: "#0E7490",
+  teal400: "#5CC1D6",
 } as const;
 
+/**
+ * Calm, professional palette: neutral surfaces, one university-blue accent for
+ * primary actions, selection, routes and "you are here". Light is the default.
+ */
 export const colors = {
   dark: {
-    bg: palette.charcoal950,
-    surface: palette.charcoal900,
-    surfaceRaised: palette.charcoal850,
-    surfaceSunken: palette.charcoal800,
-    border: palette.charcoal700,
-    borderStrong: palette.charcoal600,
-    text: palette.offwhite100,
+    bg: palette.ink950,
+    surface: palette.ink900,
+    surfaceRaised: palette.ink850,
+    surfaceSunken: palette.ink800,
+    border: palette.ink700,
+    borderStrong: palette.ink600,
+    text: "#E8EAED",
     textMuted: palette.gray400,
-    textFaint: palette.gray500,
-    accent: palette.green500,
-    accentText: palette.charcoal950,
-    accentSoft: palette.green950,
-    warning: palette.amber500,
-    danger: palette.red500,
-    info: palette.blue400,
+    textFaint: "#7C8591",
+    accent: palette.blue400,
+    accentText: "#0B1220",
+    accentSoft: palette.blue950,
+    warning: palette.amber400,
+    danger: palette.red400,
+    info: palette.teal400,
     // Map
-    mapBg: "#121518",
-    mapRoom: "#1E2328",
-    mapRoomStroke: "#3A4148",
-    mapCorridor: "#171B1F",
-    mapStairs: "#2A2F24",
-    mapElevator: "#24292F",
-    mapToilet: "#1F2630",
-    mapSelected: palette.green950,
-    mapRoute: palette.green500,
+    mapBg: "#13161B",
+    mapRoom: "#1F242C",
+    mapRoomStroke: "#3A424E",
+    mapCorridor: "#181C22",
+    mapStairs: "#2A2620",
+    mapElevator: "#1E2836",
+    mapToilet: "#1D2A30",
+    mapSelected: palette.blue950,
+    mapRoute: palette.blue400,
   },
   light: {
-    bg: palette.offwhite50,
-    surface: "#FFFFFF",
-    surfaceRaised: "#FFFFFF",
-    surfaceSunken: palette.offwhite100,
-    border: "#D9D9D2",
-    borderStrong: "#B9B9B0",
-    text: palette.charcoal950,
-    textMuted: "#4F565D",
-    textFaint: "#6B737C",
-    accent: palette.green700,
+    bg: palette.paper,
+    surface: palette.white,
+    surfaceRaised: palette.white,
+    surfaceSunken: "#EEF0F3",
+    border: "#E2E5EA",
+    borderStrong: "#CBD1D9",
+    text: "#111827",
+    textMuted: "#4B5563",
+    textFaint: "#6B7280",
+    accent: palette.blue600,
     accentText: "#FFFFFF",
-    accentSoft: "#EEFAD6",
-    warning: "#9A5B00",
-    danger: "#B42318",
-    info: "#175CD3",
-    mapBg: "#F2F2EC",
+    accentSoft: palette.blue50,
+    warning: palette.amber600,
+    danger: palette.red600,
+    info: palette.teal600,
+    mapBg: "#F1F3F6",
     mapRoom: "#FFFFFF",
-    mapRoomStroke: "#9EA3A8",
-    mapCorridor: "#E7E7E0",
-    mapStairs: "#EEF1E2",
-    mapElevator: "#E6EBF0",
-    mapToilet: "#E8EEF5",
-    mapSelected: "#E2F7B8",
-    mapRoute: palette.green700,
+    mapRoomStroke: "#AEB6C1",
+    mapCorridor: "#E6E9EE",
+    mapStairs: "#F6EFE3",
+    mapElevator: "#E7EEFB",
+    mapToilet: "#E6F3F6",
+    mapSelected: "#D6E3FC",
+    mapRoute: palette.blue600,
   },
 } as const;
 
@@ -89,7 +95,7 @@ export const colors = {
 export const visualStyles = ["minimal", "editorial", "brutal"] as const;
 export type VisualStyle = (typeof visualStyles)[number];
 export const visualStyleLabels: Record<VisualStyle, string> = {
-  minimal: "Minimalism × Electric",
+  minimal: "Standard",
   editorial: "Editorial × Electric",
   brutal: "Brutalism × Electric",
 };
@@ -122,7 +128,7 @@ export interface StyleTokens {
 }
 
 export const styleTokens: Record<VisualStyle, StyleTokens> = {
-  minimal: { radius: 3, borderWidth: 1, borderWidthStrong: 1, displayFont: null, displayWeight: "600", displayUppercase: false, displayScale: 1, displayTracking: -0.6, labelTracking: 1.6, shadowOffset: 0, buttonUppercase: false, buttonMono: false, ruleCards: false, strongBorders: false, sectionIndex: false },
+  minimal: { radius: 8, borderWidth: 1, borderWidthStrong: 1, displayFont: null, displayWeight: "600", displayUppercase: false, displayScale: 1, displayTracking: -0.3, labelTracking: 0, shadowOffset: 0, buttonUppercase: false, buttonMono: false, ruleCards: false, strongBorders: false, sectionIndex: false },
   editorial: { radius: 0, borderWidth: 1, borderWidthStrong: 1, displayFont: "InstrumentSerif_400Regular", displayWeight: "400", displayUppercase: false, displayScale: 1.3, displayTracking: -0.3, labelTracking: 2.2, shadowOffset: 0, buttonUppercase: true, buttonMono: true, ruleCards: true, strongBorders: false, sectionIndex: true },
   brutal: { radius: 0, borderWidth: 2, borderWidthStrong: 3, displayFont: null, displayWeight: "900", displayUppercase: true, displayScale: 1.1, displayTracking: -1, labelTracking: 1, shadowOffset: 4, buttonUppercase: true, buttonMono: false, ruleCards: false, strongBorders: true, sectionIndex: true },
 };
@@ -134,7 +140,7 @@ export type ThemeColors = { [K in keyof (typeof colors)["dark"]]: string };
 export const space = { 0: 0, 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64 } as const;
 
 /** Square, technical corners. Only small radii. */
-export const radius = { none: 0, sm: 2, md: 4, lg: 6, pill: 999 } as const;
+export const radius = { none: 0, sm: 4, md: 8, lg: 12, pill: 999 } as const;
 
 export const fonts = {
   /** Latin UI text */

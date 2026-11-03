@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>SUL NAV — Campus Navigation Proposal for Salahaddin University-Erbil</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 20mm 16mm; }
+  :root { --ink: #111827; --muted: #4B5563; --faint: #6B7280; --line: #E2E5EA; --soft: #F3F5F8; --blue: #1D4ED8; --blue-soft: #EAF0FD; --amber: #B45309; --amber-soft: #FDF3E6; --green: #047857; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.55; margin: 0; }
+  h1, h2, h3 { line-height: 1.2; margin: 0; }
+  h2 { font-size: 17pt; margin: 0 0 4mm; letter-spacing: -0.01em; }
+  h3 { font-size: 11.5pt; margin: 5mm 0 2mm; }
+  p { margin: 0 0 3mm; }
+  ul, ol { margin: 0 0 3mm; padding-inline-start: 5mm; }
+  li { margin-bottom: 1.2mm; }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .eyebrow { color: var(--blue); font-weight: 700; font-size: 9pt; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 2mm; }
+  .muted { color: var(--muted); }
+  .small { font-size: 9pt; }
+  .cover { height: 255mm; display: flex; flex-direction: column; }
+  .cover .brand { display: flex; align-items: center; gap: 3mm; font-weight: 700; letter-spacing: 0.06em; font-size: 10pt; }
+  .logo { width: 9mm; height: 9mm; border: 0.7mm solid var(--ink); position: relative; }
+  .logo::before { content: ""; position: absolute; left: 2mm; top: 2mm; width: 3mm; height: 3.4mm; border-left: 0.9mm solid var(--blue); border-top: 0.9mm solid var(--blue); }
+  .logo::after { content: ""; position: absolute; right: 1.5mm; bottom: 1.5mm; width: 1.4mm; height: 1.4mm; background: var(--blue); }
+  .cover h1 { font-size: 30pt; letter-spacing: -0.02em; margin-top: 40mm; }
+  .cover .lead { font-size: 13pt; color: var(--muted); margin-top: 5mm; max-width: 150mm; }
+  .cover .meta { margin-top: auto; border-top: 1px solid var(--line); padding-top: 5mm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; font-size: 9.5pt; }
+  .cover .meta b { display: block; color: var(--faint); font-weight: 600; font-size: 8.5pt; margin-bottom: 1mm; }
+  .shot-hero { margin-top: 12mm; border: 1px solid var(--line); border-radius: 3mm; overflow: hidden; box-shadow: 0 2mm 6mm rgba(16,24,40,.08); }
+  .shot-hero img { display: block; width: 100%; }
+  .box { border: 1px solid var(--line); border-radius: 2.5mm; padding: 4mm 5mm; margin: 0 0 4mm; background: #fff; }
+  .box.blue { background: var(--blue-soft); border-color: #C9D7FA; }
+  .box.amber { background: var(--amber-soft); border-color: #F2D9B8; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+  .kpi { border: 1px solid var(--line); border-radius: 2.5mm; padding: 3.5mm 4mm; }
+  .kpi b { display: block; font-size: 12pt; }
+  .kpi span { color: var(--muted); font-size: 9pt; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.9pt; margin: 2mm 0 4mm; }
+  th { text-align: left; font-weight: 600; color: var(--faint); font-size: 8.5pt; border-bottom: 1.2px solid var(--ink); padding: 2mm 2mm 1.5mm 0; }
+  td { border-bottom: 1px solid var(--line); padding: 1.5mm 2mm 1.5mm 0; vertical-align: top; line-height: 1.4; }
+  tr { page-break-inside: avoid; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 600; padding: 0.3mm 2mm; border-radius: 10mm; background: var(--soft); color: var(--muted); white-space: nowrap; }
+  .tag.req { background: var(--blue-soft); color: var(--blue); }
+  .tag.ok { background: #E6F4EF; color: var(--green); }
+  .tag.warn { background: var(--amber-soft); color: var(--amber); }
+  figure { margin: 0 0 4mm; }
+  figure img { width: 100%; border: 1px solid var(--line); border-radius: 2mm; display: block; }
+  section > figure.short img { max-height: 46mm; }
+  .tight { font-size: 9.6pt; line-height: 1.45; }
+  section > figure img { max-height: 82mm; object-fit: cover; object-position: top left; }
+  figcaption { color: var(--faint); font-size: 8.5pt; margin-top: 1.5mm; }
+  .phones { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 5mm; align-items: start; }
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin: 2mm 0 5mm; }
+  .flow div { border: 1px solid var(--line); border-radius: 2mm; padding: 3mm; font-size: 9pt; position: relative; background: #fff; }
+  .flow div b { display: block; font-size: 9.5pt; margin-bottom: 1mm; }
+  .flow .n { color: var(--blue); font-weight: 700; font-size: 8.5pt; }
+  .steps { counter-reset: s; list-style: none; padding: 0; }
+  .steps > li { counter-increment: s; position: relative; padding-inline-start: 9mm; margin-bottom: 3mm; }
+  .steps > li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 6mm; height: 6mm; border-radius: 50%; background: var(--blue); color: #fff; font-size: 8.5pt; font-weight: 700; display: grid; place-items: center; }
+  .diagram { width: 100%; height: auto; margin: 2mm 0 4mm; }
+  .sign { margin-top: 8mm; display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; font-size: 9pt; }
+  .sign div { border-top: 1px solid var(--ink); padding-top: 2mm; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ───────────── Cover ───────────── -->
+<section class="page cover">
+  <div class="brand"><span class="logo"></span> NULL-TECH · CAMPUS NAV</div>
+  <h1>SUL NAV<br />Campus navigation for<br />Salahaddin University-Erbil</h1>
+  <p class="lead">A proposal to give every student, lecturer and visitor a simple way to find any building, room or office — on their phone, in Kurdish, Arabic or English, and even without internet.</p>
+  <div class="shot-hero"><img src="img/room.png" alt="Campus explorer showing a building in 3D with a room selected" /></div>
+  <div class="meta">
+    <div><b>Prepared for</b>Presidency, Salahaddin University-Erbil</div>
+    <div><b>Prepared by</b>NULL-TECH (project owner)</div>
+    <div><b>Status</b>Working prototype · pilot proposal · November 2026</div>
+  </div>
+</section>
+
+<!-- ───────────── 1. Summary ───────────── -->
+<section class="page">
+  <div class="eyebrow">1 · Summary</div>
+  <h2>What we are asking for, in one page</h2>
+  <p>New students, visitors and even staff lose time every day looking for lecture halls, offices and services. <b>SUL NAV</b> is a campus navigation app that shows where things are and how to walk there, step by step, indoors and across floors.</p>
+  <div class="grid3">
+    <div class="kpi"><b>Find</b><span>Search any room, lecturer office, department or building in Kurdish, Arabic or English.</span></div>
+    <div class="kpi"><b>Walk there</b><span>Turn-by-turn directions, including stairs, elevators and step-free routes.</span></div>
+    <div class="kpi"><b>Stay informed</b><span>Timetable, room changes, closures and announcements in one place.</span></div>
+  </div>
+  <h3>Where the project is today</h3>
+  <div class="box">
+    <ul>
+      <li><b>The software is built and tested:</b> student web app (works on any phone, installable, offline), staff administration dashboard, secure database design, 2D/3D maps, real-world map, QR checkpoints, timetable and three languages. Automated tests cover the routes, security rules and the main user journeys.</li>
+      <li><b>It currently runs on fictional demonstration data.</b> No Salahaddin University buildings, rooms or timetables have been entered, because that must be done with the university's official information and permission.</li>
+      <li><b>It has not yet been used by real students or tested at full university scale.</b> This proposal includes the plan to do that safely.</li>
+    </ul>
+  </div>
+  <h3>What we need from the university</h3>
+  <div class="box blue">
+    <ol>
+      <li><b>Official approval</b> and one <b>coordinator</b> from the university who can open doors to the right offices.</li>
+      <li><b>Campus information:</b> official building and room lists, floor plans, and confirmation of building locations.</li>
+      <li><b>Permission</b> to put small QR signs at entrances and stairwells, and a short field survey to check every route.</li>
+      <li><b>IT support:</b> an official web address (for example <i>nav.su.edu.krd</i>) and agreement on hosting and data policy.</li>
+    </ol>
+  </div>
+  <h3>Proposed next step</h3>
+  <p>A <b>pilot in one building</b> (chosen by the university), then the whole campus once the pilot is approved. Section 5 shows the steps; section 9 lists the decisions we ask the university to make.</p>
+</section>
+
+<!-- ───────────── 2. What users get ───────────── -->
+<section class="page">
+  <div class="eyebrow">2 · What students and staff get</div>
+  <h2>A map-first app that works on every phone</h2>
+  <div class="phones">
+    <figure><img src="img/m-room.png" alt="Phone: room details" /><figcaption>Find a room and see it on its floor.</figcaption></figure>
+    <figure><img src="img/m-nav.png" alt="Phone: directions" /><figcaption>Directions with route options.</figcaption></figure>
+    <div>
+      <h3 style="margin-top:0">For students and visitors</h3>
+      <ul>
+        <li><b>Search</b> rooms, lecturers' offices, departments and buildings — Kurdish (Sorani), Arabic and English, including Kurdish/Arabic digits.</li>
+        <li><b>Real campus map</b> (OpenStreetMap) with building outlines, plus <b>3D building view</b> with floors and rooms.</li>
+        <li><b>Directions</b> through corridors, stairs and elevators. Choose <i>Shortest</i>, <i>Fewer stairs</i> or <i>Step-free</i>.</li>
+        <li><b>"Where am I?"</b> by scanning a QR sign on the wall, choosing a place, or tapping the floor plan. No GPS tracking.</li>
+        <li><b>Nearest</b> toilets, prayer room, cafeteria, library, by real walking distance.</li>
+        <li><b>Timetable</b> by student group, with room changes and cancellations.</li>
+        <li><b>Works offline</b> after the first visit — important in basements and busy Wi-Fi times.</li>
+        <li><b>Report a problem</b> (wrong room, locked door) in two taps; no name needed.</li>
+      </ul>
+      <h3>For the university</h3>
+      <ul>
+        <li>A <b>staff dashboard</b> to keep buildings, rooms, maps, timetables and announcements up to date.</li>
+        <li><b>Temporary closures</b> (works, exams, broken elevator) that routes avoid automatically.</li>
+        <li><b>Verification</b>: only data the team checked on site is shown as "Verified".</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────── 3. How it works ───────────── -->
+<section class="page">
+  <div class="eyebrow">3 · How it works</div>
+  <h2>Simple for students, controlled by the university</h2>
+  <svg class="diagram" viewBox="0 0 700 210" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif" font-size="12">
+    <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1D4ED8"/></marker></defs>
+    <rect x="10" y="20" width="160" height="80" rx="8" fill="#EAF0FD" stroke="#C9D7FA"/>
+    <text x="90" y="52" text-anchor="middle" font-weight="700">University staff</text>
+    <text x="90" y="72" text-anchor="middle" fill="#4B5563">Admin dashboard</text>
+    <rect x="270" y="20" width="160" height="80" rx="8" fill="#fff" stroke="#CBD1D9"/>
+    <text x="350" y="52" text-anchor="middle" font-weight="700">Secure database</text>
+    <text x="350" y="72" text-anchor="middle" fill="#4B5563">roles · audit log</text>
+    <rect x="530" y="20" width="160" height="80" rx="8" fill="#fff" stroke="#CBD1D9"/>
+    <text x="610" y="52" text-anchor="middle" font-weight="700">Campus data file</text>
+    <text x="610" y="72" text-anchor="middle" fill="#4B5563">cached worldwide (CDN)</text>
+    <rect x="530" y="130" width="160" height="70" rx="8" fill="#fff" stroke="#CBD1D9"/>
+    <text x="610" y="160" text-anchor="middle" font-weight="700">Student phones</text>
+    <text x="610" y="180" text-anchor="middle" fill="#4B5563">search · route · offline</text>
+    <rect x="270" y="130" width="160" height="70" rx="8" fill="#fff" stroke="#CBD1D9"/>
+    <text x="350" y="160" text-anchor="middle" font-weight="700">QR signs on walls</text>
+    <text x="350" y="180" text-anchor="middle" fill="#4B5563">"you are here"</text>
+    <line x1="170" y1="60" x2="266" y2="60" stroke="#1D4ED8" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="430" y1="60" x2="526" y2="60" stroke="#1D4ED8" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="610" y1="100" x2="610" y2="126" stroke="#1D4ED8" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="430" y1="165" x2="526" y2="165" stroke="#1D4ED8" stroke-width="2" marker-end="url(#a)"/>
+  </svg>
+  <div class="grid2">
+    <div>
+      <h3>Maps and directions</h3>
+      <ul>
+        <li><b>Outdoors:</b> the real map (OpenStreetMap). Staff trace each building's outline on it, so position and scale are true to life.</li>
+        <li><b>Indoors:</b> each floor plan becomes a network of corridors, doors, stairs and elevators. The app finds the shortest valid path through that network.</li>
+        <li>Floor plans are <b>scaled from a measured distance</b> (the dashboard has a calibration tool), so distances and walking times are realistic.</li>
+        <li>Walking time is always shown as an <b>estimate</b>.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Knowing where you are</h3>
+      <ul>
+        <li>GPS does not work reliably inside concrete buildings, so the app uses <b>QR signs</b>: scan the sign at an entrance or stairwell and the route starts there.</li>
+        <li>Students can also pick a place from a list or tap the floor plan.</li>
+        <li>The app <b>does not track</b> students and does not need their location permission.</li>
+      </ul>
+      <h3>Keeping data correct</h3>
+      <ul>
+        <li>Every change by staff is recorded (who, what, when).</li>
+        <li>Students report mistakes; staff fix them and mark them resolved.</li>
+        <li>A verification page shows which buildings are complete and checked.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────── 4. What we need ───────────── -->
+<section class="page">
+  <div class="eyebrow">4 · What the university needs to provide</div>
+  <h2>Information and help we need to install the data</h2>
+  <p class="muted small">"Essential" items are needed before the pilot. Formats are flexible — paper plans can be scanned; Excel lists are fine.</p>
+  <table>
+    <thead><tr><th style="width:26%">Item</th><th style="width:40%">Why it is needed</th><th style="width:22%">Who can usually provide it</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr><td><b>Official approval</b> and a named <b>coordinator</b></td><td>To use university names and data, and to reach the right offices quickly.</td><td>Presidency</td><td><span class="tag req">Essential</span></td></tr>
+      <tr><td><b>List of buildings</b> with official codes and names (Kurdish, Arabic, English)</td><td>What students search for must match the signs on the buildings.</td><td>Planning / Engineering office</td><td><span class="tag req">Essential</span></td></tr>
+      <tr><td><b>Floor plans</b> for each building (CAD, PDF or paper)</td><td>The basis for indoor maps and routes. The biggest piece of work.</td><td>Engineering / Projects department</td><td><span class="tag req">Essential</span></td></tr>
+      <tr><td><b>Room lists</b>: number, name, type, department, capacity</td><td>Search results and the timetable link to rooms.</td><td>Colleges / Registration</td><td><span class="tag req">Essential</span></td></tr>
+      <tr><td><b>Confirmation of building locations</b> on the map, and the campus boundary/gates</td><td>So buildings appear at their true place. We trace outlines over OpenStreetMap; the university confirms.</td><td>Planning office</td><td><span class="tag req">Essential</span></td></tr>
+      <tr><td><b>Permission to install QR signs</b> at entrances, stairwells and junctions</td><td>Lets students start a route from where they stand.</td><td>Services / Facilities</td><td><span class="tag req">Essential</span></td></tr>
+      <tr><td><b>Staff time for a field check</b> (walk each route once)</td><td>To confirm that doors, stairs and routes on the map match reality.</td><td>Coordinator + 1–2 helpers</td><td><span class="tag req">Essential</span></td></tr>
+      <tr><td><b>Restricted areas</b> and opening hours (labs, offices, women-only areas, gates)</td><td>Routes must never send people through closed areas.</td><td>Security / Facilities</td><td><span class="tag req">Essential</span></td></tr>
+      <tr><td><b>Accessibility information</b>: elevators, ramps, step-free entrances</td><td>For correct step-free routes. Ideally tested with students who use wheelchairs.</td><td>Facilities / Student affairs</td><td><span class="tag">Important</span></td></tr>
+      <tr><td><b>Timetable export</b> (Excel/CSV) and update schedule</td><td>"Where is my next lecture?" and room-change notices.</td><td>Registration / Colleges</td><td><span class="tag">Important</span></td></tr>
+      <tr><td><b>Lecturer public information</b> (name, office, office hours) with consent</td><td>Finding a lecturer's office. Only approved, public information.</td><td>Colleges / HR</td><td><span class="tag">Optional</span></td></tr>
+      <tr><td><b>Official web address</b> and IT contact; hosting/data policy</td><td>Trust, and QR signs printed with a permanent address.</td><td>IT department</td><td><span class="tag req">Essential</span></td></tr>
+      <tr><td><b>Data owner per college</b> after launch</td><td>Someone must update rooms and closures when things change.</td><td>Each college</td><td><span class="tag">Important</span></td></tr>
+    </tbody>
+  </table>
+  <div class="box amber small"><b>We will not publish</b> any university information that has not been provided or approved by the university, and anything not yet checked on site is clearly labelled in the app.</div>
+</section>
+
+<!-- ───────────── 5. Installation steps ───────────── -->
+<section class="page">
+  <div class="eyebrow">5 · How the data gets installed</div>
+  <h2>From approval to the whole campus</h2>
+  <div class="flow">
+    <div><span class="n">Step 1</span><b>Set up</b>Approval, coordinator, web address, staff accounts.</div>
+    <div><span class="n">Step 2</span><b>Pilot building</b>Enter one building fully and place QR signs.</div>
+    <div><span class="n">Step 3</span><b>Field check</b>Walk every route; students try it; fix reports.</div>
+    <div><span class="n">Step 4</span><b>Whole campus</b>Repeat building by building; launch.</div>
+  </div>
+  <ol class="steps">
+    <li><b>Setup.</b> The university appoints a coordinator and approves the project. IT provides the web address. We create staff accounts with the right permissions (e.g. college editors can edit only their own rooms).</li>
+    <li><b>Place the campus on the real map.</b> We confirm the campus location and trace each building's outline over the map, then the planning office checks them.</li>
+    <li><b>Pilot building.</b> We draw its floor plans in the dashboard (or import from CAD), calibrate the scale with a tape-measured distance, add rooms, doors, stairs and elevators, and print QR signs.</li>
+    <li><b>Field check.</b> Two people walk every route with the app, write down problems and fix them. Only then is the building marked "Verified".</li>
+    <li><b>Student test.</b> A small group of students uses the app for one or two weeks and sends feedback through "Report a problem".</li>
+    <li><b>Campus roll-out.</b> Repeat for every building, college by college. Timetables are imported each semester.</li>
+    <li><b>Maintenance.</b> Each college keeps its data current; closures and announcements are posted by staff; reports are reviewed weekly.</li>
+  </ol>
+  <h3>Time</h3>
+  <p>The time depends mostly on floor-plan availability and the number of buildings. As a planning guide (to be confirmed after the pilot): setup and the pilot building take a few weeks; each further building takes days to a few weeks depending on size and plan quality. We will give a firm schedule once we know the number of buildings and the plan formats.</p>
+  <figure class="short"><img src="img/admin-verify.png" alt="Admin verification page" /><figcaption>Staff dashboard — verification shows what is still missing before a building can be marked "Verified". (Demonstration data.)</figcaption></figure>
+</section>
+
+<!-- ───────────── 6. Scale ───────────── -->
+<section class="page">
+  <div class="eyebrow">6 · Serving all students</div>
+  <h2>Built so that thousands of students can use it at the same time</h2>
+  <p>The busiest moment is predictable: the start of the semester and the minutes before morning lectures. The design keeps that load away from the database.</p>
+  <div class="grid2 tight">
+    <div class="box">
+      <h3 style="margin-top:0">How the load is handled</h3>
+      <ul>
+        <li><b>One small data file per university.</b> When a student opens the app, the phone downloads the campus data once. Search and route calculation then run <b>on the phone itself</b> — no server work per search or per route.</li>
+        <li><b>Served from a CDN.</b> That file and the app itself are cached by a content-delivery network close to the user. The database is asked at most about once every few minutes per university, no matter how many students open the app.</li>
+        <li><b>Offline after first use.</b> Returning students load from their phone's storage; the app updates in the background.</li>
+        <li><b>No student accounts needed</b> for normal use — nothing to sign in to, nothing to overload.</li>
+        <li>Only staff edits and problem reports reach the database, and both are protected and rate-limited.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3 style="margin-top:0">Measured so far (lab tests)</h3>
+      <ul>
+        <li>Route calculation on a building-sized map: well under a millisecond; a synthetic map with 14,400 points: about 29 ms.</li>
+        <li>App start on a slow mobile connection (simulated): about 2 seconds the first time, a fraction of a second afterwards.</li>
+      </ul>
+      <h3>Before launch we will</h3>
+      <ul>
+        <li>Run a <b>load test</b> that simulates the expected peak (number of students to be agreed with the university) against the real setup.</li>
+        <li>Test on ordinary Android phones over campus Wi-Fi.</li>
+        <li>Set up uptime and error monitoring with alerts.</li>
+      </ul>
+      <p class="small muted">These are laboratory measurements on test data, not results from real campus use.</p>
+    </div>
+  </div>
+  <h3>Hosting options</h3>
+  <table>
+    <thead><tr><th>Part</th><th>Proposed</th><th>Alternative if the university requires local hosting</th></tr></thead>
+    <tbody>
+      <tr><td>Student app and campus data file</td><td>Global CDN hosting (e.g. Vercel / Cloudflare)</td><td>University web server behind a CDN</td></tr>
+      <tr><td>Database and staff login</td><td>Managed PostgreSQL (Supabase) in a nearby region</td><td>Self-hosted Supabase / PostgreSQL on university servers</td></tr>
+      <tr><td>Map background</td><td>OpenFreeMap (free OpenStreetMap tiles)</td><td>Self-hosted map tiles for the Erbil area</td></tr>
+    </tbody>
+  </table>
+  <p class="small muted">Costs depend on the chosen option and usage and will be quoted separately; the free tiers are usually enough for a pilot.</p>
+</section>
+
+<!-- ───────────── 7. Privacy & security ───────────── -->
+<section class="page">
+  <div class="eyebrow">7 · Privacy and security</div>
+  <h2>Safe for students, controlled for staff</h2>
+  <div class="grid2">
+    <div>
+      <h3>Students</h3>
+      <ul>
+        <li>No account, no tracking, no advertising, no analytics by default.</li>
+        <li>No GPS or location permission. Position is only what the student chooses (QR sign or a place on the map), and it stays on their phone.</li>
+        <li>Saved places and history stay on the student's own phone; history is off by default.</li>
+        <li>Problem reports contain no name or contact details.</li>
+      </ul>
+      <h3>Lecturers</h3>
+      <ul><li>Only approved public information (name, office, office hours) is shown, with consent.</li></ul>
+    </div>
+    <div>
+      <h3>Staff and data</h3>
+      <ul>
+        <li>Staff sign in; roles decide who can change what (e.g. a college editor cannot change another college's rooms).</li>
+        <li>The database enforces these rules itself, so they cannot be bypassed from the app.</li>
+        <li>Every change is recorded in an audit log.</li>
+        <li>Sensitive areas (server rooms, hazardous labs) can be kept off public maps — the university decides what is public.</li>
+        <li>Security headers, rate limiting and safe handling of uploaded plans are in place and tested.</li>
+      </ul>
+    </div>
+  </div>
+  <figure><img src="img/report.png" alt="Report a problem page" /><figcaption>Students can report a wrong room or a locked door without giving any personal information.</figcaption></figure>
+</section>
+
+<!-- ───────────── 8. Status & limits ───────────── -->
+<section class="page">
+  <div class="eyebrow">8 · Honest status</div>
+  <h2>What is ready, and what still depends on the pilot</h2>
+  <table>
+    <thead><tr><th style="width:40%">Area</th><th style="width:15%">Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Student web app (search, maps, directions, timetable, offline, 3 languages)</td><td><span class="tag ok">Built &amp; tested</span></td><td>Automated tests; demonstration data only.</td></tr>
+      <tr><td>Staff dashboard (data entry, map editor, real-map outlines, QR, closures, reports, verification)</td><td><span class="tag ok">Built &amp; tested</span></td><td>Tested in a local sandbox.</td></tr>
+      <tr><td>Database security rules</td><td><span class="tag ok">Built &amp; tested</span></td><td>Tested on PostgreSQL; not yet on the production database service.</td></tr>
+      <tr><td>Salahaddin University data</td><td><span class="tag warn">Not started</span></td><td>Needs the items in section 4.</td></tr>
+      <tr><td>Accuracy of routes on the real campus</td><td><span class="tag warn">Not yet proven</span></td><td>Will be measured in the field check; we make no accuracy claims before that.</td></tr>
+      <tr><td>Full-scale load test</td><td><span class="tag warn">Planned</span></td><td>Before launch, with the expected student numbers.</td></tr>
+      <tr><td>Native phone app (Android / iOS)</td><td><span class="tag">Prototype</span></td><td>The web app already works on all phones; store apps can follow.</td></tr>
+      <tr><td>GPS "blue dot" outdoors, live tracking</td><td><span class="tag">Not included</span></td><td>Possible later if the university wants it.</td></tr>
+    </tbody>
+  </table>
+  <figure><img src="img/nearby.png" alt="Nearest facilities" /><figcaption>"Nearest" list ordered by real walking distance from the student's position. (Demonstration data.)</figcaption></figure>
+</section>
+
+<!-- ───────────── 9. Decisions ───────────── -->
+<section class="page">
+  <div class="eyebrow">9 · Decisions requested</div>
+  <h2>What we ask the university to decide</h2>
+  <ol class="steps">
+    <li><b>Approve</b> a SUL NAV pilot and name a coordinator.</li>
+    <li><b>Choose the pilot building</b> (ideally a busy teaching building with several floors).</li>
+    <li><b>Share</b> the building list, the pilot building's floor plans and room list.</li>
+    <li><b>Allow</b> QR signs in the pilot building and one field-check day.</li>
+    <li><b>IT:</b> provide the official web address and confirm the hosting option (section 6).</li>
+    <li><b>Agree</b> who maintains the data after launch, and which areas must stay off the public map.</li>
+  </ol>
+  <div class="box blue" style="margin-top:6mm">
+    <b>What the university gets:</b> a multilingual campus guide for every student and visitor, aimed at reducing time lost looking for rooms and offices; one place for room changes, closures and announcements; and a maintained digital record of the campus layout.
+  </div>
+  <h3>Contact</h3>
+  <p>NULL-TECH — project owner of SUL NAV. Contact details: <i>to be added by the project owner</i>.</p>
+  <div class="sign">
+    <div>For Salahaddin University-Erbil — name, position, date</div>
+    <div>For NULL-TECH — name, date</div>
+  </div>
+  <p class="small muted" style="margin-top:10mm">All screenshots in this document show fictional demonstration data, not Salahaddin University information. Map background: © OpenStreetMap contributors.</p>
+</section>
+
+</body>
+</html>

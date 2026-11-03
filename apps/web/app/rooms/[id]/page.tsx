@@ -40,7 +40,7 @@ export default function RoomPage() {
                   {lt(floor?.name, loc)}
                 </Link>
               </div>
-              <h1 className="cn-figure text-7xl md:text-8xl mt-3">{room.code}</h1>
+              <h1 className="cn-figure text-4xl md:text-5xl mt-2">{room.code}</h1>
               {closedNow ? (
                 <div className="mt-3">
                   <Notice tone="warn">{t("room.closedNow", { reason: lt(closedNow.reason, loc) })}</Notice>

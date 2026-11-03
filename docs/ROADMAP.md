@@ -22,6 +22,8 @@
 - Campus overview: admins can upload a campus picture (aerial screenshot or official plan) and draw building footprints on it; it is not a geo-referenced map (no live map tiles or GPS coordinates).
 - Positioning is still QR checkpoint or manual pick (plus "nearest" lists computed from that start); there is no GPS or live tracking.
 - Problem reports in demo mode are validated but not sent anywhere (no backend); with Supabase they go to `problem_reports` via `submit_problem_report()`. The `closures` and `problem_reports` migration has only been tested on plain PostgreSQL.
+- Real map: the demo campus is centred on the Salahaddin University-Erbil main campus as recorded in OpenStreetMap (pilot preview); no building outlines are drawn yet. Floor plans are not yet geo-referenced onto the real map, and there is no outdoor walking network or GPS position.
+- The cached bundle endpoint has not been load-tested against a real Supabase project.
 - 3D is schematic: building heights come from the number of floors, interiors from 2D floor-plan shapes. There is no import of real 3D/BIM models, roof shapes, terrain, roads, walkways or green areas yet. Multi-building routes are drawn in 3D one building at a time.
 - Floors of one building are assumed to share one coordinate frame (true for plans drawn in the admin editor; must be checked when importing).
 - Data verification uses the existing per-record status (unverified/verified/demo) plus the university-level publish flag; there is no separate "in review" state.

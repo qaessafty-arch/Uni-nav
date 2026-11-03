@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const connectSrc = ["'self'", supabaseUrl, supabaseUrl.replace(/^http/, "ws")].filter(Boolean).join(" ");
+// Real-world base map (vector tiles). Default: OpenFreeMap (free, no key, OpenStreetMap data).
+const mapStyleUrl = process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://tiles.openfreemap.org/styles/positron";
+const mapOrigin = new URL(mapStyleUrl).origin;
+const connectSrc = ["'self'", supabaseUrl, supabaseUrl.replace(/^http/, "ws"), mapOrigin].filter(Boolean).join(" ");
 
 const securityHeaders = [
   {
@@ -11,11 +14,11 @@ const securityHeaders = [
       // Next.js inline bootstrap scripts require 'unsafe-inline' without a nonce setup.
       `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
-      `img-src 'self' data: blob: ${supabaseUrl}`.trim(),
+      `img-src 'self' data: blob: ${mapOrigin} ${supabaseUrl}`.trim(),
       "font-src 'self' data:",
       `connect-src ${connectSrc}`,
       "media-src 'self' blob:",
-      "worker-src 'self'",
+      "worker-src 'self' blob:", // the map library runs its tile workers from blob: URLs
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

@@ -20,7 +20,21 @@ export function getDataSource(): Promise<CampusDataSource> {
   if (source) return source;
   source =
     backendMode === "supabase"
-      ? import("@campusnav/data/supabase").then(({ SupabaseDataSource, createSupabase }) => new SupabaseDataSource(createSupabase({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY, persistSession: true })))
+      ? import("@campusnav/data/supabase").then(({ SupabaseDataSource, createSupabase }) => {
+          const direct = new SupabaseDataSource(createSupabase({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY, persistSession: true }));
+          // Prefer the CDN-cached bundle (one cached request per student); fall back to direct queries.
+          const getBundle = direct.getBundle.bind(direct);
+          direct.getBundle = async (universityId: string) => {
+            try {
+              const res = await fetch(`/api/bundle/${encodeURIComponent(universityId)}`);
+              if (res.ok) return { ...(await res.json()), generatedAt: new Date().toISOString() };
+            } catch {
+              /* offline or edge unavailable */
+            }
+            return getBundle(universityId);
+          };
+          return direct;
+        })
       : import("@campusnav/data/demo").then(
           ({ DemoDataSource, SandboxAdminSource }) =>
             new DemoDataSource(() => {

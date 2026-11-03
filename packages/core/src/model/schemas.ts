@@ -9,6 +9,15 @@ const uuidish = z.string().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/, "invalid_id"
 const optionalId = uuidish.nullish();
 const text = (max: number) => z.string().trim().max(max);
 
+const lngLatSchema = z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)]);
+export const campusGeoSchema = z.object({
+  center: lngLatSchema,
+  zoom: z.number().min(1).max(22),
+  bearing: z.number().min(-360).max(360).optional(),
+  source: z.string().trim().max(120).nullish(),
+});
+export const buildingGeoSchema = z.object({ footprint: z.array(lngLatSchema).min(3, "footprint_needs_3_points").max(500) });
+
 export const localizedTextSchema = z.object({
   en: text(300).min(1, "required"),
   ckb: text(300).optional(),
@@ -70,6 +79,7 @@ export const campusSchema = z.object({
     .max(3_000_000)
     .refine((s) => /^https?:\/\//.test(s) || /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(s), "invalid_image_url")
     .nullish(),
+  geo: campusGeoSchema.nullish(),
 });
 
 const rectSchema = z.object({ x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() });
@@ -82,6 +92,7 @@ export const buildingSchema = z.object({
   name: localizedTextSchema,
   description: localizedTextSchema.nullish(),
   overview: rectSchema.nullish(),
+  geo: buildingGeoSchema.nullish(),
   dataStatus: dataStatusSchema,
 });
 

@@ -384,4 +384,10 @@ export const ar: Record<MessageKey, string> = {
   "explore.today": "اليوم",
   "explore.expand": "عرض المزيد",
   "explore.collapse": "عرض أقل",
+  // ── real map ──
+  "explore.viewMap": "الخريطة",
+  "explore.viewPlan": "المخطط",
+  "explore.notOnRealMap": "ليس على الخريطة الحقيقية بعد",
+  "explore.noneOnRealMap": "لم تُرسم مباني الجامعة على الخريطة الحقيقية بعد.",
+  "explore.tilesFailed": "تعذّر تحميل الخريطة. تحقّق من اتصال الإنترنت أو استخدم عرض المخطط.",
 };
