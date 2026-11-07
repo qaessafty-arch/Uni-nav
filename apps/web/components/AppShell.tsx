@@ -8,6 +8,7 @@ import { featureOn, lt, type CampusBundle } from "@campusnav/core";
 import { formatInstant } from "@campusnav/i18n";
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
+import { useUnseenMaterials } from "@/lib/materials";
 import { cx } from "./ui";
 import { Logo } from "./Logo";
 import { BrandStyle, UniversityLogo } from "./BrandStyle";
@@ -218,9 +219,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <span className={cx("cn-dot", online ? "bg-accent" : "bg-[var(--cn-warning)]")} aria-hidden />
                 {online ? t("shell.online") : t("shell.offline")}
               </span>
-              <Link href="/notifications" className="p-2.5 text-muted hover:text-fg" aria-label={t("nav.notifications")} title={t("nav.notifications")}>
-                <IconBase d={I.bell} />
-              </Link>
+              <BellLink bundle={bundle} />
               <Link href="/settings" className="hidden md:inline-flex p-2.5 text-muted hover:text-fg" aria-label={t("nav.settings")} title={t("nav.settings")}>
                 <IconBase d={I.settings} />
               </Link>
@@ -287,5 +286,19 @@ export function AppShell({ children }: { children: ReactNode }) {
       <CommandPalette open={palette} onClose={() => setPalette(false)} bundle={bundle} index={index} pages={ALL_PAGES} />
       {bundle ? <LocationDialog bundle={bundle} open={locOpen} onClose={() => setLocOpen(false)} /> : null}
     </div>
+  );
+}
+
+/** Notifications bell with a count of lecture materials the person hasn't opened yet. */
+function BellLink({ bundle }: { bundle: CampusBundle | null }) {
+  const { t } = useApp();
+  const path = usePathname();
+  const n = useUnseenMaterials(bundle, path).length;
+  const label = n ? `${t("nav.notifications")} (${t("material.newCount", { n })})` : t("nav.notifications");
+  return (
+    <Link href="/notifications" className="relative p-2.5 text-muted hover:text-fg" aria-label={label} title={label} data-testid="bell">
+      <IconBase d={I.bell} />
+      {n ? <span className="absolute top-1 end-1 min-w-4 h-4 px-1 rounded-full bg-accent text-accent-fg text-[10px] leading-4 text-center font-semibold" data-testid="bell-count">{n > 9 ? "9+" : n}</span> : null}
+    </Link>
   );
 }

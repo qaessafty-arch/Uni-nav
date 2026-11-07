@@ -261,6 +261,8 @@ export const en = {
   "material.added": "Material added",
   "material.remove": "Remove",
   "material.removeConfirm": "Remove this material for everyone?",
+  "material.recent": "Recently added lecture materials",
+  "material.newCount": "{n} new",
   "material.new": "New",
   "material.demoNote": "Demo mode: files stay on this device only and are not shared with anyone.",
   "material.err.title": "Enter a title.",

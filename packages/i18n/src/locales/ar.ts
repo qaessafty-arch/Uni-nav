@@ -250,6 +250,8 @@ export const ar: Record<MessageKey, string> = {
   "material.added": "أُضيفت المادة",
   "material.remove": "إزالة",
   "material.removeConfirm": "إزالة هذه المادة للجميع؟",
+  "material.recent": "مواد محاضرات أُضيفت مؤخراً",
+  "material.newCount": "{n} جديد",
   "material.new": "جديد",
   "material.demoNote": "الوضع التجريبي: تبقى الملفات على هذا الجهاز فقط ولا تُشارك مع أحد.",
   "material.err.title": "أدخل عنواناً.",

@@ -149,3 +149,17 @@ export function materialsBySection(items: readonly CourseMaterial[]): { section:
   }
   return [...map.entries()].map(([section, items]) => ({ section, items }));
 }
+
+/**
+ * Materials a student has not seen yet: added after they last opened that course's page,
+ * and within the last `windowDays` (so a first visit doesn't show the whole term as new).
+ */
+export function unseenMaterials(items: readonly CourseMaterial[], seenOf: (courseId: string) => string | null | undefined, now: Date, windowDays = 14): CourseMaterial[] {
+  const floor = new Date(now.getTime() - windowDays * 86_400_000).toISOString();
+  return items
+    .filter((m) => {
+      const seen = seenOf(m.courseId) || "";
+      return m.createdAt > floor && m.createdAt > seen;
+    })
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}

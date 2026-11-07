@@ -4,6 +4,7 @@ import { lt, type CampusBundle, type Occurrence } from "@campusnav/core";
 import { formatClock, formatDate } from "@campusnav/i18n";
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
+import { useUnseenMaterials } from "@/lib/materials";
 import { Badge, ButtonLink, cx } from "./ui";
 
 /** One timetable occurrence with room/lecturer links, change markers and a Navigate action. */
@@ -20,6 +21,8 @@ export function LectureCard({ bundle, occ, emphasis, countdown, showDate }: { bu
   const timeChanged = occ.changes.some((c) => c.type === "time_change");
   const lecturerChanged = occ.changes.some((c) => c.type === "lecturer_change");
   const origRoom = occ.original.roomId ? l.rooms.get(occ.original.roomId) : undefined;
+  const unseen = useUnseenMaterials(bundle).filter((m) => m.courseId === occ.courseId).length;
+  const hasMaterials = (bundle.materials ?? []).some((m) => m.courseId === occ.courseId);
 
   return (
     <article className={cx("cn-card p-4 md:p-5", emphasis && "cn-card-accent", occ.cancelled && "opacity-70")} aria-label={lt(course?.name, loc)}>
@@ -37,6 +40,12 @@ export function LectureCard({ bundle, occ, emphasis, countdown, showDate }: { bu
               </Link>
             ) : null}
             {occ.kind ? <Badge>{t(`timetable.kind.${occ.kind}`)}</Badge> : null}
+            {course && hasMaterials ? (
+              <Link href={`/courses/${course.id}#materials`} className="text-xs underline text-muted hover:text-fg" data-testid="card-materials">
+                {t("material.title")}
+              </Link>
+            ) : null}
+            {unseen ? <Badge tone="accent">{t("material.newCount", { n: unseen })}</Badge> : null}
             {occ.cancelled ? <Badge tone="danger">{t("timetable.cancelled")}</Badge> : null}
           </div>
           <div className="text-sm text-muted mt-1 space-y-0.5">

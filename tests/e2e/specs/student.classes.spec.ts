@@ -50,3 +50,29 @@ test("the class rep uploads a PDF and posts to their class", async ({ page }) =>
   await expect(page.getByText("Quiz moved")).toBeVisible();
   await expect(page.getByText("Class · DEMO-CS-Y1-A").first()).toBeVisible();
 });
+
+test("classmates are told about new materials: bell count, notifications list, timetable badge", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-11-01T05:12:00Z")); // a Sunday with CS101 on the timetable
+  await enterDemo(page); // the rep uploads first
+  await page.goto(`${BASE}/courses/${CS101}`);
+  await page.getByTestId("material-upload").locator("summary").click();
+  await page.getByTestId("material-title").fill("Week 5 notes");
+  await page.getByTestId("material-url").fill("https://example.org/week5");
+  await page.getByRole("button", { name: "Upload" }).click();
+  await expect(page.getByText("Material added")).toBeVisible();
+
+  // Same device, now a classmate who has never opened the course page.
+  await page.evaluate((dept) => {
+    localStorage.setItem("campusnav.student.v1", JSON.stringify({ universityId: JSON.parse(localStorage.getItem("campusnav.prefs")!).universityId, status: "verified", email: "cs1b@students.demo.example", departmentId: dept, year: 1 }));
+    for (const k of Object.keys(localStorage)) if (k.startsWith("campusnav.materials.seen.")) localStorage.removeItem(k);
+  }, CS);
+  await page.goto(`${BASE}/timetable`);
+  await expect(page.getByTestId("bell-count").first()).toHaveText("1");
+  await expect(page.getByText("1 new").first()).toBeVisible();
+  await page.goto(`${BASE}/notifications`);
+  const recent = page.getByTestId("recent-materials");
+  await expect(recent).toContainText("Week 5 notes");
+  await recent.getByRole("link").first().click();
+  await expect(page).toHaveURL(new RegExp(`/courses/${CS101}#materials`));
+  await expect(page.getByTestId("bell-count")).toHaveCount(0); // opening the course marks them seen
+});

@@ -7,6 +7,7 @@ import { Badge, Button, EmptyState, Notice, PageTitle, Section } from "@/compone
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
 import { getDataSource } from "@/lib/config";
+import Link from "next/link";
 
 /**
  * Notifications: announcements plus schedule changes affecting the user's group
@@ -76,6 +77,7 @@ export default function NotificationsPage() {
                 </ul>
               )}
             </Section>
+            <RecentMaterials bundle={bundle} />
             <ClassPostForm bundle={bundle} />
             <Section title={t("home.announcements")}>
               {anns.length === 0 ? (
@@ -152,6 +154,36 @@ function ClassPostForm({ bundle }: { bundle: CampusBundle }) {
         {msg ? <Notice tone={msg.tone}>{msg.text}</Notice> : null}
         <Button variant="primary" type="submit" disabled={busy || !title.trim() || !body.trim()}>{t("class.postSend")}</Button>
       </form>
+    </Section>
+  );
+}
+
+/** Lecture materials added in the last 14 days for the person's own classes (bundle is already filtered). */
+function RecentMaterials({ bundle }: { bundle: CampusBundle }) {
+  const { t, prefs } = useApp();
+  const since = new Date(Date.now() - 14 * 86_400_000).toISOString();
+  const items = (bundle.materials ?? []).filter((m) => m.createdAt > since).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 30);
+  if (!items.length) return null;
+  const courses = new Map(bundle.courses.map((c) => [c.id, c]));
+  return (
+    <Section title={t("material.recent")} className="mt-6">
+      <ul className="border border-line divide-y divide-line" data-testid="recent-materials">
+        {items.map((m) => {
+          const c = courses.get(m.courseId);
+          return (
+            <li key={m.id}>
+              <Link href={`/courses/${m.courseId}#materials`} className="flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-surface">
+                <span className="mono text-xs text-muted">{c?.code}</span>
+                <span className="flex-1 min-w-0">
+                  <span className="block font-medium truncate">{m.title}</span>
+                  <span className="block text-xs text-muted">{lt(c?.name, prefs.locale)} · {formatDate(prefs.locale, m.createdAt)}</span>
+                </span>
+                <span aria-hidden>→</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </Section>
   );
 }

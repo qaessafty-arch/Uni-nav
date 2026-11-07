@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bundleForAccess, materialsBySection, postableGroups, uploadTargets, VISITOR, type CampusBundle } from "@campusnav/core";
+import { bundleForAccess, materialsBySection, postableGroups, unseenMaterials, uploadTargets, VISITOR, type CampusBundle } from "@campusnav/core";
 import { DemoClassTools, DemoDataSource, DEMO_REP_EMAIL, DEMO_REP_GROUP, demoBundle, materialProblem, DEMO_UNIVERSITY_ID } from "../src";
 import { did } from "../src/demo/dataset";
 import type { SyncKV } from "../src/demo/student";
@@ -87,5 +87,16 @@ describe("demo class tools", () => {
     await src.classes.removeMaterial(m);
     expect((await src.getBundle(DEMO_UNIVERSITY_ID)).materials!.some((x) => x.id === m.id)).toBe(false);
     await expect(src.classes.addMaterial(DEMO_UNIVERSITY_ID, { courseId: CS101, groupId: null, title: "Big", file: { size: 2_000_000 } as Blob, fileName: "big.pdf" })).rejects.toThrow(/demo_size/);
+  });
+});
+
+describe("new-material badges", () => {
+  const mk = (id: string, courseId: string, createdAt: string) => ({ id, universityId: DEMO_UNIVERSITY_ID, courseId, title: id, kind: "link" as const, url: "https://example.org", createdAt });
+  const now = new Date("2026-11-07T12:00:00Z");
+  const items = [mk("old", CS101, "2026-10-01T00:00:00Z"), mk("a", CS101, "2026-11-05T00:00:00Z"), mk("b", CS101, "2026-11-07T10:00:00Z"), mk("c", CS201, "2026-11-06T00:00:00Z")];
+  it("counts items after the last visit to that course, within 14 days", () => {
+    expect(unseenMaterials(items, () => null, now).map((m) => m.id)).toEqual(["b", "c", "a"]); // "old" is outside the window
+    expect(unseenMaterials(items, (c) => (c === CS101 ? "2026-11-06T00:00:00Z" : null), now).map((m) => m.id)).toEqual(["b", "c"]);
+    expect(unseenMaterials(items, () => "2026-11-08T00:00:00Z", now)).toEqual([]);
   });
 });

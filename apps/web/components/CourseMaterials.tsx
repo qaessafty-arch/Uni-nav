@@ -7,10 +7,10 @@ import type { MessageKey } from "@campusnav/i18n";
 import { Badge, Button, ButtonLink, EmptyState, Notice, Section } from "@/components/ui";
 import { getDataSource } from "@/lib/config";
 import { kv, useApp } from "@/lib/store";
+import { SEEN_EVENT, seenKey } from "@/lib/materials";
 
 const input = "cn-input w-full min-h-11";
 const sel = "w-full min-h-11 bg-surface border border-line-strong px-3 rounded-[var(--cn-radius,6px)]";
-const seenKey = (courseId: string) => `campusnav.materials.seen.${courseId}`;
 
 function sizeLabel(n?: number | null): string {
   if (!n) return "";
@@ -39,6 +39,7 @@ export function CourseMaterials({ bundle, course }: { bundle: CampusBundle; cour
   const [seenAt] = useState<string>(() => kv.getJSON<string>(seenKey(course.id), ""));
   useEffect(() => {
     kv.setJSON(seenKey(course.id), new Date().toISOString());
+    window.dispatchEvent(new Event(SEEN_EVENT));
   }, [course.id]);
 
   const [busy, setBusy] = useState<string | null>(null);
@@ -87,7 +88,7 @@ export function CourseMaterials({ bundle, course }: { bundle: CampusBundle; cour
 
   const sections = materialsBySection(items);
   return (
-    <Section title={t("material.title")} className="mt-6">
+    <Section title={<span id="materials">{t("material.title")}</span>} className="mt-6">
       {error ? <div className="mb-3"><Notice tone="warn">{error}</Notice></div> : null}
       {sections.length === 0 ? (
         <EmptyState title={t("material.empty")} />

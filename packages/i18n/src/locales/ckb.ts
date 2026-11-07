@@ -250,6 +250,8 @@ export const ckb: Record<MessageKey, string> = {
   "material.added": "کەرەستە زیادکرا",
   "material.remove": "لابردن",
   "material.removeConfirm": "ئەم کەرەستەیە بۆ هەمووان لاببرێت؟",
+  "material.recent": "کەرەستەی وانەی تازە زیادکراو",
+  "material.newCount": "{n} نوێ",
   "material.new": "نوێ",
   "material.demoNote": "دۆخی نموونە: فایلەکان تەنها لەسەر ئەم ئامێرە دەمێننەوە و لەگەڵ کەس هاوبەش ناکرێن.",
   "material.err.title": "ناونیشانێک بنووسە.",
