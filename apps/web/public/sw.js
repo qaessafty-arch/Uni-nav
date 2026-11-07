@@ -4,7 +4,7 @@
  * - API calls are never cached (checkpoint resolution must hit the backend).
  * Campus data itself is cached by the app in localStorage with a timestamp.
  */
-const VERSION = "campusnav-v1";
+const VERSION = "campusnav-v2";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const PRECACHE = ["/", "/offline", "/map", "/timetable", "/lecturers", "/scan", "/settings", "/manifest.webmanifest", "/icons/icon-192.png"];
