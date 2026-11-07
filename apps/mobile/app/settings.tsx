@@ -1,3 +1,4 @@
+import { NullTechMark } from "@/NullTechMark";
 import { router } from "expo-router";
 import { Pressable, ScrollView, Switch, View } from "react-native";
 import { LOCALES, lt } from "@campusnav/core";
@@ -48,7 +49,10 @@ export default function SettingsScreen() {
       <Btn title={t("settings.offlineRefresh")} onPress={reload} />
       <Btn variant="danger" title={t("settings.offlineClear")} onPress={() => prefs.universityId && void clearCachedBundle(kv, prefs.universityId)} />
       <T muted size="xs">{t("settings.privacy")}</T>
-      <T muted size="xs" mono>{`${t("brand.product")} · ${t("brand.studio")} · 0.1.0`}</T>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+        <NullTechMark size={14} />
+        <T muted size="xs" mono>{`${t("brand.product")} · ${t("brand.studio")} · 0.1.0`}</T>
+      </View>
     </ScrollView>
   );
 }

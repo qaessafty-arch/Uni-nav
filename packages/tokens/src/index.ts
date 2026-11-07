@@ -165,3 +165,4 @@ export const brand = {
   product: "CAMPUS NAV",
 } as const;
 export * from "./icons";
+export * from "./brand";

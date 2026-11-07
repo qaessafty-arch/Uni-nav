@@ -1,4 +1,5 @@
 "use client";
+import { NullTechMark } from "@/components/NullTechMark";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LOCALES } from "@campusnav/core";
@@ -37,7 +38,7 @@ export default function OnboardingPage() {
             <Logo size={56} />
           </div>
           <p className="mono text-xl font-semibold tracking-[0.2em] mt-6">CAMPUS NAV</p>
-          <p className="mono text-xs text-faint mt-2 tracking-[0.3em]">NULL-TECH</p>
+          <p className="mono text-xs text-faint mt-2 tracking-[0.3em] flex items-center justify-center gap-2"><NullTechMark size={16} /> NULL-TECH</p>
         </div>
       </div>
     );

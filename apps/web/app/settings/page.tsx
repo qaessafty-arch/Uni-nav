@@ -5,6 +5,7 @@ import { formatInstant } from "@campusnav/i18n";
 import { visualStyleLabels } from "@campusnav/tokens";
 import { Button, ButtonLink, PageTitle, Section, StyleSelector, Toggle } from "@/components/ui";
 import { useApp } from "@/lib/store";
+import { NullTechMark } from "@/components/NullTechMark";
 import { APP_VERSION, backendMode } from "@/lib/config";
 
 export default function SettingsPage() {
@@ -54,7 +55,7 @@ export default function SettingsPage() {
         <p className="text-sm text-muted mono">
           {t("brand.product")} · {t("settings.version", { v: APP_VERSION })} · {backendMode}
         </p>
-        <p className="text-sm text-muted mono mt-1">{t("brand.studio")}</p>
+        <p className="text-sm text-muted mono mt-1 flex items-center gap-2"><NullTechMark size={18} /> {t("brand.studio")}</p>
       </Section>
     </div>
   );

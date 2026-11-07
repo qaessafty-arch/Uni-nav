@@ -1,4 +1,5 @@
 "use client";
+import { NullTechMark } from "./NullTechMark";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -418,7 +419,7 @@ function Frame({ children }: { children: ReactNode }) {
         <main className="cn-sections p-4 md:p-8 lg:p-10 w-full max-w-7xl">
           {children}
           <p className="mt-12 flex items-center justify-center gap-2 text-[11px] text-faint" data-testid="powered-by">
-            Powered by <span className="mono font-semibold tracking-[0.2em] text-muted" dir="ltr">NULL-TECH</span>
+            Powered by <span className="inline-flex items-center gap-1.5 mono font-semibold tracking-[0.2em] text-muted" dir="ltr"><NullTechMark size={16} /> NULL-TECH</span>
           </p>
         </main>
       </div>
