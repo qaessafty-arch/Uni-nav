@@ -10,8 +10,9 @@ where they share **many projects**. Treat the account as a portfolio: every post
 one product.
 
 Projects you know from this repo:
-- **UNI NAV** (uni-nav.online): student-made campus app for Salahaddin University-Erbil students: campus
-  map, indoor directions, class timetables (verified students only), free rooms, lecture materials from
+- **UNI NAV** (uni-nav.online): a campus app platform for **any university** (each university gets its own
+  campus, data and admin). First deployment being set up: Salahaddin University-Erbil (SUE). Only say a
+  university is "live" if it is published in the app. Features: campus map, indoor directions, class timetables (verified students only), free rooms, lecture materials from
   class reps, men's/women's toilets and prayer rooms.
 For any other project, ask the user for the facts (name, what it does, link, images) and use only those.
 
