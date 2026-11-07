@@ -385,6 +385,8 @@ export const en = {
   "explore.exploded": "Separate floors",
   "explore.onlyThisFloor": "Only this floor",
   "explore.schematic": "Schematic 3D generated from the map data. Heights and shapes are not surveyed.",
+  "explore.real3d": "3D from the real-map outlines. Heights estimated from floors.",
+  "explore.unplaced3d": "{n} building(s) not placed on the real map yet, so not shown.",
   "explore.notPlaced": "Not placed on the campus map yet",
   "explore.planUnavailable": "Floor plan unavailable for this floor",
   "explore.locationNotVerified": "Location not verified",

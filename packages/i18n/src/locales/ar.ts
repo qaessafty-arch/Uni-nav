@@ -367,6 +367,8 @@ export const ar: Record<MessageKey, string> = {
   "explore.exploded": "فصل الطوابق",
   "explore.onlyThisFloor": "هذا الطابق فقط",
   "explore.schematic": "نموذج ثلاثي الأبعاد تخطيطي مولَّد من بيانات الخريطة. الارتفاعات والأشكال غير مُقاسة.",
+  "explore.real3d": "ثلاثي الأبعاد من مخططات المباني على الخريطة الحقيقية. الارتفاعات تقديرية حسب الطوابق.",
+  "explore.unplaced3d": "{n} مبنى لم يوضع على الخريطة الحقيقية بعد، لذا لا يظهر.",
   "explore.notPlaced": "لم يُوضع على خريطة الحرم بعد",
   "explore.planUnavailable": "مخطط هذا الطابق غير متوفر",
   "explore.locationNotVerified": "الموقع غير مُتحقَّق منه",

@@ -4,7 +4,7 @@
  * nodes). Heights are schematic (a fixed height per floor) — the UI says so.
  */
 import * as THREE from "three";
-import { lt, type CampusBundle, type Floor, type Locale, type MapElement, type NavNode, type Route } from "@campusnav/core";
+import { buildingHeightM, lt, type Building, type CampusBundle, type Floor, type LngLat, type Locale, type MapElement, type NavNode, type Route } from "@campusnav/core";
 import { cssColor, type LabelSpec, type SceneContent } from "./viewer";
 
 const CAMPUS_SCALE = 0.1; // campus overview units → scene units
@@ -44,9 +44,96 @@ export interface CampusSceneOptions {
   onAsset?: () => void;
 }
 
+/** Placed on the real map: has a usable outline. */
+function placed(b: Building): boolean {
+  return !!b.geo && b.geo.footprint.length >= 3;
+}
+
+/**
+ * Real-shape campus: once buildings are placed on the real map, 3D shows each
+ * one with its true outline, position and size (1 scene unit = 1 metre),
+ * at the same height as the real map's 3D. Walkways are drawn on the ground.
+ */
+function buildCampusReal(bundle: CampusBundle, o: CampusSceneOptions, buildings: Building[], c: ReturnType<typeof palette>, matFor: (color: string | null | undefined, selected: boolean) => THREE.MeshStandardMaterial) {
+  const all = buildings.flatMap((b) => b.geo!.footprint);
+  const lng0 = all.reduce((s, p) => s + p[0], 0) / all.length;
+  const lat0 = all.reduce((s, p) => s + p[1], 0) / all.length;
+  const kx = 111320 * Math.cos((lat0 * Math.PI) / 180);
+  const ky = 110540;
+  /** [lng, lat] → metres east / north of the centre. */
+  const en = (p: LngLat): [number, number] => [(p[0] - lng0) * kx, (p[1] - lat0) * ky];
+
+  const pts = all.map(en);
+  const margin = 40;
+  const minX = Math.min(...pts.map((p) => p[0])) - margin;
+  const maxX = Math.max(...pts.map((p) => p[0])) + margin;
+  const minN = Math.min(...pts.map((p) => p[1])) - margin;
+  const maxN = Math.max(...pts.map((p) => p[1])) + margin;
+
+  const root = new THREE.Group();
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(maxX - minX, maxN - minN), std(c.ground.clone().offsetHSL(0, 0, 0.03)));
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.set((minX + maxX) / 2, 0, -(minN + maxN) / 2);
+  root.add(ground);
+
+  // Walkways between buildings (outdoor edges staff traced on the real map)
+  const walkMat = new THREE.LineBasicMaterial({ color: c.accent, transparent: true, opacity: 0.55 });
+  for (const e of bundle.navEdges) {
+    if (e.kind !== "outdoor" || !e.geometry || e.geometry.length < 2) continue;
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(e.geometry.map((p) => { const [x, n] = en(p); return new THREE.Vector3(x, 0.05, -n); })), walkMat);
+    root.add(line);
+  }
+
+  const pickables: THREE.Object3D[] = [];
+  const labels: LabelSpec[] = [];
+  const buildingBoxes = new Map<string, THREE.Box3>();
+  for (const b of buildings) {
+    const ring = b.geo!.footprint.map(en);
+    const levels = bundle.floors.filter((f) => f.buildingId === b.id).map((f) => f.level);
+    const h = buildingHeightM(b.geo, levels);
+    const storeys = Math.max(1, levels.filter((l) => l >= 0).length);
+    const selected = b.id === o.selectedBuildingId;
+    const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false });
+    geo.rotateX(-Math.PI / 2); // shape (east, north) → ground; extrusion → up; north → -z
+    const mesh = new THREE.Mesh(geo, matFor(b.color, selected));
+    const g = new THREE.Group();
+    g.userData.pick = { kind: "building", id: b.id };
+    g.add(mesh);
+    g.add(edges(geo, selected ? c.accent : c.edge));
+    // storey lines along the real outline
+    const loop = (y: number) => new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(ring.map(([x, n]) => new THREE.Vector3(x, y, -n))), new THREE.LineBasicMaterial({ color: c.edge, transparent: true, opacity: 0.55 }));
+    for (let i = 1; i < storeys; i++) g.add(loop((h / storeys) * i));
+    root.add(g);
+    pickables.push(mesh);
+    const box = new THREE.Box3().setFromObject(g);
+    buildingBoxes.set(b.id, box);
+    const ctr = box.getCenter(new THREE.Vector3());
+    labels.push({ id: `b-${b.id}`, text: b.code, sub: lt(b.name, o.locale), position: new THREE.Vector3(ctr.x, h + 1.5, ctr.z), priority: selected ? 100 : 10, tone: selected ? "accent" : "default" });
+  }
+  const bounds = new THREE.Box3(new THREE.Vector3(minX, 0, -maxN), new THREE.Vector3(maxX, 12, -minN));
+  return { root, pickables, labels, bounds, buildingBoxes };
+}
+
 export function buildCampus(bundle: CampusBundle, o: CampusSceneOptions): SceneContent & { buildingBoxes: Map<string, THREE.Box3> } {
   const c = palette();
   const campus = bundle.campuses.find((x) => x.id === o.campusId) ?? bundle.campuses[0]!;
+  const matCacheReal = new Map<string, THREE.MeshStandardMaterial>();
+  const bodyReal = std(c.building);
+  const matForReal = (color: string | null | undefined, selected: boolean) => {
+    if (!color) return selected ? std(c.accent, { emissive: c.accent, emissiveIntensity: 0.25 }) : bodyReal;
+    const key = `${color}:${selected}`;
+    let m = matCacheReal.get(key);
+    if (!m) {
+      const col = c.building.clone().lerp(new THREE.Color(color), selected ? 0.85 : 0.38);
+      m = std(col, selected ? { emissive: new THREE.Color(color), emissiveIntensity: 0.18 } : {});
+      matCacheReal.set(key, m);
+    }
+    return m;
+  };
+  // Real shapes as soon as any building on this campus is placed on the real map.
+  const onMap = bundle.buildings.filter((b) => b.campusId === campus.id && placed(b));
+  if (onMap.length) return buildCampusReal(bundle, o, onMap, c, matForReal);
   const W = (campus.overviewWidth ?? 1000) * CAMPUS_SCALE;
   const H = (campus.overviewHeight ?? 700) * CAMPUS_SCALE;
   const root = new THREE.Group();

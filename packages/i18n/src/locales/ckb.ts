@@ -367,6 +367,8 @@ export const ckb: Record<MessageKey, string> = {
   "explore.exploded": "جیاکردنەوەی نهۆمەکان",
   "explore.onlyThisFloor": "تەنها ئەم نهۆمە",
   "explore.schematic": "3Dی سادەکراو لە زانیاری نەخشەوە دروستکراوە. بەرزی و شێوەکان پێوانە نەکراون.",
+  "explore.real3d": "سێ ڕەهەندی لە شێوەی ڕاستەقینەی بیناکان لەسەر نەخشە. بەرزییەکان بەپێی نهۆمەکان خەمڵێنراون.",
+  "explore.unplaced3d": "{n} بینا هێشتا لەسەر نەخشەی ڕاستەقینە دانەنراون، بۆیە پیشان نادرێن.",
   "explore.notPlaced": "هێشتا لەسەر نەخشەی کەمپەس دانەنراوە",
   "explore.planUnavailable": "نەخشەی ئەم نهۆمە بەردەست نییە",
   "explore.locationNotVerified": "شوێن پشتڕاست نەکراوەتەوە",

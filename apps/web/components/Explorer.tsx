@@ -188,6 +188,9 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
   // ── Map area ──────────────────────────────────────────────────────────
   let mapArea: React.ReactNode;
   const heights3d = heightsFor(bundle);
+  const campusBuildings = bundle.buildings.filter((b) => b.campusId === campus?.id);
+  const campusPlaced = campusBuildings.filter((b) => b.geo && b.geo.footprint.length >= 3);
+  const campusUnplaced = campusPlaced.length ? campusBuildings.length - campusPlaced.length : 0;
   const walkways = bundle.navEdges.filter((e) => e.kind === "outdoor" && e.geometry && e.geometry.length >= 2).map((e) => e.geometry!);
   if (!inside && view === "map" && campus?.geo) {
     mapArea = (
@@ -454,7 +457,14 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
             </button>
           ))}
         </div>
-        {no3d && (inside ? indoorView : view) !== "map" ? <span className="cn-mapbadge" role="status">{t("explore.no3d")}</span> : (inside ? indoorView : view) === "3d" ? <span className="cn-mapbadge hidden md:inline-flex">{t("explore.schematic")}</span> : !inside && view === "map" && !bundle.buildings.some((b) => b.geo) ? <span className="cn-mapbadge">{t("explore.noneOnRealMap")}</span> : null}
+        {no3d && (inside ? indoorView : view) !== "map" ? <span className="cn-mapbadge" role="status">{t("explore.no3d")}</span> : (inside ? indoorView : view) === "3d" ? (
+          !inside && campusPlaced.length ? (
+            <>
+              <span className="cn-mapbadge hidden md:inline-flex">{t("explore.real3d")}</span>
+              {campusUnplaced ? <span className="cn-mapbadge !text-warn">{t("explore.unplaced3d", { n: campusUnplaced })}</span> : null}
+            </>
+          ) : <span className="cn-mapbadge hidden md:inline-flex">{t("explore.schematic")}</span>
+        ) : !inside && view === "map" && !bundle.buildings.some((b) => b.geo) ? <span className="cn-mapbadge">{t("explore.noneOnRealMap")}</span> : null}
         {isDemo ? <span className="cn-mapbadge !text-warn max-md:!hidden">{t("data.demo")}</span> : null}
       </div>
 
