@@ -35,8 +35,17 @@ export interface UniversitySettings {
   weekendDays: Weekday[];
   defaultLocale: Locale;
   enabledLocales: Locale[];
-  /** Whether anonymous visitors can see timetables. */
+  /**
+   * Legacy switch, kept for stored settings. Timetables are now shown only to
+   * verified students of the group's major and year (and to staff), whatever
+   * this says; enforcement is in Postgres RLS.
+   */
   timetableVisibility: "public" | "members";
+  /**
+   * Email domains that prove a student belongs to the university, e.g.
+   * ["su.edu.krd"]. Students verify by signing in with such an address.
+   */
+  studentEmailDomains?: string[] | null;
   /** Walking speed assumptions used for time estimates (metres / second). */
   walkingSpeedMps: number;
   accessibleWalkingSpeedMps: number;
@@ -278,6 +287,8 @@ export interface Department {
   name: LocalizedText;
   college?: LocalizedText | null;
   buildingId?: string | null;
+  /** Length of the bachelor programme in years (stages). Default 4. */
+  programYears?: number | null;
 }
 
 export interface OfficeHour {
@@ -452,6 +463,12 @@ export interface CampusBundle {
   announcements: Announcement[];
   /** Active and upcoming closures (optional for compatibility with older cached bundles). */
   closures?: Closure[];
+  /**
+   * When rooms are busy, with nothing about whose class it is (no course,
+   * group or lecturer). Lets students find free rooms without seeing other
+   * majors' timetables. Absent for visitors.
+   */
+  roomOccupancy?: { entries: TimetableEntry[]; changes: ScheduleChange[] } | null;
 }
 
 export interface UniversitySummary {

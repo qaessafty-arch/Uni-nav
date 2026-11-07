@@ -25,6 +25,10 @@ export function getDataSource(): Promise<CampusDataSource> {
           // Prefer the CDN-cached bundle (one cached request per student); fall back to direct queries.
           const getBundle = direct.getBundle.bind(direct);
           direct.getBundle = async (universityId: string) => {
+            // A signed-in (verified) student gets their own view straight from the database:
+            // RLS adds classrooms and their timetable. Everyone else shares the cached public bundle.
+            const { data } = await direct.client.auth.getSession();
+            if (data.session) return getBundle(universityId);
             try {
               const res = await fetch(`/api/bundle/${encodeURIComponent(universityId)}`);
               if (res.ok) return { ...(await res.json()), generatedAt: new Date().toISOString() };
@@ -37,14 +41,23 @@ export function getDataSource(): Promise<CampusDataSource> {
         })
       : import("@campusnav/data/demo").then(
           ({ DemoDataSource, SandboxAdminSource }) =>
-            new DemoDataSource(() => {
-              try {
-                if (!window.localStorage.getItem("campusnav.sandbox.v1")) return null;
-                return new SandboxAdminSource(window.localStorage).toBundle();
-              } catch {
-                return null;
-              }
-            }),
+            new DemoDataSource(
+              () => {
+                try {
+                  if (!window.localStorage.getItem("campusnav.sandbox.v1")) return null;
+                  return new SandboxAdminSource(window.localStorage).toBundle();
+                } catch {
+                  return null;
+                }
+              },
+              (() => {
+                try {
+                  return window.localStorage;
+                } catch {
+                  return null;
+                }
+              })(),
+            ),
         );
   return source;
 }

@@ -1,5 +1,6 @@
 "use client";
 import { PoweredBy } from "./PoweredBy";
+import { useStudentLabel } from "./StudentGate";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
@@ -85,6 +86,22 @@ function LocationBar({ bundle, onOpen, className }: { bundle: CampusBundle | nul
   );
 }
 
+/** Visitor / verified student (major · year) / staff, linking to verification. */
+function AccessChip({ onNavigate }: { onNavigate?: () => void }) {
+  const { t, student } = useApp();
+  const label = useStudentLabel();
+  const a = student.access;
+  return (
+    <Link href="/verify" onClick={onNavigate} className="cn-navitem" data-testid="access-chip">
+      <IconBase d={a.kind === "visitor" ? I.lecturers : I.checkCircle} />
+      <span className="flex flex-col leading-tight min-w-0">
+        <span className="truncate">{a.kind === "student" ? t("access.student") : a.kind === "staff" ? t("access.staff") : t("access.visitor")}</span>
+        <span className="text-[11px] text-muted truncate">{a.kind === "student" ? label : a.kind === "visitor" ? t("student.verifyCta") : ""}</span>
+      </span>
+    </Link>
+  );
+}
+
 function SidebarContent({ bundle, onNavigate, onOpenLocation }: { bundle: CampusBundle | null; onNavigate?: () => void; onOpenLocation: () => void }) {
   const { t, prefs, online } = useApp();
   const isActive = useActive();
@@ -120,6 +137,7 @@ function SidebarContent({ bundle, onNavigate, onOpenLocation }: { bundle: Campus
         ))}
       </nav>
       <div className="p-3 border-t border-line space-y-2">
+        <AccessChip onNavigate={onNavigate} />
         <Link href="/report" onClick={onNavigate} aria-current={isActive("/report") ? "page" : undefined} className="cn-navitem">
           <IconBase d={I.flag} />
           <span>{t("nav.report")}</span>

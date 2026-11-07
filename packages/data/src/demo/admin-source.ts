@@ -1,5 +1,5 @@
 import { canAssignRole, type CampusBundle, type EntityTable, type ProblemStatus, type Role, type UniversitySummary } from "@campusnav/core";
-import type { AdminDataSource, AdminSession, AuditEntry, MembershipRow } from "../types";
+import type { AdminDataSource, AdminSession, AuditEntry, EnrollmentRow, MembershipRow, RosterInput, RosterRow } from "../types";
 import { demoBundle, demoCheckpoints, did, DEMO_UNIVERSITY_ID } from "./dataset";
 
 /**
@@ -205,6 +205,43 @@ export class SandboxAdminSource implements AdminDataSource {
     this.log(existing ? "update" : "insert", "memberships", row.id, { role });
     this.save();
     return row;
+  }
+
+  // Sandbox: no accounts exist, so there are no enrollments to review; the roster is kept locally.
+  async listEnrollments(): Promise<EnrollmentRow[]> {
+    return [];
+  }
+
+  async reviewEnrollment(): Promise<void> {
+    throw new Error("No student accounts in the local sandbox.");
+  }
+
+  private get roster(): RosterRow[] {
+    return ((this.state as unknown as { roster?: RosterRow[] }).roster ??= []);
+  }
+
+  async listRoster(universityId: string): Promise<RosterRow[]> {
+    return this.roster.filter((r) => r.universityId === universityId).sort((a, b) => a.email.localeCompare(b.email));
+  }
+
+  async importRoster(universityId: string, rows: RosterInput[]): Promise<number> {
+    for (const r of rows) {
+      const email = r.email.trim().toLowerCase();
+      const hit = this.roster.find((x) => x.universityId === universityId && x.email === email);
+      if (hit) Object.assign(hit, { departmentId: r.departmentId, year: r.year, studentNumber: r.studentNumber ?? null });
+      else this.roster.push({ id: `roster-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, universityId, email, departmentId: r.departmentId, year: r.year, studentNumber: r.studentNumber ?? null });
+    }
+    this.log("insert", "student_roster", "import", { rows: rows.length });
+    this.save();
+    return rows.length;
+  }
+
+  async removeRoster(id: string): Promise<void> {
+    const list = this.roster;
+    const i = list.findIndex((r) => r.id === id);
+    if (i >= 0) list.splice(i, 1);
+    this.log("delete", "student_roster", id, null);
+    this.save();
   }
 
   async removeMember(id: string): Promise<void> {

@@ -2,8 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfoFallback from "./net";
 import { getLocales } from "expo-localization";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { buildSearchIndex, type CampusBundle, type Locale, type SearchIndex, type UniversitySummary } from "@campusnav/core";
-import { createSupabase, DemoDataSource, loadBundle, readCachedBundle, SupabaseDataSource, type AsyncKV, type CampusDataSource } from "@campusnav/data";
+import { buildSearchIndex, bundleForAccess, VISITOR, type CampusBundle, type Locale, type SearchIndex, type UniversitySummary } from "@campusnav/core";
+import { clearCachedBundle, createSupabase, DemoDataSource, loadBundle, readCachedBundle, SupabaseDataSource, type AsyncKV, type CampusDataSource, type StudentStatus } from "@campusnav/data";
 import { dir, isLocale, translate, type MessageKey, type Params } from "@campusnav/i18n";
 import { visualStyles, type VisualStyle } from "@campusnav/tokens";
 
@@ -17,13 +17,28 @@ export const kv: AsyncKV = {
   removeItem: (k) => AsyncStorage.removeItem(k),
 };
 
+/** Synchronous view over AsyncStorage for the demo verification (preloaded at start, written through). */
+const STUDENT_KEY = "campusnav.student.v1";
+const memory = new Map<string, string>();
+const syncKV = {
+  getItem: (k: string) => memory.get(k) ?? null,
+  setItem: (k: string, v: string) => {
+    memory.set(k, v);
+    void AsyncStorage.setItem(k, v);
+  },
+  removeItem: (k: string) => {
+    memory.delete(k);
+    void AsyncStorage.removeItem(k);
+  },
+};
+
 let source: CampusDataSource | null = null;
 export function dataSource(): CampusDataSource {
   if (!source) {
     source =
       SUPABASE_URL && SUPABASE_ANON_KEY
         ? new SupabaseDataSource(createSupabase({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY, storage: AsyncStorage, persistSession: true }))
-        : new DemoDataSource();
+        : new DemoDataSource(undefined, syncKV);
   }
   return source;
 }
@@ -53,6 +68,10 @@ interface Ctx {
   setPrefs: (p: Partial<Prefs>) => void;
   universities: UniversitySummary[] | null;
   bundleState: BundleState;
+  /** Visitor, verified student (major + year) or staff. */
+  student: StudentStatus;
+  refreshStudent: () => Promise<void>;
+  signOutStudent: () => Promise<void>;
   reload: () => void;
   start: { nodeId: string; label?: string } | null;
   setStart: (s: { nodeId: string; label?: string } | null) => void;
@@ -69,7 +88,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [prefs, setPrefsState] = useState<Prefs>(DEFAULT);
   const [universities, setUniversities] = useState<UniversitySummary[] | null>(null);
-  const [bundleState, setBundleState] = useState<BundleState>({ status: "idle" });
+  const [rawBundleState, setBundleState] = useState<BundleState>({ status: "idle" });
+  const [student, setStudent] = useState<StudentStatus>({ access: VISITOR });
   const [start, setStartState] = useState<Ctx["start"]>(null);
   const [saved, setSaved] = useState<string[]>([]);
   const [online, setOnline] = useState(true);
@@ -77,7 +97,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const [p, s, sv] = await Promise.all([AsyncStorage.getItem("prefs"), AsyncStorage.getItem("start"), AsyncStorage.getItem("saved")]);
+      const [p, s, sv, st] = await Promise.all([AsyncStorage.getItem("prefs"), AsyncStorage.getItem("start"), AsyncStorage.getItem("saved"), AsyncStorage.getItem(STUDENT_KEY)]);
+      if (st) memory.set(STUDENT_KEY, st);
       const parsed: Partial<Prefs> = p ? JSON.parse(p) : {};
       if (!parsed.locale) {
         const lang = getLocales()[0]?.languageCode ?? "en";
@@ -126,6 +147,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, [hydrated, prefs.universityId, k]);
 
+  const refreshStudent = useCallback(async () => {
+    if (!prefs.universityId) return setStudent({ access: VISITOR });
+    try {
+      setStudent((await dataSource().student?.status(prefs.universityId)) ?? { access: VISITOR });
+    } catch {
+      setStudent({ access: VISITOR });
+    }
+  }, [prefs.universityId]);
+
+  useEffect(() => {
+    if (hydrated) void refreshStudent();
+  }, [hydrated, refreshStudent, k]);
+
+  const signOutStudent = useCallback(async () => {
+    await dataSource().student?.signOut();
+    if (prefs.universityId) await clearCachedBundle(kv, prefs.universityId);
+    setPrefs({ groupId: null });
+    setStudent({ access: VISITOR });
+    setK((x) => x + 1);
+  }, [prefs.universityId, setPrefs]);
+
+  // Visitors get public places only; students their own major and year.
+  const bundleState = useMemo<BundleState>(() => {
+    if (rawBundleState.status !== "ready") return rawBundleState;
+    const bundle = bundleForAccess(rawBundleState.bundle, student.access);
+    return bundle === rawBundleState.bundle ? rawBundleState : { ...rawBundleState, bundle, index: buildSearchIndex(bundle) };
+  }, [rawBundleState, student.access]);
+
   const setStart = useCallback((s: Ctx["start"]) => {
     setStartState(s);
     void (s ? AsyncStorage.setItem("start", JSON.stringify(s)) : AsyncStorage.removeItem("start"));
@@ -142,8 +191,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const t = useCallback((key: MessageKey, p?: Params) => translate(prefs.locale, key, p), [prefs.locale]);
 
   const value = useMemo<Ctx>(
-    () => ({ hydrated, prefs, setPrefs, universities, bundleState, reload: () => setK((x) => x + 1), start, setStart, saved, toggleSaved, online, t, rtl: dir(prefs.locale) === "rtl" }),
-    [hydrated, prefs, setPrefs, universities, bundleState, start, setStart, saved, toggleSaved, online, t],
+    () => ({ hydrated, prefs, setPrefs, universities, bundleState, student, refreshStudent, signOutStudent, reload: () => setK((x) => x + 1), start, setStart, saved, toggleSaved, online, t, rtl: dir(prefs.locale) === "rtl" }),
+    [hydrated, prefs, setPrefs, universities, bundleState, student, refreshStudent, signOutStudent, start, setStart, saved, toggleSaved, online, t],
   );
   return <C.Provider value={value}>{children}</C.Provider>;
 }

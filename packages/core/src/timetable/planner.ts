@@ -35,7 +35,9 @@ export function freeRoomsAt(bundle: CampusBundle, now: Date, opts: FreeRoomsOpti
   const types = new Set(opts.types ?? STUDY_ROOM_TYPES);
   const minMinutes = opts.minMinutes ?? 30;
   const z = zonedNow(now, bundle.university.settings.timezone);
-  const today = occurrencesOn(z.date, bundle.timetable, bundle.scheduleChanges);
+  // All bookings (anonymised for students), not just the viewer's own lectures.
+  const occ = bundle.roomOccupancy ?? { entries: bundle.timetable, changes: bundle.scheduleChanges };
+  const today = occurrencesOn(z.date, occ.entries, occ.changes);
   const closedRooms = new Set((bundle.closures ?? []).filter((c) => c.targetType === "room" && isClosureActive(c, now)).map((c) => c.targetId));
 
   const out: FreeRoom[] = [];

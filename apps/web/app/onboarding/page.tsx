@@ -96,9 +96,14 @@ export default function OnboardingPage() {
           {t("common.continue")}
         </Button>
       ) : (
-        <Button variant="primary" onClick={finish}>
-          {t("onboarding.start")}
-        </Button>
+        <div className="grid gap-2">
+          <Button variant="primary" onClick={finish}>
+            {t("onboarding.start")}
+          </Button>
+          <Button onClick={() => { setPrefs({ onboarded: true }); router.replace(prefs.universityId ? "/verify" : "/campus"); }} data-testid="onboarding-student">
+            {t("onboarding.student")}
+          </Button>
+        </div>
       )}
       <p className="text-center text-faint text-xs mono mt-6">{t("splash.tagline")}</p>
     </div>

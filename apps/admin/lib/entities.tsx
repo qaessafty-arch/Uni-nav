@@ -155,14 +155,16 @@ export const departmentConfig: EntityConfig<Department> = {
     { key: "name", label: "Name", type: "localized", required: true },
     { key: "college", label: "College / faculty", type: "localized" },
     { key: "buildingId", label: "Main building", type: "relation", table: "buildings", display: (r) => `${r.code} — ${name(r)}`, nullable: true },
+    { key: "programYears", label: "Programme length (years)", type: "number", hint: "Bachelor = 4 by default; students can be years 1 to this." },
   ],
   columns: [
     { label: "Code", render: (r) => <Code>{r.code}</Code> },
     { label: "Name", render: (r) => <L v={r.name} /> },
     { label: "College", render: (r) => <L v={r.college} /> },
+    { label: "Years", render: (r) => <span className="mono">{r.programYears ?? 4}</span> },
   ],
   searchText: (r) => `${r.code} ${r.name.en} ${r.name.ckb ?? ""} ${r.name.ar ?? ""}`,
-  defaults: () => ({ name: { en: "" }, code: "", college: null, buildingId: null }),
+  defaults: () => ({ name: { en: "" }, code: "", college: null, buildingId: null, programYears: 4 }),
 };
 
 export const lecturerConfig: EntityConfig<Lecturer> = {

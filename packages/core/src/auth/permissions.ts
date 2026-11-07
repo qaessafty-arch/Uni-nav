@@ -60,7 +60,8 @@ export type Permission =
   | "data.export"
   | "public.read"
   | "student.personal"
-  | "report.manage";
+  | "report.manage"
+  | "student.verify";
 
 const ADMIN_SET: Permission[] = [
   "university.update",
@@ -84,6 +85,7 @@ const ADMIN_SET: Permission[] = [
   "public.read",
   "student.personal",
   "report.manage",
+  "student.verify",
 ];
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
@@ -100,6 +102,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "public.read",
     "student.personal",
     "report.manage",
+    "student.verify",
   ],
   lecturer: ["lecturer.self_update", "public.read", "student.personal"],
   student: ["public.read", "student.personal"],

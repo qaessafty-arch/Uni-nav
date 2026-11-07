@@ -27,6 +27,9 @@ const users = {
   studentA: "10000000-0000-4000-8000-000000000006",
   adminB: "10000000-0000-4000-8000-000000000007",
   newbie: "10000000-0000-4000-8000-000000000008",
+  stuCs1: "10000000-0000-4000-8000-000000000009",
+  stuCs2: "10000000-0000-4000-8000-00000000000a",
+  outsider: "10000000-0000-4000-8000-00000000000b",
 } as const;
 type UserKey = keyof typeof users;
 
@@ -97,6 +100,14 @@ beforeAll(async () => {
   await member(users.studentA, A, "student");
   await member(users.adminB, B, "university_admin");
   await su("update public.lecturers set user_id = $1 where id = $2", [users.lecturerA, LECT_A]);
+  // Students prove their address with a one-time code; only confirmed emails count.
+  await su("update auth.users set email = 'cs1@students.demo.example', email_confirmed_at = now() where id = $1", [users.stuCs1]);
+  await su("update auth.users set email = 'cs2@students.demo.example', email_confirmed_at = now() where id = $1", [users.stuCs2]);
+  await su("update auth.users set email = 'someone@gmail.test', email_confirmed_at = now() where id = $1", [users.outsider]);
+  await su("update auth.users set email = 'newbie@students.demo.example' where id = $1", [users.newbie]); // never confirmed
+  await su(`update public.universities set settings = settings || '{"studentEmailDomains":["students.demo.example"]}' where id = $1`, [A]);
+  await su("insert into public.student_roster (university_id, email, department_id, year) values ($1, 'cs1@students.demo.example', $2, 1)", [A, CS]);
+  await su("insert into public.student_roster (university_id, email, department_id, year) values ($1, 'ce3@students.demo.example', $2, 3)", [A, CE]);
 });
 
 afterAll(async () => {
@@ -104,9 +115,11 @@ afterAll(async () => {
 });
 
 describe("public (anonymous) access", () => {
-  it("reads published university data", async () => {
-    const rows = await as(null, (q) => q("select code from public.rooms where university_id = $1", [A]));
-    expect(rows.rowCount).toBeGreaterThan(40);
+  it("reads published university data, but only the public places indoors", async () => {
+    const rows = await as(null, (q) => q("select code, type from public.rooms where university_id = $1", [A]));
+    expect(rows.rowCount).toBeGreaterThan(20);
+    expect(rows.rows.every((r) => ["office", "library", "cafeteria", "toilet", "prayer_room", "service", "other"].includes(r.type))).toBe(true);
+    expect(rows.rows.some((r) => r.code === "204")).toBe(false); // a classroom
   });
   it("cannot see unpublished tenants at all", async () => {
     await as(null, async (q) => {
@@ -140,11 +153,12 @@ describe("public (anonymous) access", () => {
       await expectDenied(q("update public.rooms set code = 'hacked' where university_id = $1", [A]));
     });
   });
-  it("respects members-only timetable visibility", async () => {
+  it("never sees timetables, schedule changes, or classroom outlines", async () => {
     await as(null, async (q) => {
-      expect((await q("select 1 from public.timetable_entries where university_id = $1", [A])).rowCount).toBeGreaterThan(0);
+      expect((await q("select 1 from public.timetable_entries where university_id = $1", [A])).rowCount).toBe(0);
+      expect((await q("select 1 from public.schedule_changes where university_id = $1", [A])).rowCount).toBe(0);
+      expect((await q("select 1 from public.map_elements where room_id = $1", [ROOM_204])).rowCount).toBe(0);
       expect((await q("select 1 from public.universities where id = $1", [C])).rowCount).toBe(1);
-      expect((await q("select 1 from public.timetable_entries where university_id = $1", [C])).rowCount).toBe(0);
     });
   });
 });
@@ -440,5 +454,80 @@ describe("closures and problem reports", () => {
     await as("lecturerA", async (q) => expect((await q("select 1 from public.problem_reports")).rowCount).toBe(0));
     await as("adminB", async (q) => expect((await q("select 1 from public.problem_reports where university_id = $1", [A])).rowCount).toBe(0));
     await pool.query("delete from public.problem_reports where message = 'Room name is outdated'");
+  });
+});
+
+describe("students: verified major and year", () => {
+  const CS_Y1 = did("group-DEMO-CS-Y1-A");
+  const CS_Y2 = did("group-DEMO-CS-Y2-A");
+  const groupsSeen = async (q: (sql: string, params?: unknown[]) => Promise<pg.QueryResult>) =>
+    new Set((await q("select group_id from public.timetable_entries where university_id = $1", [A])).rows.map((r) => r.group_id as string));
+
+  it("a signed-in but unverified user sees what a visitor sees", async () => {
+    await as("studentA", async (q) => {
+      expect((await q("select 1 from public.timetable_entries where university_id = $1", [A])).rowCount).toBe(0);
+      expect((await q("select 1 from public.rooms where id = $1", [ROOM_204])).rowCount).toBe(0);
+    });
+  });
+
+  it("a student on the roster is verified automatically and sees only their own major and year", async () => {
+    await as("stuCs1", async (q) => {
+      const e = await q("select status, year, department_id, method from public.claim_student_enrollment($1)", [A]);
+      expect(e.rows[0]).toMatchObject({ status: "verified", year: 1, department_id: CS, method: "roster" });
+      expect([...(await groupsSeen(q))]).toEqual([CS_Y1]);
+      expect((await q("select 1 from public.rooms where id = $1", [ROOM_204])).rowCount).toBe(1); // classrooms now visible
+      expect((await q("select 1 from public.schedule_changes where university_id = $1", [A])).rowCount).toBe(2); // both are on CS stage 1
+    });
+  });
+
+  it("an unconfirmed email or a non-university address cannot verify", async () => {
+    await as("newbie", (q) => expectDenied(q("select * from public.claim_student_enrollment($1)", [A]), /confirmed email/));
+    await as("outsider", (q) => expectDenied(q("select * from public.claim_student_enrollment($1)", [A]), /email_domain_not_allowed/));
+    await as("outsider", (q) => expectDenied(q("select * from public.request_student_enrollment($1, $2, 1)", [A, CS]), /email_domain_not_allowed/));
+  });
+
+  it("a student not on the roster requests major and year; a department admin approves", async () => {
+    await as("stuCs2", async (q) => {
+      expect((await q("select * from public.claim_student_enrollment($1)", [A])).rowCount).toBe(0);
+      await expect(q("select * from public.request_student_enrollment($1, $2, 5)", [A, CS])).rejects.toThrow(/invalid year/); // 4-year bachelor
+      const r = await q("select id, status from public.request_student_enrollment($1, $2, 2, 'S-123')", [A, CS]);
+      expect(r.rows[0].status).toBe("pending");
+      expect((await groupsSeen(q)).size).toBe(0); // nothing until approved
+      // Students cannot approve themselves, directly or via the RPC
+      await expectDenied(q("update public.student_enrollments set status = 'verified' where id = $1", [r.rows[0].id]));
+      await expectDenied(q("select * from public.admin_review_enrollment($1, 'verified')", [r.rows[0].id]));
+      // The CS department admin approves
+      await q("select set_config('request.jwt.claim.sub', $1, true)", [users.deptAdminA]);
+      expect((await q("select status from public.admin_review_enrollment($1, 'verified')", [r.rows[0].id])).rows[0].status).toBe("verified");
+      await q("select set_config('request.jwt.claim.sub', $1, true)", [users.stuCs2]);
+      expect([...(await groupsSeen(q))]).toEqual([CS_Y2]);
+    });
+  });
+
+  it("department admins only see and review their own department's students", async () => {
+    await as("deptAdminA", async (q) => {
+      const roster = await q("select email from public.student_roster where university_id = $1", [A]);
+      expect(roster.rows.map((r) => r.email)).toEqual(["cs1@students.demo.example"]);
+      await expectDenied(q("insert into public.student_roster (university_id, email, department_id, year) values ($1, 'x@students.demo.example', $2, 1)", [A, CE]));
+    });
+    await as("adminB", async (q) => expect((await q("select 1 from public.student_roster where university_id = $1", [A])).rowCount).toBe(0));
+    await as(null, (q) => expectDenied(q("select * from public.student_roster")));
+  });
+
+  it("free rooms: verified students get anonymous room bookings, visitors get none", async () => {
+    await as("stuCs1", async (q) => {
+      await q("select * from public.claim_student_enrollment($1)", [A]);
+      const occ = (await q("select public.room_occupancy($1) as o", [A])).rows[0].o;
+      expect(occ.entries.length).toBeGreaterThan(14); // every booking, not just CS stage 1
+      expect(Object.keys(occ.entries[0]).sort()).toEqual(["day", "end_time", "id", "recurrence", "room_id", "start_time", "status", "valid_from", "valid_to"]);
+      expect(JSON.stringify(occ)).not.toMatch(/course|group|lecturer|note/);
+    });
+    await as("studentA", async (q) => expect((await q("select public.room_occupancy($1) as o", [A])).rows[0].o.entries).toEqual([]));
+    await as(null, (q) => expectDenied(q("select public.room_occupancy($1)", [A])));
+  });
+
+  it("students cannot write enrollments directly, and staff still see every timetable", async () => {
+    await as("stuCs1", (q) => expectDenied(q("insert into public.student_enrollments (user_id, university_id, email, department_id, year, status, method) values ($1, $2, 'x', $3, 4, 'verified', 'roster')", [users.stuCs1, A, CS])));
+    await as("lecturerA", async (q) => expect((await groupsSeen(q)).size).toBeGreaterThan(4));
   });
 });

@@ -65,6 +65,7 @@ function Root() {
         <Stack.Screen name="navigate" options={{ title: t("navigate.title") }} />
         <Stack.Screen name="settings" options={{ title: t("settings.title") }} />
         <Stack.Screen name="free-rooms" options={{ title: t("nav.freeRooms") }} />
+        <Stack.Screen name="verify" options={{ title: t("verify.title") }} />
         <Stack.Screen name="q/[token]" options={{ title: t("map.checkpoint") }} />
       </Stack>
     </>

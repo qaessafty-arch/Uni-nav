@@ -5,7 +5,8 @@ import { formatDate } from "@campusnav/i18n";
 import { Gate } from "@/components/Gate";
 import { LectureCard } from "@/components/LectureCard";
 import { MajorYearPicker } from "@/components/MajorYearPicker";
-import { Button, EmptyState, Notice, PageTitle, cx } from "@/components/ui";
+import { StudentOnly } from "@/components/StudentGate";
+import { Button, EmptyState, PageTitle, cx } from "@/components/ui";
 import { useApp } from "@/lib/store";
 
 export default function TimetablePage() {
@@ -21,12 +22,11 @@ export default function TimetablePage() {
         const anchor = addDays(today, view === "day" ? offset : offset * 7);
         const dates = view === "day" ? [anchor] : weekDates(anchor, weekStartFor(s.weekendDays));
         const occ = prefs.groupId ? occurrencesForDates(dates, bundle.timetable, bundle.scheduleChanges, { groupId: prefs.groupId }) : null;
-        const hidden = bundle.timetable.length === 0 && s.timetableVisibility === "members";
         return (
           <div className="max-w-3xl">
             <PageTitle>{t("timetable.title")}</PageTitle>
+            <StudentOnly then="/timetable">
             <MajorYearPicker bundle={bundle} />
-            {hidden ? <Notice tone="info">{t("timetable.hidden")}</Notice> : null}
 
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <div className="cn-seg" role="tablist">
@@ -65,6 +65,7 @@ export default function TimetablePage() {
                 })}
               </div>
             )}
+            </StudentOnly>
           </div>
         );
       }}

@@ -64,6 +64,7 @@ export const universitySettingsSchema = z.object({
   features: z.partialRecord(z.enum(["prayer", "leaveBy", "freeRooms", "shareLocation", "closures", "heatWarning", "buildingDirectory"]), z.boolean()).nullish(),
   homeFacilities: z.array(z.enum(["lecture_hall", "classroom", "laboratory", "office", "library", "cafeteria", "toilet", "prayer_room", "service", "storage", "other"])).max(8).nullish(),
   defaultView: z.enum(["map", "3d", "2d"]).nullish(),
+  studentEmailDomains: z.array(z.string().regex(/^[a-z0-9.-]+\.[a-z]{2,}$/i, "invalid_domain").max(100)).max(10).nullish(),
 });
 
 export const universitySchema = z.object({
@@ -214,6 +215,7 @@ export const departmentSchema = z.object({
   name: localizedTextSchema,
   college: localizedTextSchema.nullish(),
   buildingId: optionalId,
+  programYears: z.number().int().min(1).max(7).nullish(),
 });
 
 export const officeHourSchema = z

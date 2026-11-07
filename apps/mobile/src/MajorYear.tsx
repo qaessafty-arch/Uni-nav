@@ -12,8 +12,41 @@ function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () 
   );
 }
 
-/** Major → year → group (when a year has several). No account needed. */
+/**
+ * Verified students: major and year come from verification; they only pick a
+ * section when their year has several. Staff can browse any group.
+ */
 export function MajorYear({ bundle }: { bundle: CampusBundle }) {
+  const { student } = useApp();
+  if (student.access.kind === "staff") return <StaffMajorYear bundle={bundle} />;
+  if (student.access.kind === "student") return <MySection bundle={bundle} />;
+  return null;
+}
+
+function MySection({ bundle }: { bundle: CampusBundle }) {
+  const { t, prefs, setPrefs, student } = useApp();
+  const tx = useText();
+  const groups = bundle.groups; // already limited to the student's own major and year
+  const ok = groups.some((g) => g.id === prefs.groupId);
+  useEffect(() => {
+    if (!ok) setPrefs({ groupId: groups.length === 1 ? groups[0]!.id : null });
+  }, [ok, groups, setPrefs]);
+  if (student.access.kind !== "student") return null;
+  const a = student.access;
+  const dept = bundle.departments.find((d) => d.id === a.departmentId);
+  return (
+    <View style={{ gap: 8 }}>
+      <T size="sm" bold>{t("access.studentOf", { major: dept ? lt(dept.name, prefs.locale) : "—", year: a.year })}</T>
+      {groups.length > 1 ? (
+        <View style={{ flexDirection: tx.row, flexWrap: "wrap", gap: 6 }}>
+          {groups.map((g) => <Chip key={g.id} label={lt(g.name, prefs.locale)} on={prefs.groupId === g.id} onPress={() => setPrefs({ groupId: g.id })} />)}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function StaffMajorYear({ bundle }: { bundle: CampusBundle }) {
   const { t, prefs, setPrefs } = useApp();
   const tx = useText();
   const loc = prefs.locale;

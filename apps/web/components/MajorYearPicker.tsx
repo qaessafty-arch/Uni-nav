@@ -6,10 +6,47 @@ import { useApp } from "@/lib/store";
 const sel = "w-full min-h-11 bg-surface border border-line-strong px-3 rounded-[var(--cn-radius,6px)]";
 
 /**
- * Pick your major (department), then your year (stage), then your group when
- * a year has several. Stores the group; no account needed.
+ * Verified students: their major and year are fixed by verification; they only
+ * pick their section when the year has several. Staff can browse any group.
+ * Visitors never get here (see StudentOnly).
  */
 export function MajorYearPicker({ bundle }: { bundle: CampusBundle }) {
+  const { student } = useApp();
+  if (student.access.kind === "staff") return <StaffGroupPicker bundle={bundle} />;
+  if (student.access.kind === "student") return <MySection bundle={bundle} />;
+  return null;
+}
+
+function MySection({ bundle }: { bundle: CampusBundle }) {
+  const { t, prefs, setPrefs, student } = useApp();
+  const a = student.access.kind === "student" ? student.access : null;
+  // bundle.groups is already limited to the student's own major and year.
+  const groups = bundle.groups;
+  const ok = groups.some((g) => g.id === prefs.groupId);
+  useEffect(() => {
+    if (!ok) setPrefs({ groupId: groups.length === 1 ? groups[0]!.id : null });
+  }, [ok, groups, setPrefs]);
+  if (!a) return null;
+  const dept = bundle.departments.find((d) => d.id === a.departmentId);
+  return (
+    <div className="flex flex-wrap items-end gap-3 mb-4" data-testid="my-section">
+      <span className="cn-chip !min-h-9" data-testid="my-major-year">
+        <span className="text-muted">{t("access.student")}:</span> {t("access.studentOf", { major: dept ? lt(dept.name, prefs.locale) : "—", year: a.year })}
+      </span>
+      {groups.length > 1 ? (
+        <label className="text-sm min-w-56">
+          <span className="label-caps block mb-1">{t("student.yourSections")}</span>
+          <select className={sel} value={prefs.groupId ?? ""} onChange={(e) => setPrefs({ groupId: e.target.value || null })} aria-label={t("student.yourSections")}>
+            <option value="">{t("timetable.chooseGroup")}</option>
+            {groups.map((g) => <option key={g.id} value={g.id}>{lt(g.name, prefs.locale)}</option>)}
+          </select>
+        </label>
+      ) : null}
+    </div>
+  );
+}
+
+function StaffGroupPicker({ bundle }: { bundle: CampusBundle }) {
   const { t, prefs, setPrefs } = useApp();
   const loc = prefs.locale;
   const current = bundle.groups.find((g) => g.id === prefs.groupId);

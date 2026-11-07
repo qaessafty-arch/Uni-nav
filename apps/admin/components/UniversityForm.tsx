@@ -76,11 +76,11 @@ export function UniversityForm({ mode }: { mode: "profile" | "settings" }) {
                   ))}
                 </div>
               </Field>
-              <Field label="Timetable visibility" htmlFor="tv">
-                <select id="tv" className={inputCls} value={s.timetableVisibility} onChange={(e) => setS({ timetableVisibility: e.target.value as "public" | "members" })}>
-                  <option value="members">Signed-in members only</option><option value="public">Public</option>
-                </select>
+              <Field label="Student email domains (comma-separated, e.g. su.edu.krd)" htmlFor="sed">
+                <input id="sed" className={inputCls} dir="ltr" value={(s.studentEmailDomains ?? []).join(", ")}
+                  onChange={(e) => setS({ studentEmailDomains: e.target.value.split(/[\s,]+/).map((d) => d.trim().replace(/^@/, "").toLowerCase()).filter(Boolean) })} />
               </Field>
+              <p className="text-xs text-muted">Students prove they belong to the university by signing in with one of these addresses. Timetables are shown only to verified students of each major and year, and to staff.</p>
             </Section>
             <Section title="Languages">
               <div className="flex gap-4">

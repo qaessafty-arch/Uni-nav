@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { addDays, isWeekend, lt, occurrencesOn, zonedNow } from "@campusnav/core";
 import { formatDate } from "@campusnav/i18n";
+import { StudentOnly } from "@/StudentGate";
 import { Gate } from "@/Gate";
 import { OccurrenceCard } from "@/OccurrenceCard";
 import { MajorYear } from "@/MajorYear";
@@ -14,7 +15,7 @@ export default function TimetableScreen() {
   const [offset, setOffset] = useState(0);
   return (
     <Gate>
-      {(b) => {
+      {(b) => <StudentOnly>{(() => {
         const s = b.university.settings;
         const today = zonedNow(new Date(), s.timezone).date;
         const date = addDays(today, offset);
@@ -35,7 +36,7 @@ export default function TimetableScreen() {
             {prefs.groupId ? <T muted size="xs">{lt(b.groups.find((g) => g.id === prefs.groupId)?.name, prefs.locale)}</T> : null}
           </ScrollView>
         );
-      }}
+      })()}</StudentOnly>}
     </Gate>
   );
 }

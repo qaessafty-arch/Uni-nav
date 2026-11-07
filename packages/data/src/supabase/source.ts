@@ -12,7 +12,8 @@ import {
   type University,
   type UniversitySummary,
 } from "@campusnav/core";
-import type { AdminDataSource, AdminSession, AuditEntry, CampusDataSource, MembershipRow } from "../types";
+import { emailInDomains, VISITOR, type Access } from "@campusnav/core";
+import type { AdminDataSource, AdminSession, AuditEntry, CampusDataSource, EnrollmentRow, MembershipRow, RosterInput, RosterRow, StudentAuth, StudentStatus, VerifyConfirm, VerifyStart } from "../types";
 import { domainToRow, rowToDomain } from "../mapping";
 
 export interface SupabaseConfig {
@@ -65,7 +66,10 @@ function check<T>(res: { data: T | null; error: { message: string; code?: string
 
 export class SupabaseDataSource implements CampusDataSource {
   readonly kind = "supabase" as const;
-  constructor(readonly client: SupabaseClient) {}
+  readonly student: StudentAuth;
+  constructor(readonly client: SupabaseClient) {
+    this.student = new SupabaseStudentAuth(client);
+  }
 
   async listUniversities(): Promise<UniversitySummary[]> {
     const rows = check(await this.client.from("universities").select("id,slug,name,short_name,data_status,branding").is("deleted_at", null).order("slug"));
@@ -129,6 +133,20 @@ export class SupabaseDataSource implements CampusDataSource {
       scheduleChanges: m(scheduleChanges!),
       announcements: m<CampusBundle["announcements"][number]>(announcements!).filter((a) => !a.expiresAt || Date.parse(a.expiresAt) > now),
       closures: m(closures as Record<string, unknown>[]),
+      roomOccupancy: await this.occupancy(universityId),
+    };
+  }
+
+  /** Anonymised room bookings for free rooms; only signed-in students/staff get any. */
+  private async occupancy(universityId: string): Promise<CampusBundle["roomOccupancy"]> {
+    const { data } = await this.client.auth.getSession();
+    if (!data.session) return null;
+    const res = await this.client.rpc("room_occupancy", { p_university: universityId });
+    if (res.error || !res.data) return null;
+    const raw = res.data as { entries: Record<string, unknown>[]; changes: Record<string, unknown>[] };
+    return {
+      entries: raw.entries.map((r) => ({ ...rowToDomain<CampusBundle["timetable"][number]>(r), universityId, courseId: "" })),
+      changes: raw.changes.map((r) => ({ ...rowToDomain<CampusBundle["scheduleChanges"][number]>(r), universityId })),
     };
   }
 
@@ -170,6 +188,93 @@ export class SupabaseDataSource implements CampusDataSource {
       new Date(),
       activeUniversityId,
     );
+  }
+}
+
+const STAFF_ROLES = new Set(["platform_owner", "university_owner", "university_admin", "department_admin", "lecturer"]);
+
+type EnrollmentDbRow = { status: string; department_id: string; year: number };
+
+function enrollmentResult(row: EnrollmentDbRow | undefined): VerifyConfirm {
+  if (!row) return { status: "not_on_roster" };
+  if (row.status === "verified") return { status: "verified", departmentId: row.department_id, year: row.year };
+  if (row.status === "pending") return { status: "pending", departmentId: row.department_id, year: row.year };
+  return { status: "error", message: row.status };
+}
+
+/**
+ * Student verification on Supabase Auth: the email is proven with a one-time
+ * code (or the emailed link), then the database decides major and year from
+ * the roster (claim_student_enrollment) or records a request for approval.
+ * Row-level security uses the result; the client never decides access.
+ */
+export class SupabaseStudentAuth implements StudentAuth {
+  constructor(private readonly client: SupabaseClient) {}
+
+  async status(universityId: string): Promise<StudentStatus> {
+    const { data } = await this.client.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return { access: VISITOR };
+    const email = user.email ?? null;
+    const [mem, enr] = await Promise.all([
+      this.client.from("memberships").select("role").eq("user_id", user.id).eq("university_id", universityId),
+      this.client.from("student_enrollments").select("status,department_id,year").eq("user_id", user.id).eq("university_id", universityId).maybeSingle(),
+    ]);
+    const prof = await this.client.from("user_profiles").select("is_platform_owner").eq("id", user.id).maybeSingle();
+    if (prof.data?.is_platform_owner || (mem.data ?? []).some((m: { role: string }) => STAFF_ROLES.has(m.role))) return { access: { kind: "staff" }, email };
+    const e = enr.data as EnrollmentDbRow | null;
+    if (e?.status === "verified") {
+      const access: Access = { kind: "student", departmentId: e.department_id, year: e.year };
+      return { access, email };
+    }
+    if (e?.status === "pending") return { access: VISITOR, email, pending: { departmentId: e.department_id, year: e.year } };
+    return { access: VISITOR, email, rejected: e?.status === "rejected" || e?.status === "revoked" };
+  }
+
+  async start(universityId: string, email: string): Promise<VerifyStart> {
+    const u = await this.client.from("universities").select("settings").eq("id", universityId).maybeSingle();
+    const domains: string[] = (u.data?.settings as { studentEmailDomains?: string[] } | undefined)?.studentEmailDomains ?? [];
+    if (!emailInDomains(email, domains)) return { status: "domain_not_allowed", domains };
+    const redirect = typeof window !== "undefined" ? `${window.location.origin}/verify` : undefined;
+    const { error } = await this.client.auth.signInWithOtp({ email: email.trim().toLowerCase(), options: { shouldCreateUser: true, emailRedirectTo: redirect } });
+    if (error) return { status: "error", message: error.message };
+    return { status: "code_sent" };
+  }
+
+  private async claim(universityId: string): Promise<VerifyConfirm> {
+    const res = await this.client.rpc("claim_student_enrollment", { p_university: universityId });
+    if (res.error) return { status: "error", message: res.error.message };
+    return enrollmentResult((res.data as EnrollmentDbRow[] | null)?.[0]);
+  }
+
+  async confirm(universityId: string, email: string, code: string): Promise<VerifyConfirm> {
+    const { error } = await this.client.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.trim(), type: "email" });
+    if (error) return { status: "invalid_code" };
+    return this.claim(universityId);
+  }
+
+  async completeFromUrl(universityId: string, url: string): Promise<VerifyConfirm | null> {
+    const u = new URL(url);
+    const hash = new URLSearchParams(u.hash.replace(/^#/, ""));
+    const code = u.searchParams.get("code");
+    if (hash.get("access_token") && hash.get("refresh_token")) {
+      const { error } = await this.client.auth.setSession({ access_token: hash.get("access_token")!, refresh_token: hash.get("refresh_token")! });
+      if (error) return { status: "invalid_code" };
+    } else if (code) {
+      const { error } = await this.client.auth.exchangeCodeForSession(code);
+      if (error) return { status: "invalid_code" };
+    } else return null;
+    return this.claim(universityId);
+  }
+
+  async request(universityId: string, departmentId: string, year: number, studentNumber?: string | null): Promise<VerifyConfirm> {
+    const res = await this.client.rpc("request_student_enrollment", { p_university: universityId, p_department: departmentId, p_year: year, p_student_number: studentNumber ?? null });
+    if (res.error) return { status: "error", message: res.error.message };
+    return enrollmentResult((res.data as EnrollmentDbRow[] | null)?.[0]);
+  }
+
+  async signOut(): Promise<void> {
+    await this.client.auth.signOut();
   }
 }
 
@@ -222,6 +327,34 @@ export class SupabaseAdminSource implements AdminDataSource {
 
   async updateReport(id: string, status: ProblemStatus, adminNote: string | null): Promise<void> {
     check(await this.client.from("problem_reports").update({ status, admin_note: adminNote }).eq("id", id));
+  }
+
+  async listEnrollments(universityId: string): Promise<EnrollmentRow[]> {
+    const rows = check(await this.client.from("student_enrollments").select("*").eq("university_id", universityId).order("created_at", { ascending: false }).limit(5000));
+    return (rows as Record<string, unknown>[]).map((r) => rowToDomain<EnrollmentRow>(r));
+  }
+
+  async reviewEnrollment(id: string, status: "verified" | "rejected" | "revoked"): Promise<void> {
+    check(await this.client.rpc("admin_review_enrollment", { p_enrollment: id, p_status: status }));
+  }
+
+  async listRoster(universityId: string): Promise<RosterRow[]> {
+    const rows = check(await this.client.from("student_roster").select("*").eq("university_id", universityId).order("email").limit(50000));
+    return (rows as Record<string, unknown>[]).map((r) => rowToDomain<RosterRow>(r));
+  }
+
+  async importRoster(universityId: string, rows: RosterInput[]): Promise<number> {
+    let n = 0;
+    for (let i = 0; i < rows.length; i += 500) {
+      const chunk = rows.slice(i, i + 500).map((r) => ({ university_id: universityId, email: r.email.trim().toLowerCase(), department_id: r.departmentId, year: r.year, student_number: r.studentNumber ?? null }));
+      check(await this.client.from("student_roster").upsert(chunk, { onConflict: "university_id,email" }));
+      n += chunk.length;
+    }
+    return n;
+  }
+
+  async removeRoster(id: string): Promise<void> {
+    check(await this.client.from("student_roster").delete().eq("id", id));
   }
 
   async upsert<T extends { id: string }>(table: EntityTable, row: T): Promise<T> {

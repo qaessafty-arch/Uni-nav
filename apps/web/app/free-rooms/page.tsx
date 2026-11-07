@@ -6,6 +6,7 @@ import { formatClock, formatDistance, formatDuration } from "@campusnav/i18n";
 import { Gate } from "@/components/Gate";
 import { nodeName } from "@/components/LocationPicker";
 import { MajorYearPicker } from "@/components/MajorYearPicker";
+import { StudentOnly } from "@/components/StudentGate";
 import { Icon } from "@/components/Icon";
 import { I } from "@/components/icons";
 import { Badge, ButtonLink, EmptyState, Notice, PageTitle } from "@/components/ui";
@@ -31,12 +32,14 @@ function FreeRooms({ bundle }: { bundle: CampusBundle }) {
     () => (startNode ? distancesFrom(graphForBundle(bundle), startNode.id, withClosures(bundle, routeOptionsFor(prefs.accessible ? "step_free" : "shortest"), now)) : null),
     [bundle, startNode, prefs.accessible, now],
   );
-  const scope = freeRoomScope(bundle, prefs.groupId, start?.nodeId);
+  const { student } = useApp();
+  const myGroup = prefs.groupId ?? (student.access.kind === "student" ? bundle.groups[0]?.id : null);
+  const scope = freeRoomScope(bundle, myGroup, start?.nodeId);
   const free = scope.buildingIds.size ? freeRoomsAt(bundle, now, { minMinutes, buildingIds: scope.buildingIds }) : [];
   const rows = free.map((f) => ({ ...f, distanceM: f.room.entranceNodeId && dist ? dist.get(f.room.entranceNodeId) ?? null : null }));
   if (sort === "nearest" && dist) rows.sort((a, b) => (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity));
 
-  if (!bundle.timetable.length) return <EmptyState title={t("free.noTimetable")} />;
+  if (!(bundle.roomOccupancy?.entries.length ?? bundle.timetable.length)) return <EmptyState title={t("free.noTimetable")} />;
   if (!scope.buildingIds.size)
     return (
       <div className="max-w-2xl space-y-4" data-testid="free-scope-needed">
@@ -123,7 +126,7 @@ export default function FreeRoomsPage() {
   return (
     <div>
       <PageTitle eyebrow={t("nav.freeRooms")}>{t("free.title")}</PageTitle>
-      <Gate>{(bundle) => <FreeRooms bundle={bundle} />}</Gate>
+      <Gate>{(bundle) => <StudentOnly then="/free-rooms"><FreeRooms bundle={bundle} /></StudentOnly>}</Gate>
     </div>
   );
 }

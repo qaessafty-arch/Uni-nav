@@ -14,6 +14,7 @@ export * from "./search";
 export * from "./import/csv";
 export * from "./import/timetable-import";
 export * from "./auth/permissions";
+export * from "./access/access";
 export * from "./assistant";
 export * from "./map/svg";
 export * from "./map/geo";

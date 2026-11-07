@@ -110,6 +110,7 @@ const NAV: { group: string; items: NavItem[] }[] = [
     group: "Administration",
     items: [
       { href: "/users", label: "Users", icon: IC.users, perm: "member.invite" },
+      { href: "/students", label: "Students", icon: IC.users, perm: "student.verify" },
       { href: "/roles", label: "Roles & permissions", icon: IC.shield },
       { href: "/import-export", label: "Import / export", icon: IC.swap, perm: "data.export" },
       { href: "/audit", label: "Audit log", icon: IC.list, perm: "audit.read" },

@@ -71,7 +71,8 @@ export const demoUniversity: University = {
     weekendDays: [5, 6],
     defaultLocale: "en",
     enabledLocales: ["en", "ckb", "ar"],
-    timetableVisibility: "public",
+    timetableVisibility: "members",
+    studentEmailDomains: ["students.demo.example"],
     walkingSpeedMps: 1.2,
     accessibleWalkingSpeedMps: 0.8,
     stairsSecondsPerFloor: 20,
@@ -432,9 +433,9 @@ export const demoCheckpoints: QrCheckpoint[] = [
 
 // ─── Academic structure ────────────────────────────────────────────────────
 export const demoDepartments: Department[] = [
-  { id: D_CS, universityId: U, code: "DEMO-CS", name: T("Demo Department of Computing", "بەشی کۆمپیوتەری نموونە", "قسم الحاسوب التجريبي"), college: T("Demo College of Engineering", "کۆلێژی ئەندازیاریی نموونە", "كلية الهندسة التجريبية"), buildingId: ENG },
-  { id: D_CE, universityId: U, code: "DEMO-CE", name: T("Demo Department of Civil Engineering", "بەشی ئەندازیاریی شارستانیی نموونە", "قسم الهندسة المدنية التجريبي"), college: T("Demo College of Engineering", "کۆلێژی ئەندازیاریی نموونە", "كلية الهندسة التجريبية"), buildingId: ENG },
-  { id: D_PHY, universityId: U, code: "DEMO-PHY", name: T("Demo Department of Physics", "بەشی فیزیای نموونە", "قسم الفيزياء التجريبي"), college: T("Demo College of Science", "کۆلێژی زانستی نموونە", "كلية العلوم التجريبية"), buildingId: SCI },
+  { id: D_CS, universityId: U, code: "DEMO-CS", name: T("Demo Department of Computing", "بەشی کۆمپیوتەری نموونە", "قسم الحاسوب التجريبي"), college: T("Demo College of Engineering", "کۆلێژی ئەندازیاریی نموونە", "كلية الهندسة التجريبية"), buildingId: ENG, programYears: 4 },
+  { id: D_CE, universityId: U, code: "DEMO-CE", name: T("Demo Department of Civil Engineering", "بەشی ئەندازیاریی شارستانیی نموونە", "قسم الهندسة المدنية التجريبي"), college: T("Demo College of Engineering", "کۆلێژی ئەندازیاریی نموونە", "كلية الهندسة التجريبية"), buildingId: ENG, programYears: 4 },
+  { id: D_PHY, universityId: U, code: "DEMO-PHY", name: T("Demo Department of Physics", "بەشی فیزیای نموونە", "قسم الفيزياء التجريبي"), college: T("Demo College of Science", "کۆلێژی زانستی نموونە", "كلية العلوم التجريبية"), buildingId: SCI, programYears: 4 },
 ];
 
 const roomId = (b: "eng" | "sci", code: string) => did(`${b}-room-${code}`);
@@ -489,10 +490,19 @@ const G = (code: string, en: string, dept: string, stage: number): StudentGroup 
   stage,
 });
 export const demoGroups: StudentGroup[] = [
+  // Bachelor programmes are 4 years (stages 1–4).
   G("DEMO-CS-Y1-A", "Demo Computing — Stage 1, Group A", D_CS, 1),
   G("DEMO-CS-Y2-A", "Demo Computing — Stage 2, Group A", D_CS, 2),
+  G("DEMO-CS-Y3-A", "Demo Computing — Stage 3, Group A", D_CS, 3),
+  G("DEMO-CS-Y4-A", "Demo Computing — Stage 4, Group A", D_CS, 4),
   G("DEMO-CE-Y1-A", "Demo Civil — Stage 1, Group A", D_CE, 1),
+  G("DEMO-CE-Y2-A", "Demo Civil — Stage 2, Group A", D_CE, 2),
+  G("DEMO-CE-Y3-A", "Demo Civil — Stage 3, Group A", D_CE, 3),
+  G("DEMO-CE-Y4-A", "Demo Civil — Stage 4, Group A", D_CE, 4),
   G("DEMO-PHY-Y1-A", "Demo Physics — Stage 1, Group A", D_PHY, 1),
+  G("DEMO-PHY-Y2-A", "Demo Physics — Stage 2, Group A", D_PHY, 2),
+  G("DEMO-PHY-Y3-A", "Demo Physics — Stage 3, Group A", D_PHY, 3),
+  G("DEMO-PHY-Y4-A", "Demo Physics — Stage 4, Group A", D_PHY, 4),
 ];
 
 const SEM = did("sem-2026-fall");
@@ -538,6 +548,15 @@ export const demoTimetable: TimetableEntry[] = [
   // Physics stage 1
   TT("DEMO-PHY101", "DEMO-PHY-Y1-A", "d", roomId("sci", "S003"), 1, "08:30", "10:00"),
   TT("DEMO-PHY101", "DEMO-PHY-Y1-A", "f", roomId("sci", "S101"), 4, "08:30", "10:30", "lab"),
+  // Later stages (afternoons, so earlier examples keep their free slots)
+  TT("DEMO-CS210", "DEMO-CS-Y3-A", "a", roomId("eng", "201"), 2, "13:00", "14:30"),
+  TT("DEMO-CS201", "DEMO-CS-Y4-A", "b", roomId("eng", "207"), 4, "13:00", "14:30"),
+  TT("DEMO-CE220", "DEMO-CE-Y2-A", "e", roomId("eng", "G07"), 3, "13:00", "15:00", "lab"),
+  TT("DEMO-CE110", "DEMO-CE-Y3-A", "c", roomId("eng", "G01"), 4, "13:00", "14:30"),
+  TT("DEMO-CE220", "DEMO-CE-Y4-A", "e", roomId("eng", "G01"), 3, "13:00", "14:30"),
+  TT("DEMO-PHY101", "DEMO-PHY-Y2-A", "d", roomId("sci", "S003"), 3, "13:00", "14:30"),
+  TT("DEMO-PHY101", "DEMO-PHY-Y3-A", "f", roomId("sci", "S101"), 4, "13:00", "15:00", "lab"),
+  TT("DEMO-PHY101", "DEMO-PHY-Y4-A", "d", roomId("sci", "S003"), 4, "13:00", "14:30"),
 ];
 
 export const demoScheduleChanges: ScheduleChange[] = [
@@ -626,6 +645,17 @@ export function demoBundle(now = new Date()): CampusBundle {
     closures: demoClosures(now),
   };
 }
+
+// ─── Demo student roster (fictional) ──────────────────────────────────────
+/**
+ * Stand-in for the registration office's list. Fictional addresses on a
+ * reserved test domain; in demo mode no email is sent and the code is shown.
+ */
+export const DEMO_STUDENT_DOMAIN = "students.demo.example";
+export const DEMO_VERIFY_CODE = "246810";
+export const demoRoster: { email: string; departmentId: string; year: number }[] = (
+  [["cs", D_CS], ["ce", D_CE], ["phy", D_PHY]] as const
+).flatMap(([k, dept]) => [1, 2, 3, 4].map((year) => ({ email: `${k}${year}@${DEMO_STUDENT_DOMAIN}`, departmentId: dept, year })));
 
 // ─── Second fictional tenant (used to test isolation) ─────────────────────
 export const OTHER_UNIVERSITY_ID = did("other-demo-university");

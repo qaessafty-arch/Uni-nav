@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { freeRoomScope, freeRoomsAt, lt } from "@campusnav/core";
 import { formatClock, formatDuration } from "@campusnav/i18n";
+import { StudentOnly } from "@/StudentGate";
 import { Gate } from "@/Gate";
 import { MajorYear } from "@/MajorYear";
 import { useApp } from "@/store";
@@ -14,10 +15,10 @@ export default function FreeRoomsScreen() {
   const [min, setMin] = useState(30);
   return (
     <Gate>
-      {(b) => {
+      {(b) => <StudentOnly>{(() => {
         const loc = prefs.locale;
-        if (!b.timetable.length) return <Notice>{t("free.noTimetable")}</Notice>;
-        const scope = freeRoomScope(b, prefs.groupId, start?.nodeId);
+        if (!(b.roomOccupancy?.entries.length ?? b.timetable.length)) return <Notice>{t("free.noTimetable")}</Notice>;
+        const scope = freeRoomScope(b, prefs.groupId ?? b.groups[0]?.id, start?.nodeId);
         if (!scope.buildingIds.size)
           return (
             <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 12 }}>
@@ -58,7 +59,7 @@ export default function FreeRoomsScreen() {
             ))}
           </ScrollView>
         );
-      }}
+      })()}</StudentOnly>}
     </Gate>
   );
 }

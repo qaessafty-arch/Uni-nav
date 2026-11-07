@@ -1,8 +1,47 @@
+import type { Access } from "@campusnav/core";
 import type { CampusBundle, CheckpointResolution, EntityTable, ProblemReportInput, ProblemStatus, Role, UniversitySummary } from "@campusnav/core";
+
+/** What the current person may see, plus their verification state. */
+export interface StudentStatus {
+  access: Access;
+  email?: string | null;
+  /** A request waiting for a department admin. */
+  pending?: { departmentId: string; year: number } | null;
+  rejected?: boolean;
+}
+
+export type VerifyStart =
+  | { status: "code_sent" }
+  | { status: "demo"; code: string }
+  | { status: "domain_not_allowed"; domains: string[] }
+  | { status: "error"; message: string };
+
+export type VerifyConfirm =
+  | { status: "verified"; departmentId: string; year: number }
+  | { status: "pending"; departmentId: string; year: number }
+  | { status: "not_on_roster" }
+  | { status: "invalid_code" }
+  | { status: "error"; message: string };
+
+/**
+ * Student verification: prove a university email (one-time code or link),
+ * then get major and year from the roster, or request them for approval.
+ * Visitors never need any of this.
+ */
+export interface StudentAuth {
+  status(universityId: string): Promise<StudentStatus>;
+  start(universityId: string, email: string): Promise<VerifyStart>;
+  confirm(universityId: string, email: string, code: string): Promise<VerifyConfirm>;
+  /** Finish a sign-in started from an emailed link (Supabase redirects back with tokens). */
+  completeFromUrl?(universityId: string, url: string): Promise<VerifyConfirm | null>;
+  request(universityId: string, departmentId: string, year: number, studentNumber?: string | null): Promise<VerifyConfirm>;
+  signOut(): Promise<void>;
+}
 
 /** Read-side data access used by the student web app and mobile app. */
 export interface CampusDataSource {
   readonly kind: "demo" | "supabase";
+  readonly student?: StudentAuth;
   listUniversities(): Promise<UniversitySummary[]>;
   getBundle(universityId: string): Promise<CampusBundle>;
   /** Validates an opaque checkpoint token against the backend. */
@@ -66,4 +105,37 @@ export interface AdminDataSource {
   uploadCampusImage(universityId: string, campusId: string, file: Blob, contentType: "image/jpeg" | "image/png" | "image/webp"): Promise<string>;
   /** Triage a user problem report (only status and the staff note can change). */
   updateReport(id: string, status: ProblemStatus, adminNote: string | null): Promise<void>;
+  /** Student verification: requests to review and the registration office's roster. */
+  listEnrollments(universityId: string): Promise<EnrollmentRow[]>;
+  reviewEnrollment(id: string, status: "verified" | "rejected" | "revoked"): Promise<void>;
+  listRoster(universityId: string): Promise<RosterRow[]>;
+  /** Insert or update by email. Returns the number of rows written. */
+  importRoster(universityId: string, rows: RosterInput[]): Promise<number>;
+  removeRoster(id: string): Promise<void>;
+}
+
+export interface EnrollmentRow {
+  id: string;
+  userId: string;
+  universityId: string;
+  email: string;
+  departmentId: string;
+  year: number;
+  studentNumber?: string | null;
+  status: "pending" | "verified" | "rejected" | "revoked";
+  method: "roster" | "review";
+  createdAt?: string;
+  reviewedAt?: string | null;
+}
+
+export interface RosterInput {
+  email: string;
+  departmentId: string;
+  year: number;
+  studentNumber?: string | null;
+}
+
+export interface RosterRow extends RosterInput {
+  id: string;
+  universityId: string;
 }

@@ -1,5 +1,6 @@
 import { evaluateCheckpoint, parseCheckpointPayload, problemReportInputSchema, type CampusBundle, type CheckpointResolution, type ProblemReportInput, type UniversitySummary } from "@campusnav/core";
-import type { CampusDataSource } from "../types";
+import type { CampusDataSource, StudentAuth } from "../types";
+import { DemoStudentAuth, type SyncKV } from "./student";
 import { demoBundle, demoCheckpoints, demoUniversity } from "./dataset";
 
 /**
@@ -9,7 +10,10 @@ import { demoBundle, demoCheckpoints, demoUniversity } from "./dataset";
  */
 export class DemoDataSource implements CampusDataSource {
   readonly kind = "demo" as const;
-  constructor(private readonly overlay?: () => CampusBundle | null) {}
+  readonly student: StudentAuth;
+  constructor(private readonly overlay?: () => CampusBundle | null, kv: SyncKV | null = null) {
+    this.student = new DemoStudentAuth(kv);
+  }
 
   async listUniversities(): Promise<UniversitySummary[]> {
     const u = this.overlay?.()?.university ?? demoUniversity;

@@ -2,7 +2,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { CampusBundle, Locale, UniversitySummary } from "@campusnav/core";
 import { visualStyles, type VisualStyle } from "@campusnav/tokens";
-import { buildSearchIndex, type SearchIndex } from "@campusnav/core";
+import { buildSearchIndex, bundleForAccess, VISITOR, type SearchIndex } from "@campusnav/core";
+import type { StudentStatus } from "@campusnav/data/types";
 import { clearCachedBundle, loadBundle, readCachedBundle, type AsyncKV } from "@campusnav/data/cache";
 import { dir, isLocale, translate, type MessageKey, type Params } from "@campusnav/i18n";
 import { getDataSource } from "./config";
@@ -97,6 +98,10 @@ interface AppState {
   setPrefs: (p: Partial<Prefs>) => void;
   universities: UniversitySummary[] | null;
   bundleState: BundleState;
+  /** Visitor, verified student (major + year) or staff, and verification state. */
+  student: StudentStatus;
+  refreshStudent: () => Promise<void>;
+  signOutStudent: () => Promise<void>;
   reload: () => void;
   clearOffline: () => Promise<void>;
   online: boolean;
@@ -116,7 +121,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [prefs, setPrefsState] = useState<Prefs>(DEFAULT_PREFS);
   const [universities, setUniversities] = useState<UniversitySummary[] | null>(null);
-  const [bundleState, setBundleState] = useState<BundleState>({ status: "idle" });
+  const [rawBundleState, setBundleState] = useState<BundleState>({ status: "idle" });
+  const [student, setStudent] = useState<StudentStatus>({ access: VISITOR });
   const [online, setOnline] = useState(true);
   const [start, setStartState] = useState<Start | null>(null);
   const [saved, setSaved] = useState<string[]>([]);
@@ -200,6 +206,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, [hydrated, prefs.universityId, reloadKey]);
 
+  const refreshStudent = useCallback(async () => {
+    if (!prefs.universityId) return setStudent({ access: VISITOR });
+    try {
+      const src = await getDataSource();
+      setStudent((await src.student?.status(prefs.universityId)) ?? { access: VISITOR });
+    } catch {
+      setStudent({ access: VISITOR });
+    }
+  }, [prefs.universityId]);
+
+  useEffect(() => {
+    if (hydrated) void refreshStudent();
+  }, [hydrated, refreshStudent, reloadKey]);
+
+  const signOutStudent = useCallback(async () => {
+    const src = await getDataSource();
+    await src.student?.signOut();
+    // The cached bundle may hold this student's classrooms and timetable.
+    if (prefs.universityId) await clearCachedBundle(kv, prefs.universityId);
+    setPrefsState((p) => ({ ...p, groupId: null }));
+    setStudent({ access: VISITOR });
+    setReloadKey((k) => k + 1);
+  }, [prefs.universityId]);
+
+  // What this person may see: visitors get public places only, students their own major and year.
+  const bundleState = useMemo<BundleState>(() => {
+    if (rawBundleState.status !== "ready") return rawBundleState;
+    const bundle = bundleForAccess(rawBundleState.bundle, student.access);
+    return bundle === rawBundleState.bundle ? rawBundleState : { ...rawBundleState, bundle, index: buildSearchIndex(bundle) };
+  }, [rawBundleState, student.access]);
+
   const setStart = useCallback((s: Start | null) => {
     setStartState(s);
     if (s) kv.setJSON("campusnav.start", s);
@@ -244,6 +281,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setPrefs,
       universities,
       bundleState,
+      student,
+      refreshStudent,
+      signOutStudent,
       reload: () => setReloadKey((k) => k + 1),
       clearOffline,
       online,
@@ -256,7 +296,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       clearHistory,
       t,
     }),
-    [hydrated, prefs, setPrefs, universities, bundleState, clearOffline, online, start, setStart, saved, toggleSaved, history, addHistory, clearHistory, t],
+    [hydrated, prefs, setPrefs, universities, bundleState, student, refreshStudent, signOutStudent, clearOffline, online, start, setStart, saved, toggleSaved, history, addHistory, clearHistory, t],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
