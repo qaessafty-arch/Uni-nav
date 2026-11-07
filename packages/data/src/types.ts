@@ -61,6 +61,8 @@ export interface AdminDataSource {
   removeMember(membershipId: string): Promise<void>;
   uploadFloorPlan(universityId: string, floorId: string, file: File | Blob, contentType: string): Promise<string>;
   /** Upload a campus background picture (PNG/JPEG/WebP, already resized client-side). Returns its URL. */
+  /** Building/faculty or university logo; the caller re-encodes it to a small PNG/WebP first. */
+  uploadBrandImage(universityId: string, name: string, file: Blob, contentType: "image/png" | "image/webp"): Promise<string>;
   uploadCampusImage(universityId: string, campusId: string, file: Blob, contentType: "image/jpeg" | "image/png" | "image/webp"): Promise<string>;
   /** Triage a user problem report (only status and the staff note can change). */
   updateReport(id: string, status: ProblemStatus, adminNote: string | null): Promise<void>;

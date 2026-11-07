@@ -30,6 +30,8 @@ export const isoDateSchema = z
   .regex(/^\d{4}-\d{2}-\d{2}$/, "invalid_date")
   .refine((s) => !Number.isNaN(Date.parse(`${s}T00:00:00Z`)), "invalid_date");
 export const weekdaySchema = z.number().int().min(0).max(6);
+const intervalSchema = z.tuple([clockTimeSchema, clockTimeSchema]).refine(([a, b]) => a < b, "close_after_open");
+export const openingHoursSchema = z.object(Object.fromEntries(["0", "1", "2", "3", "4", "5", "6"].map((d) => [d, z.array(intervalSchema).max(4).optional()])) as Record<"0" | "1" | "2" | "3" | "4" | "5" | "6", z.ZodOptional<z.ZodArray<typeof intervalSchema>>>);
 export const localeSchema = z.enum(["en", "ckb", "ar"]);
 export const dataStatusSchema = z.enum(["verified", "demo", "unverified"]);
 
@@ -59,6 +61,9 @@ export const universitySettingsSchema = z.object({
     })
     .nullish(),
   heatWarningC: z.number().min(25).max(60).nullish(),
+  features: z.partialRecord(z.enum(["prayer", "leaveBy", "freeRooms", "shareLocation", "closures", "heatWarning", "buildingDirectory"]), z.boolean()).nullish(),
+  homeFacilities: z.array(z.enum(["lecture_hall", "classroom", "laboratory", "office", "library", "cafeteria", "toilet", "prayer_room", "service", "storage", "other"])).max(8).nullish(),
+  defaultView: z.enum(["map", "3d", "2d"]).nullish(),
 });
 
 export const universitySchema = z.object({
@@ -102,6 +107,10 @@ export const buildingSchema = z.object({
   description: localizedTextSchema.nullish(),
   overview: rectSchema.nullish(),
   geo: buildingGeoSchema.nullish(),
+  icon: z.string().regex(/^[a-z_]{1,32}$/, "invalid_icon").nullish(),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "invalid_color").nullish(),
+  logoUrl: z.string().regex(/^(https?:\/\/|data:image\/(png|jpeg|webp);base64,)/, "logo_must_be_image_url").max(400_000).nullish(),
+  hours: openingHoursSchema.nullish(),
   dataStatus: dataStatusSchema,
 });
 

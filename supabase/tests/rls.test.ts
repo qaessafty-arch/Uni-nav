@@ -312,6 +312,19 @@ describe("data integrity and audit", () => {
       expect((await q("update public.campuses set overview_image_url = 'https://evil.example/x.jpg' where id = $1", [campus])).rowCount).toBe(0);
     });
   });
+  it("building identity: logos must be http(s) URLs, colours hex, icons simple keys", async () => {
+    const bld = did("demo-building-lib");
+    await as("adminA", async (q) => {
+      expect((await q("update public.buildings set icon = 'library', color = '#6D28D9', logo_url = 'https://example.supabase.co/storage/v1/object/public/brand-images/x.png' where id = $1", [bld])).rowCount).toBe(1);
+      await expectDenied(q("update public.buildings set logo_url = 'javascript:alert(1)' where id = $1", [bld]), /check constraint/i);
+      await expectDenied(q("update public.buildings set color = 'red' where id = $1", [bld]), /check constraint/i);
+      await expectDenied(q("update public.buildings set icon = '<svg>' where id = $1", [bld]), /check constraint/i);
+      await expectDenied(q("update public.buildings set hours = '[1,2]'::jsonb where id = $1", [bld]), /check constraint/i);
+    });
+    await as("studentA", async (q) => {
+      expect((await q("update public.buildings set color = '#000000' where id = $1", [bld])).rowCount).toBe(0);
+    });
+  });
   it("walkway paths: map editors can draw them on outdoor edges only; students cannot", async () => {
     const outdoor = (await pool.query("select id from public.navigation_edges where kind = 'outdoor' and university_id = $1 limit 1", [A])).rows[0].id;
     const corridor = (await pool.query("select id from public.navigation_edges where kind = 'corridor' and university_id = $1 limit 1", [A])).rows[0].id;

@@ -213,6 +213,15 @@ export class SandboxAdminSource implements AdminDataSource {
     this.save();
   }
 
+  async uploadBrandImage(_u: string, _n: string, file: Blob, contentType: "image/png" | "image/webp"): Promise<string> {
+    // Sandbox: logos are tiny (≤ 256 px), kept as data URLs in local storage.
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (bytes.length > 250_000) throw new Error("IMAGE_TOO_LARGE_FOR_SANDBOX");
+    let bin = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    return `data:${contentType};base64,${btoa(bin)}`;
+  }
+
   async uploadCampusImage(_u: string, _c: string, file: Blob, contentType: "image/jpeg" | "image/png" | "image/webp"): Promise<string> {
     // Sandbox: keep the (already downscaled) image as a data URL in local storage.
     const bytes = new Uint8Array(await file.arrayBuffer());

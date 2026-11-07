@@ -261,6 +261,13 @@ export class SupabaseAdminSource implements AdminDataSource {
     check(await this.client.from("memberships").delete().eq("id", membershipId));
   }
 
+  async uploadBrandImage(universityId: string, name: string, file: Blob, contentType: "image/png" | "image/webp"): Promise<string> {
+    const safe = name.replace(/[^a-z0-9-]/gi, "").slice(0, 60) || "logo";
+    const path = `${universityId}/${safe}-${Date.now()}.${contentType === "image/png" ? "png" : "webp"}`;
+    check(await this.client.storage.from("brand-images").upload(path, file, { contentType, upsert: false }));
+    return this.client.storage.from("brand-images").getPublicUrl(path).data.publicUrl;
+  }
+
   async uploadCampusImage(universityId: string, campusId: string, file: Blob, contentType: "image/jpeg" | "image/png" | "image/webp"): Promise<string> {
     const ext = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
     const path = `${universityId}/${campusId}-${Date.now()}.${ext}`;

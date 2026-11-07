@@ -47,7 +47,16 @@ export interface UniversitySettings {
   prayer?: { enabled?: boolean; method?: "mwl" | "egypt" | "karachi" | "umm_al_qura" | "isna"; asr?: "standard" | "hanafi"; maghribOffsetMin?: number } | null;
   /** Feels-like temperature (°C) from which students get a heat warning on outdoor routes. */
   heatWarningC?: number | null;
+  /** Home screen sections the university turns on or off (all on when unset). */
+  features?: Partial<Record<HomeFeature, boolean>> | null;
+  /** Facility shortcuts on the home screen, in order (room types). Unset = defaults. */
+  homeFacilities?: RoomType[] | null;
+  /** First view students see on the map: real map, 3D or plan. */
+  defaultView?: "map" | "3d" | "2d" | null;
 }
+
+export type HomeFeature = "prayer" | "leaveBy" | "freeRooms" | "shareLocation" | "closures" | "heatWarning" | "buildingDirectory";
+export const HOME_FEATURES: readonly HomeFeature[] = ["prayer", "leaveBy", "freeRooms", "shareLocation", "closures", "heatWarning", "buildingDirectory"];
 
 export interface University {
   id: string;
@@ -105,8 +114,19 @@ export interface Building {
   overview?: { x: number; y: number; w: number; h: number } | null;
   /** Outline on the real map (drawn by staff in the admin Campus map). */
   geo?: BuildingGeo | null;
+  /** Icon key from the shared building icon set (e.g. "library", "engineering"). */
+  icon?: string | null;
+  /** Marker colour, "#RRGGBB" (white icons must stay readable on it). */
+  color?: string | null;
+  /** Building / faculty logo (uploaded by staff; used on maps and lists). */
+  logoUrl?: string | null;
+  /** Weekly opening hours; absent = not published (never shown as "open"). */
+  hours?: OpeningHours | null;
   dataStatus: DataStatus;
 }
+
+/** Weekday ("0" = Sunday … "6" = Saturday) → open intervals, university-local time. Missing day = closed. */
+export type OpeningHours = Partial<Record<"0" | "1" | "2" | "3" | "4" | "5" | "6", [ClockTime, ClockTime][]>>;
 
 export interface Floor {
   id: string;

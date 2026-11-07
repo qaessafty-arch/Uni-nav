@@ -65,7 +65,7 @@ export const demoUniversity: University = {
   shortName: "DEMO",
   dataStatus: "demo",
   published: true,
-  branding: { primaryColor: "#2BFF88", logoUrl: null, productName: "DEMO NAV" },
+  branding: { primaryColor: "#1D4ED8", logoUrl: null, productName: "DEMO NAV" },
   settings: {
     timezone: "Asia/Baghdad",
     weekendDays: [5, 6],
@@ -94,6 +94,8 @@ export const demoCampuses: Campus[] = [
   },
 ];
 
+/** Demo opening hours (not real): Sunday–Thursday 07:00–17:00. */
+const WEEKDAY_7_TO_17 = { "0": [["07:00", "17:00"]], "1": [["07:00", "17:00"]], "2": [["07:00", "17:00"]], "3": [["07:00", "17:00"]], "4": [["07:00", "17:00"]] } as Building["hours"] & object;
 const ENG = did("demo-building-eng");
 const SCI = did("demo-building-sci");
 const LIB = did("demo-building-lib");
@@ -107,6 +109,9 @@ export const demoBuildings: Building[] = [
     name: T("Demo Engineering Building", "بینای ئەندازیاریی نموونە", "مبنى الهندسة التجريبي"),
     description: T("Three-storey demonstration building with stairs and an elevator."),
     overview: { x: 120, y: 160, w: 360, h: 220 },
+    icon: "engineering",
+    color: "#1D4ED8",
+    hours: WEEKDAY_7_TO_17,
     dataStatus: "demo",
   },
   {
@@ -117,6 +122,9 @@ export const demoBuildings: Building[] = [
     name: T("Demo Science Building", "بینای زانستیی نموونە", "مبنى العلوم التجريبي"),
     description: T("Two-storey demonstration building connected to the Engineering building by an outdoor path."),
     overview: { x: 600, y: 300, w: 280, h: 200 },
+    icon: "science",
+    color: "#047857",
+    hours: WEEKDAY_7_TO_17,
     dataStatus: "demo",
   },
   {
@@ -127,6 +135,10 @@ export const demoBuildings: Building[] = [
     name: T("Demo Central Library", "کتێبخانەی ناوەندیی نموونە", "المكتبة المركزية التجريبية"),
     description: T("Two-storey demonstration library, a separate building reached by outdoor paths."),
     overview: { x: 600, y: 40, w: 300, h: 190 },
+    icon: "library",
+    color: "#6D28D9",
+    // Demo hours only: Sun–Thu 08:00–20:00, Sat 09:00–14:00, Fri closed.
+    hours: { "0": [["08:00", "20:00"]], "1": [["08:00", "20:00"]], "2": [["08:00", "20:00"]], "3": [["08:00", "20:00"]], "4": [["08:00", "20:00"]], "6": [["09:00", "14:00"]] },
     dataStatus: "demo",
   },
   {
@@ -137,6 +149,10 @@ export const demoBuildings: Building[] = [
     name: T("Demo Student Cafeteria", "کافتریای قوتابیانی نموونە", "كافتيريا الطلبة التجريبية"),
     description: T("Single-storey demonstration cafeteria building."),
     overview: { x: 170, y: 470, w: 260, h: 160 },
+    icon: "cafeteria",
+    color: "#B45309",
+    // Demo hours only: Sun–Thu 07:30–16:00 with a short cleaning break.
+    hours: { "0": [["07:30", "12:00"], ["12:30", "16:00"]], "1": [["07:30", "12:00"], ["12:30", "16:00"]], "2": [["07:30", "12:00"], ["12:30", "16:00"]], "3": [["07:30", "12:00"], ["12:30", "16:00"]], "4": [["07:30", "12:00"], ["12:30", "16:00"]] },
     dataStatus: "demo",
   },
 ];
