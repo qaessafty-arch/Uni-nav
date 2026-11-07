@@ -16,10 +16,11 @@ export function PoweredBy({ className = "" }: { className?: string }) {
 }
 
 /** Faint corner mark on maps. Never intercepts taps; sits clear of the map attribution. */
-export function MapWatermark() {
-  const { t } = useApp();
+export function MapWatermark({ offset = 0 }: { offset?: number }) {
+  const { t, prefs } = useApp();
+  const rtl = prefs.locale === "ar" || prefs.locale === "ckb";
   return (
-    <span aria-hidden className="pointer-events-none select-none absolute left-2 bottom-2 z-[5] inline-flex items-center gap-1.5 mono text-[10px] font-semibold tracking-[0.25em] text-fg/40" dir="ltr" data-testid="map-watermark">
+    <span aria-hidden style={{ left: rtl ? 8 : offset + 8 }} className="pointer-events-none select-none absolute bottom-2 z-[5] inline-flex items-center gap-1.5 mono text-[10px] font-semibold tracking-[0.25em] text-fg/40" dir="ltr" data-testid="map-watermark">
       <span className="opacity-70 inline-flex"><NullTechMark size={14} /></span> {t("brand.studio")}
     </span>
   );

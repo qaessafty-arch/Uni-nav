@@ -8,7 +8,7 @@ import { buildingIconPath } from "@campusnav/tokens";
  * photo). With `routeBuildingIds` it also draws a schematic route: straight
  * dashed lines between building centres, never presented as the real path.
  */
-export function CampusMap2D({ bundle, campusId, selectedId, onSelect, routeBuildingIds }: { bundle: CampusBundle; campusId: string; selectedId: string | null; onSelect: (id: string) => void; routeBuildingIds?: string[] }) {
+export function CampusMap2D({ bundle, campusId, selectedId, onSelect, routeBuildingIds, insets }: { bundle: CampusBundle; campusId: string; selectedId: string | null; onSelect: (id: string) => void; routeBuildingIds?: string[]; insets?: { start: number; bottom: number } }) {
   const { prefs, t } = useApp();
   const campus = bundle.campuses.find((c) => c.id === campusId)!;
   const w = campus.overviewWidth ?? 1000;
@@ -16,7 +16,7 @@ export function CampusMap2D({ bundle, campusId, selectedId, onSelect, routeBuild
   const buildings = bundle.buildings.filter((b) => b.campusId === campusId && b.overview);
   const fs = Math.max(22, w * 0.036); // readable on phones, where the campus is scaled down
   return (
-    <svg viewBox={`${-w * 0.05} ${-h * 0.05} ${w * 1.1} ${h * 1.1}`} className="absolute inset-0 w-full h-full" role="img" aria-label={t("map.campus")} direction="ltr" preserveAspectRatio="xMidYMid meet">
+    <svg viewBox={`${-w * 0.05} ${-h * 0.05} ${w * 1.1} ${h * 1.1}`} className="absolute top-0" style={{ insetInlineStart: insets?.start ?? 0, width: `calc(100% - ${insets?.start ?? 0}px)`, height: `calc(100% - ${insets?.bottom ?? 0}px)` }} role="img" aria-label={t("map.campus")} direction="ltr" preserveAspectRatio="xMidYMid meet">
       <rect x={0} y={0} width={w} height={h} fill="var(--cn-surface)" stroke="var(--cn-border-strong)" />
       {campus.overviewImageUrl ? <image href={campus.overviewImageUrl} x={0} y={0} width={w} height={h} preserveAspectRatio="none" opacity={0.9} /> : null}
       {buildings.map((b) => {
@@ -24,12 +24,12 @@ export function CampusMap2D({ bundle, campusId, selectedId, onSelect, routeBuild
         const sel = b.id === selectedId;
         return (
           <g key={b.id} role="button" tabIndex={0} aria-label={lt(b.name, prefs.locale)} aria-pressed={sel} className="cursor-pointer" onClick={() => onSelect(b.id)} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(b.id)}>
-            <rect x={r.x} y={r.y} width={r.w} height={r.h} fill={sel ? "var(--cn-accent)" : campus.overviewImageUrl ? "color-mix(in srgb, var(--cn-accent) 18%, transparent)" : "var(--cn-map-room)"} stroke={sel ? "var(--cn-accent)" : "var(--cn-border-strong)"} strokeWidth={2} />
+            <rect x={r.x} y={r.y} width={r.w} height={r.h} fill={sel ? `color-mix(in srgb, ${b.color ?? "var(--cn-accent)"} 24%, var(--cn-surface))` : campus.overviewImageUrl ? "color-mix(in srgb, var(--cn-accent) 18%, transparent)" : "var(--cn-map-room)"} stroke={sel ? (b.color ?? "var(--cn-accent)") : "var(--cn-border-strong)"} strokeWidth={sel ? 5 : 2} />
             <BoxMark b={b} x={r.x + r.w - fs * 1.55} y={r.y + fs * 0.35} s={fs * 1.2} />
-            <text x={r.x + fs * 0.6} y={r.y + fs * 1.4} fill={sel ? "var(--cn-accent-text)" : "var(--cn-text)"} fontSize={fs} fontFamily="IBM Plex Mono, monospace" fontWeight={600}>
+            <text x={r.x + fs * 0.6} y={r.y + fs * 1.4} fill="var(--cn-text)" fontSize={fs} fontFamily="IBM Plex Mono, monospace" fontWeight={600}>
               {b.code}
             </text>
-            <text x={r.x + fs * 0.6} y={r.y + fs * 2.5} fill={sel ? "var(--cn-accent-text)" : "var(--cn-text-muted)"} fontSize={fs * 0.72}>
+            <text x={r.x + fs * 0.6} y={r.y + fs * 2.5} fill="var(--cn-text-muted)" fontSize={fs * 0.72}>
               {lt(b.name, prefs.locale)}
             </text>
           </g>

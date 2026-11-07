@@ -114,7 +114,10 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
   const hasRealMap = !!(bundle.campuses.find((c) => c.id === (s.b ? l.buildings.get(s.b)?.campusId : undefined)) ?? bundle.campuses[0])?.geo && !noMap;
   // Default: the real map when the campus is placed on it; otherwise 3D on large screens and the plan on phones.
   // The university can choose the first view; 3D still falls back to the plan on devices without WebGL.
-  const requested: View = s.view ?? bundle.university.settings.defaultView ?? (hasRealMap ? "map" : s.defaultView);
+  // Open on the real map only once at least one building is placed on it; otherwise it's just an empty street map.
+  const anyPlaced = bundle.buildings.some((b) => b.geo && b.geo.footprint.length >= 3);
+  const preferred = bundle.university.settings.defaultView === "map" && !anyPlaced ? undefined : bundle.university.settings.defaultView;
+  const requested: View = s.view ?? preferred ?? (hasRealMap && anyPlaced ? "map" : s.defaultView);
   let view: View = requested === "map" && !hasRealMap ? s.defaultView : requested;
   if (view === "3d" && no3d) view = "2d";
   const building = s.b ? l.buildings.get(s.b) : undefined;
@@ -231,7 +234,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
       <div className="absolute inset-0 grid place-items-center text-muted">{t("map.noFloors")}</div>
     );
   } else if (campus) {
-    mapArea = <CampusMap2D bundle={bundle} campusId={campus.id} selectedId={building?.id ?? null} onSelect={(id) => set({ b: id, f: null, r: null, inside: false })} />;
+    mapArea = <CampusMap2D bundle={bundle} campusId={campus.id} selectedId={building?.id ?? null} onSelect={(id) => set({ b: id, f: null, r: null, inside: false })} insets={{ start: insets.start, bottom: 0 }} />;
   }
 
   // ── Panel content ─────────────────────────────────────────────────────
@@ -439,7 +442,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
           the 3D view and real map instead shift their camera (they stay full-bleed behind the sheet). */}
       <div className="cn-explorer-map" style={(inside ? indoorView : view) === "2d" ? { bottom: "var(--cn-sheet-h, 0px)" } : undefined}>
         {mapArea}
-        <MapWatermark />
+        <MapWatermark offset={insets.start} />
       </div>
 
       {/* Top-end: view switch + honesty badges */}

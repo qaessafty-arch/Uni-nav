@@ -75,7 +75,19 @@ export function buildCampus(bundle: CampusBundle, o: CampusSceneOptions): SceneC
   const buildingBoxes = new Map<string, THREE.Box3>();
   const buildings = bundle.buildings.filter((b) => b.campusId === campus.id && b.overview);
   const bodyMat = std(c.building);
-  const selMat = std(c.accent, { emissive: c.accent, emissiveIntensity: 0.25 });
+  const matCache = new Map<string, THREE.MeshStandardMaterial>();
+  /** Building colour, softened toward the neutral body so labels stay readable; stronger when selected. */
+  const matFor = (color: string | null | undefined, selected: boolean) => {
+    if (!color) return selected ? std(c.accent, { emissive: c.accent, emissiveIntensity: 0.25 }) : bodyMat;
+    const key = `${color}:${selected}`;
+    let m = matCache.get(key);
+    if (!m) {
+      const col = c.building.clone().lerp(new THREE.Color(color), selected ? 0.85 : 0.38);
+      m = std(col, selected ? { emissive: new THREE.Color(color), emissiveIntensity: 0.18 } : {});
+      matCache.set(key, m);
+    }
+    return m;
+  };
   for (const b of buildings) {
     const r = b.overview!;
     const floors = bundle.floors.filter((f) => f.buildingId === b.id).length;
@@ -85,7 +97,7 @@ export function buildCampus(bundle: CampusBundle, o: CampusSceneOptions): SceneC
     const d = r.h * CAMPUS_SCALE;
     const selected = b.id === o.selectedBuildingId;
     const geo = new THREE.BoxGeometry(w, h, d);
-    const mesh = new THREE.Mesh(geo, selected ? selMat : bodyMat);
+    const mesh = new THREE.Mesh(geo, matFor(b.color, selected));
     const g = new THREE.Group();
     g.position.set(r.x * CAMPUS_SCALE + w / 2, h / 2, r.y * CAMPUS_SCALE + d / 2);
     g.userData.pick = { kind: "building", id: b.id };

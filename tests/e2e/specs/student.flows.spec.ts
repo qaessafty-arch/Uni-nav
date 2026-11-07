@@ -239,10 +239,11 @@ test("directions can be shown in 3D from the router's own route", async ({ page 
   await expect(page.locator(".cn3d canvas")).toHaveCount(0);
 });
 
-test("the real map opens by default when the campus is placed on it; the view choice is kept in the URL", async ({ page }) => {
+test("with no building on the real map yet, the app opens on 3D/plan; the real map is one tap away; the view choice is kept in the URL", async ({ page }) => {
   await enterDemo(page);
   await page.goto(BASE);
-  await expect(page.getByRole("radio", { name: "Map" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByRole("radio", { name: "Map" })).toHaveAttribute("aria-checked", "false");
+  await page.getByRole("radio", { name: "Map" }).click();
   await expect(page.getByTestId("real-map")).toBeVisible();
   await expect(page.getByText("University buildings haven't been drawn on the real map yet.")).toBeVisible();
   await page.getByRole("list", { name: "Buildings" }).getByRole("button", { name: /DEMO-ENG/ }).click();
@@ -257,7 +258,7 @@ test("the real map opens by default when the campus is placed on it; the view ch
 
 test("the real map tilts to 3D and remembers the choice", async ({ page }) => {
   await enterDemo(page, {}, "visitor");
-  await page.goto(BASE);
+  await page.goto(`${BASE}/?v=map`);
   await expect(page.getByTestId("real-map")).toBeVisible();
   const btn = page.getByTestId("realmap-3d");
   await expect(btn).toHaveAttribute("aria-pressed", "false");
