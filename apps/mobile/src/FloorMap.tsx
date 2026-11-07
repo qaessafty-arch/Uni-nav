@@ -4,6 +4,7 @@ import Svg, { Circle, G, Path, Polyline, Rect, Text as SvgText } from "react-nat
 import { fitPoints, fitViewBox, lt, pan, polygonPath, shapeCenter, zoomAt, type Floor, type Locale, type MapElement, type NavNode, type Room, type ViewBox } from "@campusnav/core";
 import { colors } from "@campusnav/tokens";
 import { useLook } from "./ui";
+import { ICONS } from "@campusnav/tokens";
 
 const c = colors.dark;
 const FILL: Record<string, string> = { room: c.mapRoom, corridor: c.mapCorridor, stairs: c.mapStairs, elevator: c.mapElevator, toilet: c.mapToilet, entrance: c.accentSoft, emergency_exit: "#3A1C1C", wall: c.borderStrong, outdoor: "transparent", building: c.mapRoom };
@@ -113,12 +114,12 @@ export function NativeFloorMap(p: NativeFloorMapProps) {
       </Svg>
       <View style={{ position: "absolute", right: 8, top: 8, gap: 4 }}>
         {[
-          ["+", p.labels.zoomIn, () => zoom(1.4)],
-          ["−", p.labels.zoomOut, () => zoom(1 / 1.4)],
-          ["⟲", p.labels.reset, () => setVb(target.length ? fitPoints(base, target, 80) : base)],
+          [ICONS.plus, p.labels.zoomIn, () => zoom(1.4)],
+          [ICONS.minus, p.labels.zoomOut, () => zoom(1 / 1.4)],
+          [ICONS.reset, p.labels.reset, () => setVb(target.length ? fitPoints(base, target, 80) : base)],
         ].map(([g, label, fn]) => (
           <Pressable key={label as string} accessibilityRole="button" accessibilityLabel={label as string} onPress={fn as () => void} style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center", backgroundColor: c.surface, borderWidth: look.borderWidth, borderRadius: look.radius, borderColor: look.strongBorders ? c.text : c.borderStrong }}>
-            <Text style={{ color: c.text, fontSize: 20 }}>{g as string}</Text>
+            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={c.text} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><Path d={g as string} /></Svg>
           </Pressable>
         ))}
       </View>

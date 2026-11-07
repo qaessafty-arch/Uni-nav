@@ -1,7 +1,8 @@
-import { Link, type Href } from "expo-router";
+import { Link, router, type Href } from "expo-router";
 import type { ReactNode } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from "react-native";
-import { colors, fontSize, space, styleTokens, touchTarget, type StyleTokens } from "@campusnav/tokens";
+import { colors, fontSize, ICONS, space, styleTokens, touchTarget, type StyleTokens } from "@campusnav/tokens";
+import Svg, { Path } from "react-native-svg";
 import { useApp } from "./store";
 
 export const c = colors.dark;
@@ -113,13 +114,13 @@ export function Btn({ title, onPress, variant = "secondary", disabled, href, acc
     </T>
   );
   const pressedStyle: ViewStyle = look.shadowOffset ? { transform: [{ translateX: 2 }, { translateY: 2 }], shadowOpacity: 0 } : { opacity: 0.7 };
+  // Navigate with the router rather than wrapping in <Link asChild>: on web the
+  // Link wrapper drops Pressable's style function, which removed the button fill.
   if (href && !disabled)
     return (
-      <Link href={href} asChild>
-        <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? title} style={({ pressed }) => [style, pressed && pressedStyle]}>
-          {label}
-        </Pressable>
-      </Link>
+      <Pressable accessibilityRole="link" accessibilityLabel={accessibilityLabel ?? title} onPress={() => router.push(href)} style={({ pressed }) => [style, pressed && pressedStyle]}>
+        {label}
+      </Pressable>
     );
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? title} accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={({ pressed }) => [style, pressed && pressedStyle]}>
@@ -130,19 +131,21 @@ export function Btn({ title, onPress, variant = "secondary", disabled, href, acc
 
 export function Row({ title, subtitle, meta, href, onPress }: { title: string; subtitle?: string; meta?: string; href?: Href; onPress?: () => void }) {
   const tx = useText();
-  const inner = (
-    <Pressable accessibilityRole={href ? "link" : "button"} onPress={onPress} style={({ pressed }) => [styles.row, { flexDirection: tx.row }, pressed && { backgroundColor: c.surface }]}>
+  // router.push instead of <Link asChild>: on web the Link wrapper drops the style function (row layout).
+  return (
+    <Pressable accessibilityRole={href ? "link" : "button"} onPress={href ? () => router.push(href) : onPress} style={({ pressed }) => [styles.row, { flexDirection: tx.row }, pressed && { backgroundColor: c.surface }]}>
       <View style={{ flex: 1 }}>
         <T numberOfLines={1}>{title}</T>
         {subtitle ? <T muted size="sm" numberOfLines={1}>{subtitle}</T> : null}
       </View>
       {meta ? <T muted size="sm" mono>{meta}</T> : null}
-      <Text style={{ color: c.textFaint, transform: [{ scaleX: tx.rtl ? -1 : 1 }] }} accessibilityElementsHidden importantForAccessibility="no">
-        →
-      </Text>
+      <View style={{ transform: [{ scaleX: tx.rtl ? -1 : 1 }] }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={c.textFaint} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+          <Path d={ICONS.arrow} />
+        </Svg>
+      </View>
     </Pressable>
   );
-  return href ? <Link href={href} asChild>{inner}</Link> : inner;
 }
 
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "accent" | "warn" | "danger" }) {

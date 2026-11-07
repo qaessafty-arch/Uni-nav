@@ -4,6 +4,7 @@ import { View } from "react-native";
 import type { CampusBundle, SearchIndex } from "@campusnav/core";
 import { formatInstant } from "@campusnav/i18n";
 import { useApp } from "./store";
+import { applyBranding } from "./campus";
 import { Btn, Loading, Notice, Screen, T } from "./ui";
 
 export function Gate({ children }: { children: (b: CampusBundle, index: SearchIndex) => ReactNode }) {
@@ -21,6 +22,7 @@ export function Gate({ children }: { children: (b: CampusBundle, index: SearchIn
         <Btn title={t("common.retry")} onPress={reload} />
       </Screen>
     );
+  applyBranding(bundleState.bundle);
   return <>{children(bundleState.bundle, bundleState.index)}</>;
 }
 

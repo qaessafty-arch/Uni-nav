@@ -1,12 +1,13 @@
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { currentAndNext, lt, search, type CampusBundle, type Occurrence, type SearchResult } from "@campusnav/core";
+import { currentAndNext, featureOn, lt, relevantClosures, search, type CampusBundle, type Occurrence, type SearchResult } from "@campusnav/core";
 import { formatClock, formatCountdownText } from "@campusnav/i18n";
 import { DataBanners, Gate } from "@/Gate";
 import { OccurrenceCard, resultHref } from "@/OccurrenceCard";
+import { BuildingMark, Icon, LeaveBy, OpenStatusLine, PrayerCard } from "@/campus";
 import { useApp } from "@/store";
-import { Badge, Btn, Input, Label, Row, T, c, useCard, useText } from "@/ui";
+import { Badge, Btn, Input, Label, Notice, Row, T, c, useCard, useText } from "@/ui";
 
 function Home({ bundle, index }: { bundle: CampusBundle; index: Parameters<typeof search>[0] }) {
   const { t, prefs, saved } = useApp();
@@ -15,6 +16,7 @@ function Home({ bundle, index }: { bundle: CampusBundle; index: Parameters<typeo
   const cn = prefs.groupId ? currentAndNext(new Date(), bundle.university.settings.timezone, bundle.timetable, bundle.scheduleChanges, { groupId: prefs.groupId }) : null;
   const loc = prefs.locale;
   const card = useCard();
+  const tx = useText();
   return (
     <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 12 }} keyboardShouldPersistTaps="handled">
       <DataBanners />
@@ -31,6 +33,10 @@ function Home({ bundle, index }: { bundle: CampusBundle; index: Parameters<typeo
         </View>
       ) : (
         <>
+          {featureOn(bundle.university.settings, "closures") && relevantClosures(bundle, new Date()).active.length ? (
+            <Notice tone="warn">{`${t("home.closures")}: ${lt(relevantClosures(bundle, new Date()).active[0]!.reason, loc)}`}</Notice>
+          ) : null}
+          <PrayerCard bundle={bundle} />
           <Label>{cn?.current ? t("home.currentLecture") : t("home.nextLecture")}</Label>
           {!prefs.groupId ? (
             <View style={card}>
@@ -45,10 +51,23 @@ function Home({ bundle, index }: { bundle: CampusBundle; index: Parameters<typeo
             <View style={{ gap: 8 }}>
               {cn.current ? <OccurrenceCard bundle={bundle} occ={cn.current} countdown={cn.secondsUntilCurrentEnds != null ? t("home.endsIn", { time: formatCountdownText(loc, cn.secondsUntilCurrentEnds) }) : undefined} /> : null}
               {cn.next ? <OccurrenceCard bundle={bundle} occ={cn.next} countdown={cn.secondsUntilNext != null ? t("home.startsIn", { time: formatCountdownText(loc, cn.secondsUntilNext) }) : undefined} /> : null}
+              {!cn.current && cn.next ? <LeaveBy bundle={bundle} occ={cn.next} /> : null}
             </View>
           ) : (
             <T muted>{t("home.noLectures")}</T>
           )}
+          {featureOn(bundle.university.settings, "freeRooms") ? <Btn title={t("free.homeLink")} href="/free-rooms" /> : null}
+          <Label>{t("nav.buildings")}</Label>
+          {bundle.buildings.map((x) => (
+            <Pressable key={x.id} onPress={() => router.push(`/building/${x.id}`)} accessibilityRole="link" accessibilityLabel={lt(x.name, loc)} style={{ flexDirection: tx.row, alignItems: "center", gap: 10, minHeight: 52, borderBottomWidth: 1, borderBottomColor: c.border }}>
+                <BuildingMark b={x} size={34} />
+                <View style={{ flex: 1 }}>
+                  <T size="sm" bold numberOfLines={1}>{lt(x.name, loc)}</T>
+                  <OpenStatusLine hours={x.hours} timeZone={bundle.university.settings.timezone} />
+                </View>
+                <Icon name="arrow" size={18} color={c.textMuted} />
+              </Pressable>
+          ))}
           <Label>{t("home.savedPlaces")}</Label>
           {saved.length === 0 ? <T muted size="sm">{t("home.noSaved")}</T> : saved.map((id) => bundle.rooms.find((r) => r.id === id)).filter(Boolean).map((r) => <Row key={r!.id} title={`${r!.code} · ${lt(r!.name, loc)}`} href={`/room/${r!.id}`} />)}
           <Label>{t("home.announcements")}</Label>

@@ -33,7 +33,7 @@ export default function RoomScreen() {
               {room.accessible ? <Badge tone="accent">{t("room.accessible")}</Badge> : null}
             </View>
             {room.entranceNodeId ? <Btn variant="primary" title={t("common.navigate")} href={`/navigate?to=${room.id}`} /> : <Notice tone="warn">{t("room.noEntrance")}</Notice>}
-            <Btn title={saved.includes(room.id) ? `★ ${t("common.saved_location")}` : `☆ ${t("common.save_location")}`} onPress={() => toggleSaved(room.id)} />
+            <Btn title={saved.includes(room.id) ? t("common.saved_location") : t("common.save_location")} onPress={() => toggleSaved(room.id)} />
             <NativeFloorMap floor={floor} elements={b.mapElements.filter((e) => e.floorId === floor.id)} rooms={b.rooms.filter((r) => r.floorId === floor.id)} locale={loc} selectedRoomId={room.id} destination={entrance} labels={{ zoomIn: t("map.zoomIn"), zoomOut: t("map.zoomOut"), reset: t("map.reset") }} />
             <Btn title={t("common.viewOnMap")} href={`/floor/${floor.id}?room=${room.id}`} />
             <Label>{t("room.lecturesToday")}</Label>
