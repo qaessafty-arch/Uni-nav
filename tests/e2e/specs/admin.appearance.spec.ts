@@ -46,8 +46,8 @@ test("appearance: brand colour is contrast-checked, features switch off, preview
   await expect(page.getByTestId("contrast")).toContainText("meets WCAG AA");
   await page.getByTestId("feature-toggles").getByLabel("Prayer times").uncheck();
   await expect(preview).not.toContainText("Prayer times");
-  await page.getByLabel("App name").fill("SUL NAV");
-  await expect(preview).toContainText("SUL NAV");
+  await page.getByLabel("App name").fill("SUE NAV");
+  await expect(preview).toContainText("SUE NAV");
   await page.getByRole("button", { name: "Save appearance" }).click();
   await expect(page.getByText(/Appearance saved/)).toBeVisible();
   await page.reload();

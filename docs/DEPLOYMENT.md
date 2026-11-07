@@ -53,10 +53,10 @@ Local development alternative: `supabase start` uses `supabase/config.toml` and 
    ```
 3. Create the university (no code changes):
    ```sql
-   select public.create_university('sul', '{"en":"Salahaddin University","ckb":"…","ar":"…"}', 'SUL', 'owner@university.example', 'Asia/Baghdad');
+   select public.create_university('sue', '{"en":"Salahaddin University","ckb":"…","ar":"…"}', 'SUE', 'owner@university.example', 'Asia/Baghdad');
    ```
    The owner must have an account first (or invite them with the `invite-member` function and re-run the assignment from Admin → Users).
-4. The owner signs into the admin dashboard, sets **University** (branding: product name "SUL NAV", logo with permission) and **Settings** (time zone, weekend days, languages, timetable visibility, walking assumptions), then invites administrators from **Users**.
+4. The owner signs into the admin dashboard, sets **University** (branding: product name "SUE NAV", logo with permission) and **Settings** (time zone, weekend days, languages, timetable visibility, walking assumptions), then invites administrators from **Users**.
 5. Keep the university **unpublished** until data is verified; publish from Settings.
 
 ## Importing verified university data

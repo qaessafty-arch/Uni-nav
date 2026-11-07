@@ -2,7 +2,7 @@
 
 **A NULL-TECH product.** Smart campus navigation: *find my lecture, find my lecturer, and navigate there.*
 
-First deployment target: **SUL NAV — Salahaddin University**. The platform itself is university-independent: every university is a tenant with its own branding, campuses, maps, timetable, languages and administrators.
+First deployment target: **SUE NAV — Salahaddin University**. The platform itself is university-independent: every university is a tenant with its own branding, campuses, maps, timetable, languages and administrators.
 
 > **Data honesty.** This repository ships only a clearly labelled, entirely fictional **Demo University** dataset. It contains no official Salahaddin University information. Real data must be entered or imported by authorised university staff (see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#importing-verified-university-data)).
 
@@ -62,7 +62,7 @@ Try it: search “Room 204”, open it, press **Navigate**, pick “main entranc
 1. Create a Supabase project, apply `supabase/migrations/*` (`supabase db push`), optionally load `supabase/seed.sql` into a **non-production** project.
 2. Copy `apps/*/.env.example` to `.env.local` and fill `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` (and `EXPO_PUBLIC_…` for mobile). **Only the anon key ever goes to clients.**
 3. Make the first platform owner (SQL editor): `update public.user_profiles set is_platform_owner = true where email = 'you@…';`
-4. Create the university with `select public.create_university('sul', '{"en":"…"}', 'SUL', 'owner@…', 'Asia/Baghdad');` — no code changes.
+4. Create the university with `select public.create_university('sue', '{"en":"…"}', 'SUE', 'owner@…', 'Asia/Baghdad');` — no code changes.
 
 Full instructions: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) · Mobile builds: [docs/MOBILE.md](docs/MOBILE.md)
 

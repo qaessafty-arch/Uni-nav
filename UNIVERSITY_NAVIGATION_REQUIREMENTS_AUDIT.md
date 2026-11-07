@@ -1,6 +1,6 @@
 # UNIVERSITY NAVIGATION — REQUIREMENTS & READINESS AUDIT
 
-**Project:** NULL-TECH CAMPUS NAV (first intended deployment: "SUL NAV", Salahaddin University – Erbil)
+**Project:** NULL-TECH CAMPUS NAV (first intended deployment: "SUE NAV", Salahaddin University – Erbil)
 **Repository:** `qaessafty-arch/Uni-nav`, branch `ccr-c29fe201-j9n0yn`, commit `f7561bd`
 **Audit date:** 2026-11-02
 **Method:** read the source, schema, tests, CI workflow and docs; ran the demo navigation engine in a throw-away probe (deleted afterwards). **No source code was changed.**
@@ -265,10 +265,10 @@ Only questions the code **cannot** answer are listed. *Essential* means work can
 
 | # | Question | Why it matters | Essential? | Decision that depends on it | Source |
 |---|---|---|---|---|---|
-| A1 | Do you have (or will you seek) **official permission from Salahaddin University** to build and publish SUL NAV with its data? | Without authorisation no real data can be entered or published | **Essential** | Whether we pilot with SUL or a generic demo | You |
-| A2 | What is the **first pilot scope**: one building, one college, or the whole campus? Which campus (SUL has several sites)? | Determines whether outdoor/geo work is needed now | **Essential** | Phase 2 scope; whether C2 is a blocker | You (+ university) |
+| A1 | Do you have (or will you seek) **official permission from Salahaddin University** to build and publish SUE NAV with its data? | Without authorisation no real data can be entered or published | **Essential** | Whether we pilot with SUE or a generic demo | You |
+| A2 | What is the **first pilot scope**: one building, one college, or the whole campus? Which campus (SUE has several sites)? | Determines whether outdoor/geo work is needed now | **Essential** | Phase 2 scope; whether C2 is a blocker | You (+ university) |
 | A3 | Is there a **target date** (e.g. start of a semester)? | Drives prioritisation | **Essential** | Roadmap cut-line | You |
-| A4 | Is this a product for **many universities** (multi-tenant SaaS) or SUL first and only? | Multi-tenant cost is already paid; affects onboarding work | Optional | Whether to invest in tenant onboarding tooling | You |
+| A4 | Is this a product for **many universities** (multi-tenant SaaS) or SUE first and only? | Multi-tenant cost is already paid; affects onboarding work | Optional | Whether to invest in tenant onboarding tooling | You |
 
 ### B. University and campus information
 

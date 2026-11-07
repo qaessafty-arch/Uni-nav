@@ -26,7 +26,7 @@ export type DataStatus = "verified" | "demo" | "unverified";
 export interface UniversityBranding {
   primaryColor?: string;
   logoUrl?: string | null;
-  productName?: string; // e.g. "SUL NAV"
+  productName?: string; // e.g. "SUE NAV"
 }
 
 export interface UniversitySettings {

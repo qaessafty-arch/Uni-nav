@@ -33,7 +33,7 @@
 
 ## Roadmap
 
-### Next (before SUL pilot)
+### Next (before SUE pilot)
 1. Staging Supabase project; run apps and edge function against it; add integration tests with a real project in CI.
 2. Run the mobile app on Android/iOS devices; add Maestro or Detox smoke flows.
 3. Accessibility audit (axe + TalkBack/VoiceOver); Safari/Firefox e2e projects.
@@ -41,7 +41,7 @@
 5. Student sign-in (magic link) with sync of group, saved places and reminders.
 6. Schedule-change push sender (DB webhook → edge function → Expo Push).
 7. Cookie-based admin sessions (`@supabase/ssr`) and nonce CSP.
-8. Pilot data entry with SUL staff for one building; field-test QR signs and timing assumptions.
+8. Pilot data entry with SUE staff for one building; field-test QR signs and timing assumptions.
 
 ### Later — campus services
 Library directory, cafeteria menus, student services, lost & found, events, study-room / lab / facility booking (exclusion constraints on time ranges, reusing conflict logic).

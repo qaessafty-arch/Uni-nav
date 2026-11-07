@@ -162,7 +162,7 @@ export default function AppearancePage() {
             <div className="grid md:grid-cols-2 gap-5">
               <label className="block text-sm">
                 App name shown to students
-                <input className="cn-input w-full mt-1" value={u.branding.productName ?? ""} maxLength={40} onChange={(e) => setB({ productName: e.target.value || undefined })} placeholder="e.g. SUL NAV" aria-label="App name" />
+                <input className="cn-input w-full mt-1" value={u.branding.productName ?? ""} maxLength={40} onChange={(e) => setB({ productName: e.target.value || undefined })} placeholder="e.g. SUE NAV" aria-label="App name" />
               </label>
               <div className="text-sm">
                 University logo

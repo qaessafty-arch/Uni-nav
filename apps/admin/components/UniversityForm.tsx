@@ -48,7 +48,7 @@ export function UniversityForm({ mode }: { mode: "profile" | "settings" }) {
             <Field label="Name *" htmlFor="uname"><LocalizedInput id="uname" value={u.name} onChange={(name) => setU({ ...u, name })} /></Field>
             <Field label="Short name" htmlFor="short"><input id="short" className={inputCls} value={u.shortName} onChange={(e) => setU({ ...u, shortName: e.target.value })} /></Field>
             <Section title="Branding">
-              <Field label="Product name shown to students (e.g. SUL NAV)" htmlFor="pname"><input id="pname" className={inputCls} value={u.branding.productName ?? ""} onChange={(e) => setU({ ...u, branding: { ...u.branding, productName: e.target.value || undefined } })} /></Field>
+              <Field label="Product name shown to students (e.g. SUE NAV)" htmlFor="pname"><input id="pname" className={inputCls} value={u.branding.productName ?? ""} onChange={(e) => setU({ ...u, branding: { ...u.branding, productName: e.target.value || undefined } })} /></Field>
               <Field label="Primary colour" htmlFor="pcolor" hint="Used sparingly for accents in university-branded contexts."><input id="pcolor" type="color" className="h-10 w-20 bg-bg border border-line-strong" value={u.branding.primaryColor ?? "#1D4ED8"} onChange={(e) => setU({ ...u, branding: { ...u.branding, primaryColor: e.target.value.toUpperCase() } })} /></Field>
               <Field label="Logo URL (official logo, with permission)" htmlFor="logo"><input id="logo" type="url" className={inputCls} value={u.branding.logoUrl ?? ""} onChange={(e) => setU({ ...u, branding: { ...u.branding, logoUrl: e.target.value || null } })} /></Field>
             </Section>
