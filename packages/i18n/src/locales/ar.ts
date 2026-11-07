@@ -63,6 +63,12 @@ export const ar: Record<MessageKey, string> = {
   "onboarding.body3": "امسح رموز QR على جدران الحرم لتحديد موقعك — دون الحاجة إلى GPS داخل المباني.",
   "onboarding.start": "ابدأ",
   "onboarding.skip": "تخطٍّ",
+  "about.install": "أضفه إلى الشاشة الرئيسية: لا حاجة لمتجر التطبيقات",
+  "about.ios": "آيفون: اضغط مشاركة ثم “إضافة إلى الشاشة الرئيسية”.",
+  "about.android": "أندرويد: اضغط ⋮ ثم “تثبيت التطبيق” أو “إضافة إلى الشاشة الرئيسية”.",
+  "about.installNow": "تثبيت",
+  "about.unofficial": "مشروع طلابي من NULL-TECH. ليس تطبيقاً رسمياً للجامعة.",
+  "about.follow": "تابعنا على إنستغرام",
 
   "campus.select": "اختر جامعتك",
   "campus.selectHint": "يمكنك تغيير ذلك لاحقًا من الإعدادات.",

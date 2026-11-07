@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "CAMPUS NAV",
-    short_name: "CAMPUS NAV",
+    name: "UNI NAV",
+    short_name: "UNI NAV",
     description: "Find your lecture room and lecturer, and navigate there.",
     start_url: "/",
     scope: "/",

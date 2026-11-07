@@ -63,6 +63,12 @@ export const ckb: Record<MessageKey, string> = {
   "onboarding.body3": "کۆدی QR ی سەر دیوارەکان سکان بکە بۆ دیاریکردنی شوێنت — پێویست بە GPS ناکات.",
   "onboarding.start": "دەستپێبکە",
   "onboarding.skip": "تێپەڕاندن",
+  "about.install": "زیادی بکە بۆ شاشەی سەرەکی: پێویست بە ئەپ ستۆر ناکات",
+  "about.ios": "ئایفۆن: کرتە لە Share بکە، پاشان “Add to Home Screen”.",
+  "about.android": "ئەندرۆید: کرتە لە ⋮ بکە، پاشان “Install app” یان “Add to Home screen”.",
+  "about.installNow": "دامەزراندن",
+  "about.unofficial": "پڕۆژەیەکی قوتابییە لەلایەن NULL-TECH. ئەپی فەرمیی زانکۆ نییە.",
+  "about.follow": "لە ئینستاگرام فۆڵۆمان بکە",
 
   "campus.select": "زانکۆکەت هەڵبژێرە",
   "campus.selectHint": "دواتر دەتوانیت لە ڕێکخستنەکان بیگۆڕیت.",

@@ -2,12 +2,19 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { Providers } from "./providers";
+import { Analytics } from "@vercel/analytics/next";
+
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://uni-nav.online";
+const DESCRIPTION = "Find your room, your timetable and your lecture files. Campus map, indoor directions and free rooms. A student project by NULL-TECH.";
 
 export const metadata: Metadata = {
-  title: { default: "CAMPUS NAV", template: "%s · CAMPUS NAV" },
-  description: "Find your lecture room, find your lecturer, and navigate there. A NULL-TECH product.",
-  applicationName: "CAMPUS NAV",
-  appleWebApp: { capable: true, title: "CAMPUS NAV", statusBarStyle: "black-translucent" },
+  metadataBase: new URL(SITE),
+  title: { default: "UNI NAV", template: "%s · UNI NAV" },
+  description: DESCRIPTION,
+  openGraph: { type: "website", siteName: "UNI NAV", title: "UNI NAV: find your room and your class", description: DESCRIPTION, url: SITE },
+  twitter: { card: "summary_large_image", title: "UNI NAV: find your room and your class", description: DESCRIPTION },
+  applicationName: "UNI NAV",
+  appleWebApp: { capable: true, title: "UNI NAV", statusBarStyle: "black-translucent" },
   icons: { icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }, { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }], apple: "/icons/apple-touch-icon.png" },
 };
 
@@ -29,6 +36,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <Providers>{children}</Providers>
+        {/* Page-view counts only (no cookies, no personal data); ?ref= tags show which channel people came from. */}
+        <Analytics />
       </body>
     </html>
   );

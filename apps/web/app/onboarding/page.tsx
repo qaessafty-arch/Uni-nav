@@ -6,6 +6,7 @@ import { LOCALES } from "@campusnav/core";
 import { useApp } from "@/lib/store";
 import { Button, cx } from "@/components/ui";
 import { Logo } from "@/components/Logo";
+import { AboutCard } from "@/components/AboutCard";
 
 /** Splash + onboarding + language selection, shown on first launch. */
 export default function OnboardingPage() {
@@ -37,7 +38,7 @@ export default function OnboardingPage() {
           <div className="inline-block p-4 bg-bg border border-line-strong">
             <Logo size={56} />
           </div>
-          <p className="mono text-xl font-semibold tracking-[0.2em] mt-6">CAMPUS NAV</p>
+          <p className="mono text-xl font-semibold tracking-[0.2em] mt-6">UNI NAV</p>
           <p className="mono text-xs text-faint mt-2 tracking-[0.3em] flex items-center justify-center gap-2"><NullTechMark size={16} /> NULL-TECH</p>
         </div>
       </div>
@@ -50,7 +51,7 @@ export default function OnboardingPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Logo />
-          <span className="mono font-semibold tracking-wider">CAMPUS NAV</span>
+          <span className="mono font-semibold tracking-wider">UNI NAV</span>
         </div>
         <Button variant="ghost" onClick={finish}>
           {t("onboarding.skip")}
@@ -105,6 +106,7 @@ export default function OnboardingPage() {
           </Button>
         </div>
       )}
+      {step === slides.length - 1 ? <div className="mt-4"><AboutCard compact /></div> : null}
       <p className="text-center text-faint text-xs mono mt-6">{t("splash.tagline")}</p>
     </div>
   );

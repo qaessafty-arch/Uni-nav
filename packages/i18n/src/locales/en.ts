@@ -64,6 +64,12 @@ export const en = {
   "onboarding.body3": "Scan QR checkpoints on campus walls to set where you are — no GPS needed indoors.",
   "onboarding.start": "Get started",
   "onboarding.skip": "Skip",
+  "about.install": "Add it to your home screen: no app store needed",
+  "about.ios": "iPhone: tap Share, then “Add to Home Screen”.",
+  "about.android": "Android: tap ⋮ (menu), then “Install app” or “Add to Home screen”.",
+  "about.installNow": "Install",
+  "about.unofficial": "A student project by NULL-TECH. Not an official university app.",
+  "about.follow": "Follow us on Instagram",
 
   // Campus selection
   "campus.select": "Choose your university",
