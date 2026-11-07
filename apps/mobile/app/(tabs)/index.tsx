@@ -78,6 +78,10 @@ function Home({ bundle, index }: { bundle: CampusBundle; index: Parameters<typeo
             </View>
           ))}
           <Btn title={t("nav.settings")} href="/settings" />
+          <View style={{ marginTop: 28, flexDirection: "row", justifyContent: "center", gap: 6 }}>
+            <T muted size="xs">{t("brand.poweredBy")}</T>
+            <T size="xs" mono bold>{t("brand.studio")}</T>
+          </View>
         </>
       )}
     </ScrollView>

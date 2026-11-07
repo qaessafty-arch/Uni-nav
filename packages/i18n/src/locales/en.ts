@@ -2,6 +2,7 @@ export const en = {
   // Brand & common
   "brand.studio": "NULL-TECH",
   "brand.product": "CAMPUS NAV",
+  "brand.poweredBy": "Powered by",
   "common.loading": "Loading…",
   "common.retry": "Retry",
   "common.cancel": "Cancel",

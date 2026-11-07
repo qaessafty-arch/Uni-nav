@@ -415,7 +415,12 @@ function Frame({ children }: { children: ReactNode }) {
             <div className="cn-strip px-4 md:px-8 py-1.5 text-xs text-warn mono">LOCAL SANDBOX — browser-only demo data, no authentication, nothing leaves this device.</div>
           ) : null}
         </header>
-        <main className="cn-sections p-4 md:p-8 lg:p-10 w-full max-w-7xl">{children}</main>
+        <main className="cn-sections p-4 md:p-8 lg:p-10 w-full max-w-7xl">
+          {children}
+          <p className="mt-12 flex items-center justify-center gap-2 text-[11px] text-faint" data-testid="powered-by">
+            Powered by <span className="mono font-semibold tracking-[0.2em] text-muted" dir="ltr">NULL-TECH</span>
+          </p>
+        </main>
       </div>
     </div>
   );

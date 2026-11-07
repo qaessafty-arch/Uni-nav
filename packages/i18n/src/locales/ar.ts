@@ -4,6 +4,7 @@ import type { MessageKey } from "./en";
 export const ar: Record<MessageKey, string> = {
   "brand.studio": "NULL-TECH",
   "brand.product": "CAMPUS NAV",
+  "brand.poweredBy": "من تطوير",
   "common.loading": "جارٍ التحميل…",
   "common.retry": "إعادة المحاولة",
   "common.cancel": "إلغاء",

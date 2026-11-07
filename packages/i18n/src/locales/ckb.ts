@@ -4,6 +4,7 @@ import type { MessageKey } from "./en";
 export const ckb: Record<MessageKey, string> = {
   "brand.studio": "NULL-TECH",
   "brand.product": "CAMPUS NAV",
+  "brand.poweredBy": "پەرەپێدراوە لەلایەن",
   "common.loading": "بارکردن…",
   "common.retry": "دووبارە هەوڵبدەرەوە",
   "common.cancel": "پاشگەزبوونەوە",

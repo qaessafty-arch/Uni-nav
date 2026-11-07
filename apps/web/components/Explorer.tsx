@@ -32,6 +32,7 @@ import { Icon } from "./Icon";
 import { I } from "./icons";
 import { Badge, ButtonLink, Button, Spinner, cx } from "./ui";
 import type { Scene3DSpec } from "./three/Scene3D";
+import { MapWatermark } from "./PoweredBy";
 
 const RealMap = dynamic(() => import("./map/RealMap"), { ssr: false, loading: () => <div className="absolute inset-0 grid place-items-center"><Spinner label="Map" /></div> });
 const Scene3D = dynamic(() => import("./three/Scene3D"), { ssr: false, loading: () => <div className="absolute inset-0 grid place-items-center"><Spinner label="3D" /></div> });
@@ -425,6 +426,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
           the 3D view and real map instead shift their camera (they stay full-bleed behind the sheet). */}
       <div className="cn-explorer-map" style={(inside ? indoorView : view) === "2d" ? { bottom: "var(--cn-sheet-h, 0px)" } : undefined}>
         {mapArea}
+        <MapWatermark />
       </div>
 
       {/* Top-end: view switch + honesty badges */}

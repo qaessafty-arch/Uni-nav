@@ -1,4 +1,5 @@
 "use client";
+import { PoweredBy } from "./PoweredBy";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
@@ -235,6 +236,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         ) : (
           <main id="main" className="cn-sections flex-1 w-full max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10 pb-28 md:pb-16">
             {children}
+            <PoweredBy className="mt-12" />
           </main>
         )}
       </div>
