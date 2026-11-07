@@ -28,7 +28,7 @@ body{background:#0E0F12;color:#F4F5F7;font-family:Inter,sans-serif}
 .chip{display:inline-block;border:2px solid #2A2D35;border-radius:999px;padding:10px 22px;color:#A9AEB8}
 `;
 const posts = [
-  { n: 1, kicker: "01 · Find", en: "Find any room at SUE in seconds.", sub: "Search a room, lecturer or building. Get walking directions, floor by floor.", ku: "هەر ژوورێک لە زانکۆ لە چەند چرکەیەکدا بدۆزەرەوە." },
+  { n: 1, kicker: "01 · Find", en: "Find any room on campus in seconds.", sub: "Search a room, lecturer or building. Get walking directions, floor by floor.", ku: "هەر ژوورێک لە کەمپەس لە چەند چرکەیەکدا بدۆزەرەوە." },
   { n: 2, kicker: "02 · Timetable", en: "Your timetable. Only for your class.", sub: "Verify with your university email. See your classes, rooms and changes — and nobody else's.", ku: "خشتەی وانەکانت، تەنها بۆ پۆلەکەت." },
   { n: 3, kicker: "03 · Lectures", en: "Lecture files from your class rep.", sub: "PDFs and slides on each course page, with a badge when something new is posted.", ku: "فایلی وانەکان لە نوێنەری پۆلەکەتەوە." },
 ];
@@ -64,6 +64,15 @@ const foot = (s, url = "uni-nav.online", stack = false) => `<div class="foot" st
         </div>
       </div>${foot(32, "uni-nav.online", true)}`), 1080, 1920, `story-${x.n}.png`);
   }
+  // Portfolio cover slide for the NULL-TECH account
+  await shot(page(1080, 1350, `<div class="foot" style="font-size:30px;position:relative"><span style="letter-spacing:.3em;color:#A9AEB8">NULL-TECH · PROJECT</span><span></span></div>
+    <div style="position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:40px">
+      <span class="mark" style="width:260px;height:260px">${MARK}</span>
+      <div style="font-size:150px;font-weight:800;letter-spacing:.06em;line-height:1">UNI NAV</div>
+      <div style="font-size:48px;color:#C9CDD5;line-height:1.3">A campus app for universities.<br>Rooms · timetables · lecture files.</div>
+      <div class="ku" style="font-size:42px;font-weight:700;align-self:stretch">ئەپێک بۆ زانکۆکان</div>
+    </div>
+    <div class="foot" style="font-size:30px;position:relative"><span class="url">uni-nav.online</span><span>Swipe →</span></div>`), 1080, 1350, "post-0-cover.png");
   // A4 QR poster (print as PDF)
   const qr = await QR.toString("https://uni-nav.online/?ref=poster", { type: "svg", margin: 1, color: { dark: "#0E0F12", light: "#FFFFFF" }, errorCorrectionLevel: "M" }).then((x) => x.replace("<svg ", '<svg width="100%" height="100%" '));
   const poster = `<!doctype html><html><head><meta charset="utf-8"><style>${css}

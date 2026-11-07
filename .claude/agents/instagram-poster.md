@@ -30,6 +30,7 @@ For any other project, ask the user for the facts (name, what it does, link, ima
 
 ## Images
 - Instagram fetches images from a **public HTTPS JPEG URL**. Ready-made images are served from the live site:
+  - Cover (1080×1350): `https://uni-nav.online/social/post-0-cover.jpg`
   - Posts (1080×1350): `https://uni-nav.online/social/post-1.jpg`, `post-2.jpg`, `post-3.jpg`
   - Stories (1080×1920): `https://uni-nav.online/social/story-1.jpg`, `story-2.jpg`, `story-3.jpg`
   Before using one, confirm it is live (it ships with the web app deploy).
