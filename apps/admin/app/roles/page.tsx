@@ -1,5 +1,6 @@
 "use client";
 import { ROLE_PERMISSIONS, ROLES, type Permission } from "@campusnav/core";
+import { Icon } from "@/components/Icon";
 import { PageTitle } from "@/components/ui";
 
 /** Read-only view of the role → permission matrix enforced by database RLS. */
@@ -24,7 +25,7 @@ export default function RolesPage() {
               <tr key={p} className="border-t border-line">
                 <td className="px-3 py-1.5 mono text-xs sticky start-0 bg-bg">{p}</td>
                 {ROLES.map((r) => (
-                  <td key={r} className="text-center px-3">{ROLE_PERMISSIONS[r].includes(p) ? <span className="text-accent" aria-label="allowed">■</span> : <span className="text-faint" aria-label="not allowed">·</span>}</td>
+                  <td key={r} className="text-center px-3">{ROLE_PERMISSIONS[r].includes(p) ? <span className="inline-flex text-accent" aria-label="allowed"><Icon name="check" className="size-4" /></span> : <span className="text-faint" aria-label="not allowed">·</span>}</td>
                 ))}
               </tr>
             ))}

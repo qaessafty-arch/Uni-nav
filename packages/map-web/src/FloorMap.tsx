@@ -275,11 +275,20 @@ export function FloorMap(props: FloorMapProps) {
       </svg>
 
       <div style={{ position: "absolute", insetInlineEnd: 8, top: 8, display: "flex", flexDirection: "column", gap: 4 }}>
-        <MapButton label={labels.zoomIn} onClick={() => zoomBy(1.4)}>+</MapButton>
-        <MapButton label={labels.zoomOut} onClick={() => zoomBy(1 / 1.4)}>−</MapButton>
-        <MapButton label={labels.reset} onClick={() => setVb(fitTarget.length ? fitPoints(base, fitTarget, 80) : base)}>⟲</MapButton>
+        <MapButton label={labels.zoomIn} onClick={() => zoomBy(1.4)}><Glyph d="M12 5v14M5 12h14" /></MapButton>
+        <MapButton label={labels.zoomOut} onClick={() => zoomBy(1 / 1.4)}><Glyph d="M5 12h14" /></MapButton>
+        <MapButton label={labels.reset} onClick={() => setVb(fitTarget.length ? fitPoints(base, fitTarget, 80) : base)}><Glyph d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" /></MapButton>
       </div>
     </div>
+  );
+}
+
+/** Same 24px line icons as the rest of the product (no text glyphs). */
+function Glyph({ d }: { d: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d={d} />
+    </svg>
   );
 }
 

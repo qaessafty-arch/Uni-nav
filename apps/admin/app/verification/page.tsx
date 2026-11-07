@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { lt, validateMap, type Building, type Room } from "@campusnav/core";
 import { useAdminBundle } from "@/lib/bundle";
+import { Icon } from "@/components/Icon";
 import { errorMessage, getAdminSource, useAdmin } from "@/lib/admin";
 import { Badge, Button, EmptyState, ErrorState, Notice, PageTitle, Spinner } from "@/components/ui";
 
@@ -95,7 +96,7 @@ export default function VerificationPage() {
               <ul className="mt-3 space-y-1.5 text-sm" aria-label={`Checks for ${bld.code}`}>
                 {checks.map((c) => (
                   <li key={c.label} className="flex items-center gap-2">
-                    <span aria-hidden className={c.ok ? "text-accent" : "text-warn"}>{c.ok ? "✓" : "!"}</span>
+                    <Icon name={c.ok ? "checkCircle" : "warning"} className={c.ok ? "size-4 text-accent" : "size-4 text-warn"} />
                     <span className={c.ok ? "" : "text-warn"}>{c.label}</span>
                     {!c.ok ? (
                       <Link href={c.href} className="ms-auto text-xs underline text-muted">

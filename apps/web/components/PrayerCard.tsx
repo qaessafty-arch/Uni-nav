@@ -45,7 +45,7 @@ export function PrayerCard({ bundle }: { bundle: CampusBundle }) {
 
   return (
     <section className={cx("cn-card p-4", ramadan && "cn-card-accent")} aria-label={t("prayer.title")} data-testid="prayer-card">
-      {ramadan ? <div className="label-caps text-accent mb-1">☾ {t("ramadan.title")}</div> : <div className="label-caps mb-1">{t("prayer.title")}</div>}
+      {ramadan ? <div className="label-caps text-accent mb-1 flex items-center gap-1.5"><Icon name="moon" className="size-4" /> {t("ramadan.title")}</div> : <div className="label-caps mb-1">{t("prayer.title")}</div>}
       <div className="flex items-baseline justify-between gap-3">
         <div className="font-semibold text-lg">
           {iftar

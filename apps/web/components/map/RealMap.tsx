@@ -7,6 +7,7 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "../Icon";
 import { lt, type Building, type CampusGeo, type LngLat, type Locale } from "@campusnav/core";
 
 export const MAP_STYLE_URL = process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://tiles.openfreemap.org/styles/positron";
@@ -170,9 +171,9 @@ export default function RealMap({ geo, buildings, walkways = [], selectedId, loc
         </div>
       ) : null}
       <div className="cn3d-controls">
-        <button type="button" className={btn} onClick={() => map.current?.zoomIn()} aria-label={labels.zoomIn} title={labels.zoomIn}>+</button>
-        <button type="button" className={btn} onClick={() => map.current?.zoomOut()} aria-label={labels.zoomOut} title={labels.zoomOut}>−</button>
-        <button type="button" className={btn} onClick={() => map.current?.easeTo({ center: geo.center, zoom: geo.zoom, bearing: geo.bearing ?? 0 })} aria-label={labels.reset} title={labels.reset}>⌂</button>
+        <button type="button" className={btn} onClick={() => map.current?.zoomIn()} aria-label={labels.zoomIn} title={labels.zoomIn}><Icon name="plus" /></button>
+        <button type="button" className={btn} onClick={() => map.current?.zoomOut()} aria-label={labels.zoomOut} title={labels.zoomOut}><Icon name="minus" /></button>
+        <button type="button" className={btn} onClick={() => map.current?.easeTo({ center: geo.center, zoom: geo.zoom, bearing: geo.bearing ?? 0 })} aria-label={labels.reset} title={labels.reset}><Icon name="reset" /></button>
       </div>
     </div>
   );

@@ -9,6 +9,8 @@ import { mapLabels } from "@/components/MapLabels";
 import { Badge, Button, ButtonLink, ErrorState, Notice, Section } from "@/components/ui";
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
+import { Icon } from "@/components/Icon";
+import { cx } from "@/components/ui";
 
 export default function RoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -79,7 +81,7 @@ export default function RoomPage() {
                 ) : null}
                 <ButtonLink href={`/floors/${room.floorId}?room=${room.id}`}>{t("common.viewOnMap")}</ButtonLink>
                 <Button onClick={() => toggleSaved(room.id)} aria-pressed={isSaved}>
-                  {isSaved ? `★ ${t("common.saved_location")}` : `☆ ${t("common.save_location")}`}
+                  <Icon name="star" className={cx("size-4", isSaved && "fill-current text-accent")} /> {isSaved ? t("common.saved_location") : t("common.save_location")}
                 </Button>
               </div>
               <p className="mt-3 text-sm">

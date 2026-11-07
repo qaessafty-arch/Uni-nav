@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Icon } from "./Icon";
 import { fitViewBox, zoomAt, type ViewBox } from "@campusnav/core";
 import { Button, cx } from "./ui";
 
@@ -225,9 +226,9 @@ export function CampusCanvas(p: Props) {
         ))}
       </svg>
       <div className="absolute end-2 top-2 flex flex-col gap-1">
-        <Button className="!min-h-9 !px-3" aria-label="Zoom in" onClick={() => setVb((v) => zoomAt(v, 1.4, v.x + v.w / 2, v.y + v.h / 2, base))}>+</Button>
-        <Button className="!min-h-9 !px-3" aria-label="Zoom out" onClick={() => setVb((v) => zoomAt(v, 1 / 1.4, v.x + v.w / 2, v.y + v.h / 2, base))}>−</Button>
-        <Button className="!min-h-9 !px-3" aria-label="Reset view" onClick={() => setVb(base)}>⟲</Button>
+        <Button className="!min-h-9 !px-3" aria-label="Zoom in" onClick={() => setVb((v) => zoomAt(v, 1.4, v.x + v.w / 2, v.y + v.h / 2, base))}><Icon name="plus" /></Button>
+        <Button className="!min-h-9 !px-3" aria-label="Zoom out" onClick={() => setVb((v) => zoomAt(v, 1 / 1.4, v.x + v.w / 2, v.y + v.h / 2, base))}><Icon name="minus" /></Button>
+        <Button className="!min-h-9 !px-3" aria-label="Reset view" onClick={() => setVb(base)}><Icon name="reset" /></Button>
       </div>
     </div>
   );

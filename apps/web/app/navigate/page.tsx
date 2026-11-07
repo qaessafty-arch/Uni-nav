@@ -168,8 +168,8 @@ function NavigateInner() {
         if (arrived) {
           return (
             <div className="max-w-xl mx-auto text-center py-10">
-              <div className="mx-auto size-20 bg-accent text-accent-fg grid place-items-center text-4xl font-black" aria-hidden>
-                ✓
+              <div className="mx-auto size-20 bg-accent text-accent-fg grid place-items-center rounded-full" aria-hidden>
+                <Icon name="check" className="size-10" />
               </div>
               <h1 className="cn-display cn-display-xl mt-8">{t("navigate.arrived")}</h1>
               <p className="text-muted mt-2">{t("navigate.arrivedAt", { place: destName })}</p>
@@ -197,7 +197,7 @@ function NavigateInner() {
                     const outsideTab =
                       prev && f && prev.buildingId !== f.buildingId ? (
                         <button key={`out-${i}`} role="tab" aria-selected={showOutside} onClick={() => setOutsideView(true)} className="cn-chip !min-h-9" data-testid="tab-outside">
-                          ☀ {t("navigate.outside")}
+                          <Icon name="sun" className="size-4" /> {t("navigate.outside")}
                         </button>
                       ) : null;
                     return [
@@ -276,7 +276,7 @@ function NavigateInner() {
                   </div>
                   <p className="col-span-2 border-t border-line px-4 py-2 text-xs text-muted">
                     {t("navigate.timeNote", { speed: formatNumber(loc, plan.estimate.assumptions.speedMps) })}
-                    {outM > 0 ? <span className="block mt-0.5" data-testid="outdoor-m">☀ {t("navigate.outdoor", { distance: formatDistance(loc, outM) })}</span> : null}
+                    {outM > 0 ? <span className="mt-0.5 flex items-center gap-1" data-testid="outdoor-m"><Icon name="sun" className="size-3.5" /> {t("navigate.outdoor", { distance: formatDistance(loc, outM) })}</span> : null}
                   </p>
                 </div>
                 {outM > 0 && heat !== "none" && weather ? (

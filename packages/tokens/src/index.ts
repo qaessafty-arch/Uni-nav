@@ -164,3 +164,4 @@ export const brand = {
   studio: "NULL-TECH",
   product: "CAMPUS NAV",
 } as const;
+export * from "./icons";

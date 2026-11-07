@@ -7,6 +7,7 @@ import { Panel } from "@/components/Blocks";
 import { Badge, Button, EmptyState, PageTitle, Row } from "@/components/ui";
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
+import { Icon } from "@/components/Icon";
 
 export default function SavedPage() {
   const { t, prefs, saved, toggleSaved, history, clearHistory } = useApp();
@@ -37,7 +38,7 @@ export default function SavedPage() {
                           {t("common.navigate")}
                         </Link>
                         <Button className="!min-h-9" onClick={() => toggleSaved(r.id)} aria-label={`${t("common.delete")} ${r.code}`}>
-                          ✕
+                          <Icon name="close" className="size-4" />
                         </Button>
                       </li>
                     ))}

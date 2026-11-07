@@ -159,7 +159,7 @@ export function StyleSelector({ value, onChange, labels, legend }: { value: stri
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-semibold" dir="ltr">{labels[k]}</span>
-            {value === k ? <span className="block text-xs text-accent mono">●</span> : null}
+            {value === k ? <svg viewBox="0 0 24 24" className="size-4 text-accent" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12.5 10 17.5 19 7" /></svg> : null}
           </span>
         </button>
       ))}

@@ -4,6 +4,7 @@
  * (ssr: false) so three.js is only downloaded when a 3D view is shown.
  */
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "../Icon";
 import type { CampusBundle } from "@campusnav/core";
 import { Viewer, webglAvailable, type PickData } from "@/lib/three/viewer";
 import { buildBuilding, buildCampus, type BuildingSceneOptions, type CampusSceneOptions } from "@/lib/three/scenes";
@@ -93,10 +94,10 @@ export default function Scene3D({ bundle, spec, focusKey, onPick, onUnavailable,
     <div className="cn3d" role="application" aria-label={labels.canvas} aria-roledescription="3D map">
       <div ref={host} className="absolute inset-0" />
       <div className="cn3d-controls" role="group" aria-label={labels.canvas}>
-        <button type="button" className={btn} onClick={() => viewer.current?.zoom(0.75)} aria-label={labels.zoomIn} title={labels.zoomIn}>+</button>
-        <button type="button" className={btn} onClick={() => viewer.current?.zoom(1.33)} aria-label={labels.zoomOut} title={labels.zoomOut}>−</button>
-        <button type="button" className={btn} onClick={() => viewer.current?.rotate(Math.PI / 4)} aria-label={labels.rotate} title={labels.rotate}>⟳</button>
-        <button type="button" className={btn} onClick={() => boxes.current.all && viewer.current?.focus(boxes.current.all)} aria-label={labels.reset} title={labels.reset}>⌂</button>
+        <button type="button" className={btn} onClick={() => viewer.current?.zoom(0.75)} aria-label={labels.zoomIn} title={labels.zoomIn}><Icon name="plus" /></button>
+        <button type="button" className={btn} onClick={() => viewer.current?.zoom(1.33)} aria-label={labels.zoomOut} title={labels.zoomOut}><Icon name="minus" /></button>
+        <button type="button" className={btn} onClick={() => viewer.current?.rotate(Math.PI / 4)} aria-label={labels.rotate} title={labels.rotate}><Icon name="rotate" /></button>
+        <button type="button" className={btn} onClick={() => boxes.current.all && viewer.current?.focus(boxes.current.all)} aria-label={labels.reset} title={labels.reset}><Icon name="reset" /></button>
         {hasRoute && labels.play && !reduced ? (
           <button
             type="button"
@@ -113,7 +114,7 @@ export default function Scene3D({ bundle, spec, focusKey, onPick, onUnavailable,
             aria-label={playing ? labels.stop : labels.play}
             title={playing ? labels.stop : labels.play}
           >
-            {playing ? "■" : "▶"}
+            <Icon name={playing ? "stop" : "play"} />
           </button>
         ) : null}
       </div>

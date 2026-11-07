@@ -457,9 +457,9 @@ function Editor({ bundle, building, floorId, setFloorId, checkpoints }: { bundle
           {draft ? <rect x={Math.min(draft.x0, draft.x1)} y={Math.min(draft.y0, draft.y1)} width={Math.abs(draft.x1 - draft.x0)} height={Math.abs(draft.y1 - draft.y0)} fill="color-mix(in srgb, var(--cn-accent) 15%, transparent)" stroke="var(--cn-accent)" strokeDasharray="4 3" vectorEffect="non-scaling-stroke" /> : null}
         </svg>
         <div className="flex flex-wrap gap-3 text-xs text-muted mt-2">
-          <span><span className="text-info">●</span> entrance/door</span>
-          <span><span className="text-warn">●</span> stairs/elevator (ring = linked to another floor)</span>
-          <span><span className="text-accent">●</span> building entrance</span>
+          <span><span className="inline-block size-2.5 rounded-full bg-current align-middle text-info" aria-hidden /> entrance/door</span>
+          <span><span className="inline-block size-2.5 rounded-full bg-current align-middle text-warn" aria-hidden /> stairs/elevator (ring = linked to another floor)</span>
+          <span><span className="inline-block size-2.5 rounded-full bg-current align-middle text-accent" aria-hidden /> building entrance</span>
           <span>– – not step-free</span>
           <span className="text-danger">— blocked</span>
           <span className="text-warn">? room shape not linked to a room record</span>

@@ -2,6 +2,7 @@
 import { LOCALES } from "@campusnav/core";
 import { PageTitle, cx } from "@/components/ui";
 import { useApp } from "@/lib/store";
+import { Icon } from "@/components/Icon";
 
 export default function LanguagePage() {
   const { t, prefs, setPrefs } = useApp();
@@ -20,7 +21,7 @@ export default function LanguagePage() {
             className={cx("w-full flex items-center justify-between px-4 min-h-14 text-lg", prefs.locale === l ? "text-accent" : "")}
           >
             <span>{t(`language.${l}`)}</span>
-            {prefs.locale === l ? <span aria-hidden>●</span> : null}
+            {prefs.locale === l ? <Icon name="check" /> : null}
           </button>
         ))}
       </div>

@@ -59,7 +59,7 @@ export function StartPicker({ bundle, onPick, returnTo, compact }: { bundle: Cam
               {g.nodes.map((n) => (
                 <option key={n.id} value={n.id}>
                   {lt(l.floors.get(n.floorId)?.name, loc)} — {nodeName(n, l, loc)}
-                  {l.checkpointNodeIds.has(n.id) ? " ▣" : ""}
+                  {l.checkpointNodeIds.has(n.id) ? " (QR)" : ""}
                 </option>
               ))}
             </optgroup>

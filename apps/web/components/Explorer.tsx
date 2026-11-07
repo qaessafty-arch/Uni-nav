@@ -261,7 +261,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
           )}
           <ButtonLink href={`/rooms/${room.id}`}>{t("explore.details")}</ButtonLink>
           <Button onClick={() => toggleSaved(room.id)} aria-pressed={saved.includes(room.id)}>
-            {saved.includes(room.id) ? `★ ${t("common.saved_location")}` : `☆ ${t("common.save_location")}`}
+            <Icon name="star" className={cx("size-4", saved.includes(room.id) && "fill-current text-accent")} /> {saved.includes(room.id) ? t("common.saved_location") : t("common.save_location")}
           </Button>
         </div>
       </div>
@@ -429,7 +429,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
             ))}
             {indoorView === "3d" ? (
               <button type="button" aria-pressed={!floor} onClick={() => set({ f: null, r: null })} title={t("explore.allFloors")} aria-label={t("explore.allFloors")}>
-                ≡
+                <Icon name="layers" className="size-4" />
               </button>
             ) : null}
           </div>
