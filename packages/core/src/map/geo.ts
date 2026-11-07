@@ -247,3 +247,35 @@ export function outlineFromGeoJSON(geom: { type: string; coordinates: unknown } 
   }
   return best.length >= 3 ? best : null;
 }
+
+/** Ray-casting point-in-polygon on [lng, lat] (fine at building scale). */
+export function pointInRing(p: LngLat, ring: readonly LngLat[]): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]!;
+    const [xj, yj] = ring[j]!;
+    if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+/**
+ * Which map building the person meant: among shapes under the click, the
+ * smallest one that actually contains the point (a large overlapping shape,
+ * like a whole-site outline, must not swallow every click). Falls back to the
+ * smallest shape if none strictly contains it (click on an edge).
+ */
+export function pickOutlineAt(geoms: readonly ({ type: string; coordinates: unknown } | null | undefined)[], at: LngLat): LngLat[] | null {
+  const outlines = geoms.map((g) => outlineFromGeoJSON(g)).filter((o): o is LngLat[] => !!o);
+  if (!outlines.length) return null;
+  const containing = outlines.filter((o) => pointInRing(at, o));
+  const pool = containing.length ? containing : outlines;
+  return pool.reduce((a, b) => (ringArea(b) < ringArea(a) ? b : a));
+}
+
+/** Same outline (to ~1 m), regardless of starting corner or direction. */
+export function sameOutline(a: readonly LngLat[] | null | undefined, b: readonly LngLat[] | null | undefined): boolean {
+  if (!a || !b || a.length !== b.length) return false;
+  const key = (r: readonly LngLat[]) => r.map(([x, y]) => `${x.toFixed(5)},${y.toFixed(5)}`).sort().join("|");
+  return key(a) === key(b);
+}

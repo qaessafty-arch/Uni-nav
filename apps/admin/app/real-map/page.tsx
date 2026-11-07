@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import { useMemo, useRef, useState } from "react";
-import { buildingSchema, campusSchema, lt, type Building, type Campus, type LngLat } from "@campusnav/core";
+import { buildingSchema, campusSchema, lt, type Building, type Campus, type LngLat, sameOutline } from "@campusnav/core";
 import { errorMessage, getAdminSource, useAdmin, useTable } from "@/lib/admin";
 import { Badge, Button, EmptyState, Notice, PageTitle, Spinner, cx } from "@/components/ui";
 import type { RealMapEditorHandle } from "@/components/RealMapEditor";
@@ -16,6 +16,8 @@ export default function RealMapPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [drawing, setDrawing] = useState(false);
   const [picking, setPicking] = useState(false);
+  /** Outline picked from the base map, shown as a preview until confirmed. */
+  const [picked, setPicked] = useState<LngLat[] | null>(null);
   const [height, setHeight] = useState("");
   const [draft, setDraft] = useState<LngLat[]>([]);
   const [lat, setLat] = useState("");
@@ -84,10 +86,22 @@ export default function RealMapPage() {
                 <Button className="!min-h-9" onClick={() => { setDrawing(false); setDraft([]); }}>Cancel</Button>
               </>
             ) : null}
-            {picking ? (
+            {picking && !picked ? (
               <>
-                <Badge tone="warn">Click the real building for {sel?.code} on the map</Badge>
+                <Badge tone="warn">Point at the real building for {sel?.code} — it lights up blue — then click</Badge>
                 <Button className="!min-h-9" onClick={() => setPicking(false)}>Cancel</Button>
+              </>
+            ) : null}
+            {picked && sel ? (
+              <>
+                <Badge tone="accent">Preview for {sel.code}: {picked.length} corners</Badge>
+                {(() => {
+                  const dup = list.find((b) => b.id !== sel.id && sameOutline(b.geo?.footprint, picked));
+                  return dup ? <Badge tone="danger">Already used by {dup.code}</Badge> : null;
+                })()}
+                <Button variant="primary" className="!min-h-9" data-testid="pick-confirm" onClick={() => { void saveOutline(sel, picked); setPicked(null); }}>Use this outline</Button>
+                <Button className="!min-h-9" onClick={() => setPicked(null)}>Pick again</Button>
+                <Button className="!min-h-9" onClick={() => { setPicked(null); setPicking(false); }}>Cancel</Button>
               </>
             ) : null}
           </div>
@@ -96,15 +110,15 @@ export default function RealMapPage() {
             buildings={list}
             selectedId={selected}
             drawing={drawing}
-            draft={draft}
+            draft={picked ?? draft}
             onAddPoint={(p) => setDraft((d) => [...d, p])}
-            onSelect={setSelected}
+            onSelect={(id) => { setSelected(id); setPicked(null); }}
             onReady={(h) => (handle.current = h)}
-            picking={picking}
+            picking={picking && !picked}
             onPick={(outline) => {
               if (!sel) return;
-              if (!outline) return toast("No building there on the base map — zoom in and click inside a building shape, or draw the outline.", "error");
-              void saveOutline(sel, outline);
+              if (!outline) return toast("No building shape there on the base map. Zoom in (buildings show from zoom 15) and click inside one, or draw the outline.", "error");
+              setPicked(outline);
             }}
           />
           <p className="text-xs text-muted">Tip: “Pick from map” copies the outline of a building that OpenStreetMap already has (highlighted in blue while picking). Check it on site; if a building is split across map tiles, draw it instead. Students see placed buildings in 3D on the real map.</p>
@@ -134,7 +148,7 @@ export default function RealMapPage() {
             <ul className="divide-y divide-[var(--cn-border)]" aria-label="Buildings on the real map">
               {list.map((b) => (
                 <li key={b.id}>
-                  <button type="button" className={cx("w-full text-start py-2.5 flex items-center gap-2", selected === b.id && "text-accent font-semibold")} onClick={() => setSelected(b.id)}>
+                  <button type="button" className={cx("w-full text-start py-2.5 flex items-center gap-2", selected === b.id && "text-accent font-semibold")} onClick={() => { setSelected(b.id); setPicked(null); setHeight(""); }}>
                     <span className="mono text-sm w-20 truncate">{b.code}</span>
                     <span className="text-sm flex-1 truncate">{lt(b.name, "en")}</span>
                     {b.geo ? <Badge tone="accent">placed</Badge> : <Badge>not placed</Badge>}
@@ -144,7 +158,7 @@ export default function RealMapPage() {
             </ul>
             {sel && editable ? (
               <div className="mt-3 flex flex-wrap gap-2">
-                <Button variant="primary" className="!min-h-9 text-sm" disabled={!campus.geo || drawing || picking} onClick={() => { setPicking(true); setDrawing(false); setDraft([]); }} data-testid="pick-outline">
+                <Button variant="primary" className="!min-h-9 text-sm" disabled={!campus.geo || drawing || picking} onClick={() => { setPicking(true); setPicked(null); setDrawing(false); setDraft([]); }} data-testid="pick-outline">
                   Pick from map
                 </Button>
                 <Button className="!min-h-9 text-sm" disabled={!campus.geo || drawing || picking} onClick={() => { setDrawing(true); setPicking(false); setDraft([]); }}>

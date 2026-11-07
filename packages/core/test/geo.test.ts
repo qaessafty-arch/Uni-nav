@@ -105,3 +105,24 @@ describe("3D real map helpers", () => {
     expect(outlineFromGeoJSON({ type: "Polygon", coordinates: [[[44, 36], [44.1, 36], [44, 36]]] })).toBeNull();
   });
 });
+
+import { pickOutlineAt, pointInRing, sameOutline } from "../src";
+
+describe("picking a building from the base map", () => {
+  const poly = (x: number, y: number, w: number, h: number) => ({ type: "Polygon", coordinates: [[[x, y], [x + w, y], [x + w, y + h], [x, y + h], [x, y]]] });
+  const big = poly(44.0, 36.0, 0.01, 0.01); // whole-site shape
+  const a = poly(44.002, 36.002, 0.001, 0.001);
+  const b = poly(44.006, 36.006, 0.001, 0.001);
+  it("takes the smallest shape that contains the click, so a big overlapping shape can't swallow every click", () => {
+    expect(pickOutlineAt([big, a, b], [44.0025, 36.0025])![0]).toEqual([44.002, 36.002]);
+    expect(pickOutlineAt([big, a, b], [44.0065, 36.0065])![0]).toEqual([44.006, 36.006]);
+    expect(pickOutlineAt([big, a, b], [44.009, 36.009])![0]).toEqual([44.0, 36.0]); // only the big one contains it
+    expect(pickOutlineAt([], [44, 36])).toBeNull();
+  });
+  it("point-in-polygon and outline equality", () => {
+    expect(pointInRing([0.5, 0.5], [[0, 0], [1, 0], [1, 1], [0, 1]])).toBe(true);
+    expect(pointInRing([1.5, 0.5], [[0, 0], [1, 0], [1, 1], [0, 1]])).toBe(false);
+    expect(sameOutline([[0, 0], [1, 0], [1, 1]], [[1, 1], [0, 0], [1, 0]])).toBe(true);
+    expect(sameOutline([[0, 0], [1, 0], [1, 1]], [[0, 0], [1, 0], [2, 1]])).toBe(false);
+  });
+});

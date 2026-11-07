@@ -39,6 +39,12 @@ export default function StudentsPage() {
   const [csv, setCsv] = useState("");
   const [parseErrors, setParseErrors] = useState<string[]>([]);
   const [filter, setFilter] = useState("");
+  // One-student form
+  const [oneEmail, setOneEmail] = useState("");
+  const [oneDept, setOneDept] = useState("");
+  const [oneYear, setOneYear] = useState("");
+  const [oneNumber, setOneNumber] = useState("");
+  const [oneError, setOneError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!universityId) return;
@@ -80,6 +86,30 @@ export default function StudentsPage() {
     }
   };
 
+  const addOne = async () => {
+    setOneError(null);
+    const email = oneEmail.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setOneError("Enter a valid email address.");
+    if (!oneDept) return setOneError("Choose the department.");
+    if (!oneYear) return setOneError("Choose the year.");
+    try {
+      await getAdminSource().importRoster(universityId!, [{ email, departmentId: oneDept, year: Number(oneYear), studentNumber: oneNumber.trim() || null }]);
+      toast(`${email} added`);
+      setOneEmail("");
+      setOneNumber("");
+      bump();
+    } catch (e) {
+      setOneError(errorMessage(e));
+    }
+  };
+  // Departments grouped by college for the dropdown
+  const byCollege = new Map<string, Department[]>();
+  for (const d of [...depts].sort((a, b) => lt(a.name as LocalizedText, "en").localeCompare(lt(b.name as LocalizedText, "en")))) {
+    const c = d.college ? lt(d.college as LocalizedText, "en") : "Other";
+    byCollege.set(c, [...(byCollege.get(c) ?? []), d]);
+  }
+  const oneYears = oneDept ? Array.from({ length: programYears(deptById.get(oneDept)) }, (_, i) => i + 1) : [];
+
   const pending = enrollments.filter((e) => e.status === "pending");
   const decided = enrollments.filter((e) => e.status !== "pending");
   const f = filter.trim().toLowerCase();
@@ -117,7 +147,35 @@ export default function StudentsPage() {
 
       <section aria-labelledby="roster">
         <h2 id="roster" className="label-caps mb-2">Roster from the registration office ({roster.length})</h2>
-        <form className="border border-line p-4 space-y-2" onSubmit={(e) => { e.preventDefault(); void importCsv(); }}>
+        <form className="border border-line p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.4fr_1.4fr_0.6fr_0.8fr_auto] items-end" onSubmit={(e) => { e.preventDefault(); void addOne(); }} data-testid="add-student">
+          <label className="text-sm">University email
+            <input className={inputCls} type="email" dir="ltr" required value={oneEmail} onChange={(e) => setOneEmail(e.target.value)} placeholder="name@su.edu.krd" aria-label="Student email" />
+          </label>
+          <label className="text-sm">Department
+            <select className={inputCls} value={oneDept} onChange={(e) => { setOneDept(e.target.value); setOneYear(""); }} aria-label="Department">
+              <option value="">Choose…</option>
+              {[...byCollege.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([college, list]) => (
+                <optgroup key={college} label={college}>
+                  {list.map((d) => <option key={d.id} value={d.id}>{lt(d.name as LocalizedText, "en")}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm">Year
+            <select className={inputCls} value={oneYear} disabled={!oneDept} onChange={(e) => setOneYear(e.target.value)} aria-label="Year">
+              <option value="">Choose…</option>
+              {oneYears.map((y) => <option key={y} value={String(y)}>Year {y}</option>)}
+            </select>
+          </label>
+          <label className="text-sm">Student no. <span className="text-muted">(optional)</span>
+            <input className={inputCls} dir="ltr" maxLength={40} value={oneNumber} onChange={(e) => setOneNumber(e.target.value)} aria-label="Student number" />
+          </label>
+          <Button type="submit" variant="primary">Add student</Button>
+          {oneError ? <p role="alert" className="text-danger text-sm sm:col-span-2 lg:col-span-5">{oneError}</p> : null}
+        </form>
+        <details className="mt-3 border border-line">
+          <summary className="cursor-pointer px-4 py-2.5 text-sm font-medium">Add many at once (paste a list from the registration office)</summary>
+        <form className="p-4 pt-1 space-y-2" onSubmit={(e) => { e.preventDefault(); void importCsv(); }}>
           <label className="text-sm block">
             Paste one student per line: <span className="mono">email, department code, year, student number (optional)</span>
             <textarea className={`${inputCls} mono min-h-32`} dir="ltr" value={csv} onChange={(e) => setCsv(e.target.value)} placeholder={`name@university.edu, ${depts[0]?.code ?? "CS"}, 1, 2026001`} aria-label="Roster lines" />
@@ -130,6 +188,7 @@ export default function StudentsPage() {
             <ul role="alert" className="text-danger text-sm list-disc ps-5">{parseErrors.slice(0, 20).map((m) => <li key={m}>{m}</li>)}</ul>
           ) : null}
         </form>
+        </details>
         <input className={`${inputCls} mt-3 max-w-sm`} placeholder="Filter by email or department" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filter roster" />
         <ul className="border border-line divide-y divide-line mt-2" data-testid="roster-list">
           {shownRoster.slice(0, 300).map((r) => (
