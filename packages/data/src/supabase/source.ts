@@ -246,13 +246,13 @@ export class SupabaseAdminSource implements AdminDataSource {
   }
 
   async listMembers(universityId: string): Promise<MembershipRow[]> {
-    const rows = check(await this.client.rpc("admin_list_members", { p_university_id: universityId }));
+    const rows = check(await this.client.rpc("admin_list_members", { p_university: universityId }));
     return (rows as Record<string, unknown>[]).map((r) => rowToDomain<MembershipRow>(r));
   }
 
   async setMemberRole(universityId: string, email: string, role: Role, departmentId?: string | null): Promise<MembershipRow> {
     const row = check(
-      await this.client.rpc("admin_set_member_role", { p_university_id: universityId, p_email: email, p_role: role, p_department_id: departmentId ?? null }),
+      await this.client.rpc("admin_set_member_role", { p_university: universityId, p_email: email, p_role: role, p_department_id: departmentId ?? null }),
     );
     return rowToDomain<MembershipRow>((Array.isArray(row) ? row[0] : row) as Record<string, unknown>);
   }

@@ -127,6 +127,13 @@ describe("public (anonymous) access", () => {
     expect(res.rowCount).toBe(6); // active, unexpired only (ENG main, ENG floor 1 stairs, ENG floor 2, SCI, LIB, CAF)
     expect(res.fields.map((f) => f.name)).not.toContain("token");
   });
+  it("cannot call staff RPCs or trigger functions directly", async () => {
+    await as(null, async (q) => {
+      await expectDenied(q("select public.create_university('x', '{\"en\":\"x\"}', 'X', 'a@b.c')"));
+      await expectDenied(q("select * from public.admin_list_members($1)", [A]));
+      await expectDenied(q("select public.audit_trigger()"));
+    });
+  });
   it("cannot write anything", async () => {
     await as(null, async (q) => {
       await expectDenied(q(`insert into public.buildings (university_id, campus_id, code, name) values ($1, $2, 'X', '{"en":"x"}')`, [A, did("demo-campus-main")]));

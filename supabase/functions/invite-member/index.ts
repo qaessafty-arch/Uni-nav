@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
   if (inviteErr && !/already/i.test(inviteErr.message)) return json({ error: "invite_failed" }, 502);
 
   // 3) Assign the role AS THE CALLER so escalation rules and audit logging apply.
-  const { data, error } = await asCaller.rpc("admin_set_member_role", { p_university_id: universityId, p_email: email, p_role: role, p_department_id: departmentId });
+  const { data, error } = await asCaller.rpc("admin_set_member_role", { p_university: universityId, p_email: email, p_role: role, p_department_id: departmentId });
   if (error) return json({ error: "assign_failed", detail: error.message }, 400);
   return json({ ok: true, membership: data });
 });
