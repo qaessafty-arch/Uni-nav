@@ -19,6 +19,8 @@ export interface FreeRoomsOptions {
   types?: readonly RoomType[];
   /** Only rooms free for at least this many minutes. Default 30. */
   minMinutes?: number;
+  /** Only rooms in these buildings (see freeRoomScope). */
+  buildingIds?: ReadonlySet<string>;
 }
 
 export const STUDY_ROOM_TYPES: readonly RoomType[] = ["lecture_hall", "classroom"];
@@ -39,6 +41,7 @@ export function freeRoomsAt(bundle: CampusBundle, now: Date, opts: FreeRoomsOpti
   const out: FreeRoom[] = [];
   for (const room of bundle.rooms) {
     if (!types.has(room.type) || closedRooms.has(room.id)) continue;
+    if (opts.buildingIds && !opts.buildingIds.has(room.buildingId)) continue;
     const here = today.filter((o) => o.roomId === room.id);
     const covering = (o: (typeof here)[number]) => toMinutes(o.startTime) <= z.minutes && z.minutes < toMinutes(o.endTime);
     if (here.some((o) => !o.cancelled && covering(o))) continue;
@@ -75,4 +78,30 @@ export function leaveAdvice(secondsUntilStart: number, walkSeconds: number, buff
   else if (leaveInSeconds <= 15 * 60) status = "leave_soon";
   else status = "relax";
   return { status, leaveInSeconds, walkSeconds: Math.round(walkSeconds) };
+}
+
+export interface FreeRoomScope {
+  buildingIds: Set<string>;
+  /** Building(s) of the student's major (department of their chosen group). */
+  majorBuildingIds: string[];
+  /** Building the person is in now (from their QR scan / chosen location). */
+  hereBuildingId: string | null;
+}
+
+/**
+ * Free rooms are offered to the students of the major that owns a building,
+ * and to whoever is inside that building — not campus-wide. A student's major
+ * comes from the timetable group they picked (department → its building, plus
+ * buildings where that department has rooms); a visitor's from where they are.
+ */
+export function freeRoomScope(bundle: CampusBundle, groupId: string | null | undefined, startNodeId: string | null | undefined): FreeRoomScope {
+  const majorBuildingIds = new Set<string>();
+  const dept = bundle.departments.find((d) => d.id === bundle.groups.find((g) => g.id === groupId)?.departmentId);
+  if (dept?.buildingId) majorBuildingIds.add(dept.buildingId);
+  if (dept) for (const r of bundle.rooms) if (r.departmentId === dept.id) majorBuildingIds.add(r.buildingId);
+  const node = startNodeId ? bundle.navNodes.find((n) => n.id === startNodeId) : undefined;
+  const hereBuildingId = node ? bundle.floors.find((f) => f.id === node.floorId)?.buildingId ?? null : null;
+  const buildingIds = new Set(majorBuildingIds);
+  if (hereBuildingId) buildingIds.add(hereBuildingId);
+  return { buildingIds, majorBuildingIds: [...majorBuildingIds], hereBuildingId };
 }

@@ -481,6 +481,17 @@ export const en = {
   "buildings.none": "No buildings match.",
   "navigate.destClosed": "{building} is closed now.",
   "explore.floorOne": "1 floor",
+  // ── major/year & free-room scope ──
+  "timetable.major": "Major",
+  "timetable.chooseMajor": "Choose your major",
+  "timetable.year": "Year",
+  "timetable.yearN": "Year {n}",
+  "timetable.chooseYear": "Choose your year",
+  "timetable.section": "Group",
+  "free.scopeMajor": "Your major's building",
+  "free.scopeHere": "Where you are",
+  "free.noScope": "Free rooms are shown for your major's building and the building you are in. Choose your major and year, or scan a QR code inside a building.",
+  "free.chooseMajor": "Choose major & year",
 } as const;
 
 export type MessageKey = keyof typeof en;

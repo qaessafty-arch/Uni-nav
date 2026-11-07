@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { freeRoomsAt, lt } from "@campusnav/core";
+import { freeRoomScope, freeRoomsAt, lt } from "@campusnav/core";
 import { formatClock, formatDuration } from "@campusnav/i18n";
 import { Gate } from "@/Gate";
+import { MajorYear } from "@/MajorYear";
 import { useApp } from "@/store";
-import { Badge, Notice, Row, T, c, useText } from "@/ui";
+import { Badge, Btn, Notice, Row, T, c, useText } from "@/ui";
 
 /** Teaching rooms with no class right now, from the published timetable. */
 export default function FreeRoomsScreen() {
-  const { t, prefs } = useApp();
+  const { t, prefs, start } = useApp();
   const tx = useText();
   const [min, setMin] = useState(30);
   return (
@@ -16,7 +17,20 @@ export default function FreeRoomsScreen() {
       {(b) => {
         const loc = prefs.locale;
         if (!b.timetable.length) return <Notice>{t("free.noTimetable")}</Notice>;
-        const free = freeRoomsAt(b, new Date(), { minMinutes: min });
+        const scope = freeRoomScope(b, prefs.groupId, start?.nodeId);
+        if (!scope.buildingIds.size)
+          return (
+            <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 12 }}>
+              <T muted>{t("free.noScope")}</T>
+              <MajorYear bundle={b} />
+              <Btn variant="primary" title={t("navigate.scanToStart")} href="/scan" />
+            </ScrollView>
+          );
+        const free = freeRoomsAt(b, new Date(), { minMinutes: min, buildingIds: scope.buildingIds });
+        const scopeText = [
+          ...scope.majorBuildingIds.map((id) => `${t("free.scopeMajor")}: ${lt(b.buildings.find((x) => x.id === id)?.name, loc)}`),
+          ...(scope.hereBuildingId && !scope.majorBuildingIds.includes(scope.hereBuildingId) ? [`${t("free.scopeHere")}: ${lt(b.buildings.find((x) => x.id === scope.hereBuildingId)?.name, loc)}`] : []),
+        ].join(" · ");
         return (
           <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 10 }}>
             <T display size="2xl">{t("free.title")}</T>
@@ -29,6 +43,7 @@ export default function FreeRoomsScreen() {
                 </Pressable>
               ))}
             </View>
+            <T size="sm">{scopeText}</T>
             <Notice>{t("free.caveat")}</Notice>
             {free.length === 0 ? <T muted>{t("free.none")}</T> : null}
             {free.map(({ room, freeUntil, freedByCancellation }) => (

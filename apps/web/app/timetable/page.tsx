@@ -4,6 +4,7 @@ import { addDays, isWeekend, lt, occurrencesForDates, weekDates, weekStartFor, z
 import { formatDate } from "@campusnav/i18n";
 import { Gate } from "@/components/Gate";
 import { LectureCard } from "@/components/LectureCard";
+import { MajorYearPicker } from "@/components/MajorYearPicker";
 import { Button, EmptyState, Notice, PageTitle, cx } from "@/components/ui";
 import { useApp } from "@/lib/store";
 
@@ -24,19 +25,7 @@ export default function TimetablePage() {
         return (
           <div className="max-w-3xl">
             <PageTitle>{t("timetable.title")}</PageTitle>
-            <div className="flex flex-col sm:flex-row gap-2 sm:items-center mb-4">
-              <label htmlFor="group" className="label-caps shrink-0">
-                {t("timetable.group")}
-              </label>
-              <select id="group" value={prefs.groupId ?? ""} onChange={(e) => setPrefs({ groupId: e.target.value || null })} className="flex-1 min-h-11 bg-surface border border-line-strong px-3">
-                <option value="">{t("timetable.chooseGroup")}</option>
-                {bundle.groups.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.code} — {lt(g.name, loc)}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <MajorYearPicker bundle={bundle} />
             {hidden ? <Notice tone="info">{t("timetable.hidden")}</Notice> : null}
 
             <div className="flex flex-wrap items-center gap-2 mb-4">

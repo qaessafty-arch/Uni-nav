@@ -463,4 +463,15 @@ export const ckb: Record<MessageKey, string> = {
   "buildings.none": "هیچ بینایەک نەدۆزرایەوە.",
   "navigate.destClosed": "{building} ئێستا داخراوە.",
   "explore.floorOne": "١ نهۆم",
+  // ── major/year & free-room scope ──
+  "timetable.major": "بەش",
+  "timetable.chooseMajor": "بەشەکەت هەڵبژێرە",
+  "timetable.year": "قۆناغ",
+  "timetable.yearN": "قۆناغی {n}",
+  "timetable.chooseYear": "قۆناغەکەت هەڵبژێرە",
+  "timetable.section": "گرووپ",
+  "free.scopeMajor": "بینای بەشەکەت",
+  "free.scopeHere": "ئەو شوێنەی لێیت",
+  "free.noScope": "هۆڵە بەتاڵەکان بۆ بینای بەشەکەت و ئەو بینایەی تێیدایت پیشان دەدرێن. بەش و قۆناغەکەت هەڵبژێرە، یان QR کۆدێک لەناو بینایەک سکان بکە.",
+  "free.chooseMajor": "بەش و قۆناغ هەڵبژێرە",
 };

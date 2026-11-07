@@ -123,3 +123,36 @@ describe("between buildings: library and cafeteria are their own buildings", () 
     expect(b.rooms.filter((r) => r.type === "cafeteria" || r.type === "library").every((r) => ["DEMO-CAF", "DEMO-LIB"].includes(b.buildings.find((x) => x.id === r.buildingId)!.code))).toBe(true);
   });
 });
+
+import { freeRoomScope } from "@campusnav/core";
+
+describe("free rooms are scoped to your major's building and the building you're in", () => {
+  const b = demoBundle(new Date("2026-10-30T00:00:00Z"));
+  const eng = did("demo-building-eng");
+  const sci = did("demo-building-sci");
+  const lib = did("demo-building-lib");
+  const sciEntrance = b.checkpoints.find((c) => c.id === did("cp-sci-main"))!.nodeId;
+  const libEntrance = b.checkpoints.find((c) => c.id === did("cp-lib-main"))!.nodeId;
+
+  it("a Computing student sees Engineering rooms only", () => {
+    const s = freeRoomScope(b, did("group-DEMO-CS-Y1-A"), null);
+    expect([...s.buildingIds]).toEqual([eng]);
+    const rooms = freeRoomsAt(b, SUN_0900, { minMinutes: 0, buildingIds: s.buildingIds });
+    expect(rooms.length).toBeGreaterThan(0);
+    expect(rooms.every((r) => r.room.buildingId === eng)).toBe(true);
+  });
+
+  it("a Computing student standing in Science also sees Science rooms", () => {
+    const s = freeRoomScope(b, did("group-DEMO-CS-Y1-A"), sciEntrance);
+    expect(s.buildingIds).toEqual(new Set([eng, sci]));
+    expect(s.hereBuildingId).toBe(sci);
+  });
+
+  it("a visitor (no major) sees only the building they are in, and nothing before that", () => {
+    expect(freeRoomScope(b, null, null).buildingIds.size).toBe(0);
+    expect([...freeRoomScope(b, null, sciEntrance).buildingIds]).toEqual([sci]);
+    // The library has no teaching rooms, so a visitor there gets none.
+    expect(freeRoomsAt(b, SUN_0900, { minMinutes: 0, buildingIds: freeRoomScope(b, null, libEntrance).buildingIds })).toEqual([]);
+    expect(lib).toBeTruthy();
+  });
+});

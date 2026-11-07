@@ -28,18 +28,41 @@ test("leave-by asks for a location instead of guessing", async ({ page }) => {
   await expect(page.getByTestId("leave-by")).toHaveText("Set where you are to see when to leave.");
 });
 
-test("free rooms excludes rooms with a class now and shows until when the rest are free", async ({ page }) => {
+test("free rooms: a Computing student sees free Engineering rooms, with times", async ({ page }) => {
   await page.clock.setFixedTime(new Date("2026-11-01T06:00:00Z")); // Sunday 09:00
-  await enterDemo(page);
+  await enterDemo(page, { groupId: GROUP_CS1 });
   await page.goto(`${BASE}/free-rooms`);
+  await expect(page.getByTestId("free-scope")).toContainText("Your major's building: Demo Engineering Building");
   const list = page.getByTestId("free-rooms");
-  await expect(list).toBeVisible();
   await expect(list.getByText(/^204 ·/)).toHaveCount(0); // DEMO-CS101 08:30–10:00
+  await expect(list.getByText(/^S00\d ·/)).toHaveCount(0); // Science rooms are not offered
   await page.getByRole("button", { name: "60 min" }).click();
   await expect(list.locator("li", { hasText: "107 ·" })).toContainText("Free until 10:30");
   await page.getByRole("button", { name: "120 min" }).click();
   await expect(list.getByText(/^107 ·/)).toHaveCount(0);
   await expect(page.getByText("Based on the timetable only.")).toBeVisible();
+});
+
+test("free rooms: a visitor sees only the building they are in; with neither, they are asked", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-11-01T06:00:00Z"));
+  await enterDemo(page);
+  await page.goto(`${BASE}/free-rooms`);
+  await expect(page.getByTestId("free-scope-needed")).toBeVisible();
+  await page.goto(`${BASE}/q/DEMOsciMainEntrance01`);
+  await expect(page.getByText(/Location set/).first()).toBeVisible();
+  await page.goto(`${BASE}/free-rooms`);
+  await expect(page.getByTestId("free-scope")).toContainText("Where you are: Demo Science Building");
+  await expect(page.getByTestId("free-rooms").getByText(/^1\d\d ·/)).toHaveCount(0); // no Engineering rooms
+});
+
+test("timetable: choose major, then year", async ({ page }) => {
+  await enterDemo(page);
+  await page.goto(`${BASE}/timetable`);
+  const pick = page.getByTestId("major-year");
+  await pick.getByLabel("Major").selectOption({ label: "Demo Department of Computing" });
+  await pick.getByLabel("Year").selectOption({ label: "Year 2" });
+  await page.goto(`${BASE}/timetable`);
+  await expect(pick.getByLabel("Year")).toHaveValue("2");
 });
 
 test("3D route view offers a fly-through that can be stopped", async ({ page }) => {

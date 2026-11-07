@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { distancesFrom, freeRoomsAt, graphForBundle, lt, routeOptionsFor, withClosures, type CampusBundle } from "@campusnav/core";
+import { distancesFrom, freeRoomScope, freeRoomsAt, graphForBundle, lt, routeOptionsFor, withClosures, type CampusBundle } from "@campusnav/core";
 import { formatClock, formatDistance, formatDuration } from "@campusnav/i18n";
 import { Gate } from "@/components/Gate";
 import { nodeName } from "@/components/LocationPicker";
+import { MajorYearPicker } from "@/components/MajorYearPicker";
 import { Icon } from "@/components/Icon";
 import { I } from "@/components/icons";
 import { Badge, ButtonLink, EmptyState, Notice, PageTitle } from "@/components/ui";
@@ -30,11 +31,21 @@ function FreeRooms({ bundle }: { bundle: CampusBundle }) {
     () => (startNode ? distancesFrom(graphForBundle(bundle), startNode.id, withClosures(bundle, routeOptionsFor(prefs.accessible ? "step_free" : "shortest"), now)) : null),
     [bundle, startNode, prefs.accessible, now],
   );
-  const free = freeRoomsAt(bundle, now, { minMinutes });
+  const scope = freeRoomScope(bundle, prefs.groupId, start?.nodeId);
+  const free = scope.buildingIds.size ? freeRoomsAt(bundle, now, { minMinutes, buildingIds: scope.buildingIds }) : [];
   const rows = free.map((f) => ({ ...f, distanceM: f.room.entranceNodeId && dist ? dist.get(f.room.entranceNodeId) ?? null : null }));
   if (sort === "nearest" && dist) rows.sort((a, b) => (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity));
 
   if (!bundle.timetable.length) return <EmptyState title={t("free.noTimetable")} />;
+  if (!scope.buildingIds.size)
+    return (
+      <div className="max-w-2xl space-y-4" data-testid="free-scope-needed">
+        <p className="text-muted">{t("free.noScope")}</p>
+        <MajorYearPicker bundle={bundle} />
+        <ButtonLink href="/scan?then=%2Ffree-rooms"><Icon d={I.scan} className="size-4" /> {t("navigate.scanToStart")}</ButtonLink>
+      </div>
+    );
+  const scopeName = (id: string) => lt(bundle.buildings.find((b) => b.id === id)?.name, loc);
 
   return (
     <div>
@@ -58,6 +69,14 @@ function FreeRooms({ bundle }: { bundle: CampusBundle }) {
           <span className="cn-dot bg-accent" aria-hidden /> {t("home.startingFrom", { place: nodeName(startNode, l, loc) })}
         </p>
       ) : null}
+      <div className="flex flex-wrap gap-2 mb-3 text-sm" data-testid="free-scope">
+        {scope.majorBuildingIds.map((id) => (
+          <span key={id} className="cn-chip !min-h-8"><span className="text-muted">{t("free.scopeMajor")}:</span> {scopeName(id)}</span>
+        ))}
+        {scope.hereBuildingId && !scope.majorBuildingIds.includes(scope.hereBuildingId) ? (
+          <span className="cn-chip !min-h-8"><span className="text-muted">{t("free.scopeHere")}:</span> {scopeName(scope.hereBuildingId)}</span>
+        ) : null}
+      </div>
       <div className="mb-4"><Notice tone="info">{t("free.caveat")}</Notice></div>
       {rows.length === 0 ? (
         <EmptyState title={t("free.none")} />

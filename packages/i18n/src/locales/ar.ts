@@ -463,4 +463,15 @@ export const ar: Record<MessageKey, string> = {
   "buildings.none": "لا توجد مبانٍ مطابقة.",
   "navigate.destClosed": "{building} مغلق الآن.",
   "explore.floorOne": "طابق واحد",
+  // ── major/year & free-room scope ──
+  "timetable.major": "القسم",
+  "timetable.chooseMajor": "اختر قسمك",
+  "timetable.year": "المرحلة",
+  "timetable.yearN": "المرحلة {n}",
+  "timetable.chooseYear": "اختر مرحلتك",
+  "timetable.section": "المجموعة",
+  "free.scopeMajor": "مبنى قسمك",
+  "free.scopeHere": "مكانك الحالي",
+  "free.noScope": "تُعرض القاعات الفارغة لمبنى قسمك وللمبنى الذي أنت فيه. اختر قسمك ومرحلتك، أو امسح رمز QR داخل مبنى.",
+  "free.chooseMajor": "اختر القسم والمرحلة",
 };

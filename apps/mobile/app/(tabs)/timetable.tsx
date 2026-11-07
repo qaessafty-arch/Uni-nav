@@ -4,6 +4,7 @@ import { addDays, isWeekend, lt, occurrencesOn, zonedNow } from "@campusnav/core
 import { formatDate } from "@campusnav/i18n";
 import { Gate } from "@/Gate";
 import { OccurrenceCard } from "@/OccurrenceCard";
+import { MajorYear } from "@/MajorYear";
 import { useApp } from "@/store";
 import { Btn, Label, T, c, useText } from "@/ui";
 
@@ -20,20 +21,13 @@ export default function TimetableScreen() {
         const list = prefs.groupId ? occurrencesOn(date, b.timetable, b.scheduleChanges, { groupId: prefs.groupId }) : [];
         return (
           <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 12 }}>
-            <Label>{t("timetable.group")}</Label>
-            <View style={{ flexDirection: tx.row, flexWrap: "wrap", gap: 6 }}>
-              {b.groups.map((g) => (
-                <Pressable key={g.id} accessibilityRole="radio" accessibilityState={{ selected: prefs.groupId === g.id }} onPress={() => setPrefs({ groupId: g.id })} style={{ borderWidth: 1, borderColor: prefs.groupId === g.id ? c.accent : c.borderStrong, paddingHorizontal: 10, minHeight: 40, justifyContent: "center" }}>
-                  <T size="sm" mono style={{ color: prefs.groupId === g.id ? c.accent : c.text }}>{g.code}</T>
-                </Pressable>
-              ))}
-            </View>
+            <MajorYear bundle={b} />
             <View style={{ flexDirection: tx.row, gap: 8, alignItems: "center" }}>
-              <Btn title={tx.rtl ? "→" : "←"} accessibilityLabel={t("timetable.prev")} onPress={() => setOffset(offset - 1)} />
+              <Btn title={t("timetable.prev")} accessibilityLabel={t("timetable.prev")} onPress={() => setOffset(offset - 1)} />
               <View style={{ flex: 1 }}>
                 <T bold style={{ textAlign: "center" }}>{formatDate(prefs.locale, date, { weekday: "long", day: "numeric", month: "short" })}</T>
               </View>
-              <Btn title={tx.rtl ? "←" : "→"} accessibilityLabel={t("timetable.next")} onPress={() => setOffset(offset + 1)} />
+              <Btn title={t("timetable.next")} accessibilityLabel={t("timetable.next")} onPress={() => setOffset(offset + 1)} />
             </View>
             {offset !== 0 ? <Btn title={t("timetable.today")} onPress={() => setOffset(0)} /> : null}
             <T muted size="xs">{t("timetable.timezone", { tz: s.timezone })}</T>
