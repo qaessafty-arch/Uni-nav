@@ -11,7 +11,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { currentAndNext, isClosureActive, lt, nearestNode, relevantClosures, type Building, type CampusBundle, type Floor, type SearchIndex, type SearchResult } from "@campusnav/core";
+import { currentAndNext, featureOn, isClosureActive, lt, nearestNode, relevantClosures, type Building, type CampusBundle, type Floor, type SearchIndex, type SearchResult } from "@campusnav/core";
 import { FloorMap } from "@campusnav/map-web";
 import { useApp } from "@/lib/store";
 import { lookup, floorsOf } from "@/lib/lookup";
@@ -25,6 +25,7 @@ import { LectureCard } from "./LectureCard";
 import { LeaveBy } from "./LeaveBy";
 import { PrayerCard } from "./PrayerCard";
 import { SafeBoundary } from "./SafeBoundary";
+import { BuildingMark, HoursTable, OpenStatusLine } from "./BuildingMark";
 import { ShareButton } from "./ShareButton";
 import { nodeName } from "./LocationPicker";
 import { Icon } from "./Icon";
@@ -100,7 +101,8 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
   const [noMap, setNoMap] = useState(false);
   const hasRealMap = !!(bundle.campuses.find((c) => c.id === (s.b ? l.buildings.get(s.b)?.campusId : undefined)) ?? bundle.campuses[0])?.geo && !noMap;
   // Default: the real map when the campus is placed on it; otherwise 3D on large screens and the plan on phones.
-  const requested: View = s.view ?? (hasRealMap ? "map" : s.defaultView);
+  // The university can choose the first view; 3D still falls back to the plan on devices without WebGL.
+  const requested: View = s.view ?? bundle.university.settings.defaultView ?? (hasRealMap ? "map" : s.defaultView);
   let view: View = requested === "map" && !hasRealMap ? s.defaultView : requested;
   if (view === "3d" && no3d) view = "2d";
   const building = s.b ? l.buildings.get(s.b) : undefined;
@@ -220,7 +222,11 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
 
   // ── Panel content ─────────────────────────────────────────────────────
   const cn = prefs.groupId ? currentAndNext(now, bundle.university.settings.timezone, bundle.timetable, bundle.scheduleChanges, { groupId: prefs.groupId }) : null;
-  const closures = relevantClosures(bundle, now);
+  const settings = bundle.university.settings;
+  const closures = featureOn(settings, "closures") ? relevantClosures(bundle, now) : { active: [], upcoming: [] };
+  const facilityChips = settings.homeFacilities?.length
+    ? settings.homeFacilities.map((type) => FACILITIES.find((f) => f.type === type) ?? { type, icon: I.building })
+    : FACILITIES;
   const recent = prefs.keepHistory ? history.map((h) => l.rooms.get(h.to)).filter((r): r is NonNullable<typeof r> => !!r).slice(0, 3) : [];
   const savedRooms = saved.map((id) => l.rooms.get(id)).filter((r): r is NonNullable<typeof r> => !!r).slice(0, 3);
 
@@ -283,8 +289,14 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
           </button>
         )}
         <div>
-          <div className="label-caps">{building.code}</div>
-          <h2 className="cn-display cn-display-md mt-1">{lt(building.name, loc)}</h2>
+          <div className="flex items-center gap-3">
+            <BuildingMark building={building} size="lg" />
+            <div className="min-w-0">
+              <div className="label-caps">{building.code}</div>
+              <h2 className="cn-display cn-display-md mt-0.5">{lt(building.name, loc)}</h2>
+            </div>
+          </div>
+          <OpenStatusLine hours={building.hours} timeZone={bundle.university.settings.timezone} className="mt-2" />
           {building.description ? <p className="text-sm text-muted mt-1">{lt(building.description, loc)}</p> : null}
           <p className="text-sm text-muted mt-1">
             {t("explore.floorsCount", { n: floors.length })} · {t("explore.roomsCount", { n: roomCount })}
@@ -300,6 +312,12 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
           {entrance ? <ButtonLink href={`/navigate?to=node:${entrance.id}`} className="col-span-2"><Icon d={I.route} /> {t("explore.toEntrance")}</ButtonLink> : null}
           <ButtonLink href={`/buildings/${building.id}`} className="col-span-2">{t("explore.details")}</ButtonLink>
         </div>
+        {building.hours && Object.keys(building.hours).length ? (
+          <details className="text-sm">
+            <summary className="cursor-pointer label-caps">{t("hours.title")}</summary>
+            <div className="mt-2"><HoursTable hours={building.hours} /></div>
+          </details>
+        ) : null}
         <div>
           <div className="label-caps mb-2">{t("map.floors")}</div>
           {floors.length === 0 ? <p className="text-sm text-muted">{t("map.noFloors")}</p> : null}
@@ -334,7 +352,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
     panel = (
       <div className="space-y-5">
         <div className="cn-scroll-x">
-          {FACILITIES.filter((f) => bundle.rooms.some((r) => r.type === f.type)).map((f) => (
+          {facilityChips.filter((f) => bundle.rooms.some((r) => r.type === f.type)).map((f) => (
             <Link key={f.type} href={`/nearby?type=${f.type}`} className="cn-chip !min-h-9">
               <Icon d={f.icon} className="size-4 text-accent" /> {t(`roomType.${f.type}`)}
             </Link>
@@ -347,19 +365,21 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
             <span className="block text-muted">{lt((closures.active[0] ?? closures.upcoming[0])!.reason, loc)}</span>
           </div>
         ) : null}
-        <SafeBoundary><PrayerCard bundle={bundle} /></SafeBoundary>
+        {featureOn(settings, "prayer") ? <SafeBoundary><PrayerCard bundle={bundle} /></SafeBoundary> : null}
         {cn?.current || cn?.next ? (
           <div>
             <div className="label-caps mb-2">{cn.current ? t("home.currentLecture") : t("home.nextLecture")}</div>
             <LectureCard bundle={bundle} occ={(cn.current ?? cn.next)!} emphasis showDate={!cn.current} />
-            {!cn.current && cn.next ? <SafeBoundary><LeaveBy bundle={bundle} occ={cn.next} /></SafeBoundary> : null}
+            {!cn.current && cn.next && featureOn(settings, "leaveBy") ? <SafeBoundary><LeaveBy bundle={bundle} occ={cn.next} /></SafeBoundary> : null}
           </div>
         ) : null}
         <div className="grid grid-cols-2 gap-2">
-          <ButtonLink href="/free-rooms" className="!min-h-10">
-            <Icon d={I.hall} className="size-4 text-accent" /> {t("free.homeLink")}
-          </ButtonLink>
-          {start ? (
+          {featureOn(settings, "freeRooms") ? (
+            <ButtonLink href="/free-rooms" className="!min-h-10">
+              <Icon d={I.hall} className="size-4 text-accent" /> {t("free.homeLink")}
+            </ButtonLink>
+          ) : null}
+          {start && featureOn(settings, "shareLocation") ? (
             <ShareButton path={`/navigate?to=${encodeURIComponent(`node:${start.nodeId}`)}`} label={t("share.myLocation")} title={t("share.myLocationHint")} className="!min-h-10" />
           ) : null}
         </div>
@@ -384,8 +404,11 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
             {bundle.buildings.map((b) => (
               <li key={b.id}>
                 <button type="button" className="w-full text-start py-2.5 flex items-center gap-3 hover:text-accent" onClick={() => set({ b: b.id, f: null, r: null, inside: false })}>
-                  <span className="mono font-semibold w-20 shrink-0 truncate">{b.code}</span>
-                  <span className="truncate text-sm flex-1">{lt(b.name, loc)}</span>
+                  <BuildingMark building={b} size="sm" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{lt(b.name, loc)}</span>
+                    <span className="flex items-center gap-2 text-xs text-muted"><span className="mono">{b.code}</span><OpenStatusLine hours={b.hours} timeZone={bundle.university.settings.timezone} className="!text-xs" /></span>
+                  </span>
                   {hasRealMap ? (!b.geo ? <Badge>{t("explore.notOnRealMap")}</Badge> : null) : !b.overview ? <Badge>{t("explore.notPlaced")}</Badge> : null}
                 </button>
               </li>

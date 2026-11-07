@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { heatLevel, lt, outdoorMeters, planRoute, routeOutdoorGeometry, relevantClosures, routeOptionsFor, ROUTE_PREFERENCES, type PlanResult, type RoutePreference } from "@campusnav/core";
+import { featureOn, heatLevel, lt, openStatus, outdoorMeters, planRoute, routeOutdoorGeometry, relevantClosures, routeOptionsFor, ROUTE_PREFERENCES, type PlanResult, type RoutePreference } from "@campusnav/core";
 import { describeStep, formatDistance, formatDuration, formatNumber } from "@campusnav/i18n";
 import { FloorMap, routeSegmentsForFloor } from "@campusnav/map-web";
 import { Gate } from "@/components/Gate";
@@ -18,6 +18,7 @@ import { Spinner } from "@/components/ui";
 
 const RouteRealMap = dynamic(() => import("@/components/map/RouteRealMap"), { ssr: false, loading: () => <div className="absolute inset-0 grid place-items-center"><Spinner label="Map" /></div> });
 import { ShareButton } from "@/components/ShareButton";
+import { OpenStatusLine } from "@/components/BuildingMark";
 import { formatTemp, useCampusWeather } from "@/lib/weather";
 import { webglAvailable } from "@/lib/three/support";
 import { useApp } from "@/lib/store";
@@ -136,7 +137,9 @@ function NavigateInner() {
         const res = planRoute(bundle, startId, destNodeId, routeOptionsFor(pref), now);
         const activeClosures = relevantClosures(bundle, now).active.filter((c) => c.targetType !== "room");
         const outM = res.ok ? outdoorMeters(res.plan.route.legs) : 0;
-        const heat = heatLevel(weather?.feelsC, bundle.university.settings.heatWarningC ?? 38);
+        const heat = featureOn(bundle.university.settings, "heatWarning") ? heatLevel(weather?.feelsC, bundle.university.settings.heatWarningC ?? 38) : "none";
+        const destBuilding = destNode ? l.buildings.get(l.floors.get(destNode.floorId)?.buildingId ?? "") : undefined;
+        const destOpen = destBuilding ? openStatus(destBuilding.hours, now, bundle.university.settings.timezone) : null;
         if (!res.ok) {
           return (
             <div className="max-w-2xl space-y-4">
@@ -279,6 +282,15 @@ function NavigateInner() {
                     {outM > 0 ? <span className="mt-0.5 flex items-center gap-1" data-testid="outdoor-m"><Icon name="sun" className="size-3.5" /> {t("navigate.outdoor", { distance: formatDistance(loc, outM) })}</span> : null}
                   </p>
                 </div>
+                {destBuilding && destOpen && !destOpen.open ? (
+                  <div className="cn-card p-3 border-s-4 border-warn flex items-start gap-2" role="note" data-testid="dest-closed">
+                    <Icon name="clock" className="size-5 text-warn mt-0.5" />
+                    <div className="text-sm">
+                      <div className="font-medium">{t("navigate.destClosed", { building: lt(destBuilding.name, loc) })}</div>
+                      <OpenStatusLine hours={destBuilding.hours} timeZone={bundle.university.settings.timezone} />
+                    </div>
+                  </div>
+                ) : null}
                 {outM > 0 && heat !== "none" && weather ? (
                   <div className={`cn-card p-3 border-s-4 ${heat === "extreme" ? "border-danger" : "border-warn"}`} role="note" data-testid="heat-notice">
                     <p className="text-sm">

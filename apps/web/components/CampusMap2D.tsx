@@ -1,6 +1,7 @@
 "use client";
 import { lt, type Building, type CampusBundle } from "@campusnav/core";
 import { useApp } from "@/lib/store";
+import { buildingIconPath } from "@campusnav/tokens";
 
 /**
  * The staff-drawn campus picture (building boxes on a plain canvas or a campus
@@ -24,6 +25,7 @@ export function CampusMap2D({ bundle, campusId, selectedId, onSelect, routeBuild
         return (
           <g key={b.id} role="button" tabIndex={0} aria-label={lt(b.name, prefs.locale)} aria-pressed={sel} className="cursor-pointer" onClick={() => onSelect(b.id)} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(b.id)}>
             <rect x={r.x} y={r.y} width={r.w} height={r.h} fill={sel ? "var(--cn-accent)" : campus.overviewImageUrl ? "color-mix(in srgb, var(--cn-accent) 18%, transparent)" : "var(--cn-map-room)"} stroke={sel ? "var(--cn-accent)" : "var(--cn-border-strong)"} strokeWidth={2} />
+            <BoxMark b={b} x={r.x + r.w - fs * 1.55} y={r.y + fs * 0.35} s={fs * 1.2} />
             <text x={r.x + fs * 0.6} y={r.y + fs * 1.4} fill={sel ? "var(--cn-accent-text)" : "var(--cn-text)"} fontSize={fs} fontFamily="IBM Plex Mono, monospace" fontWeight={600}>
               {b.code}
             </text>
@@ -48,6 +50,19 @@ function SchematicRoute({ buildings, w }: { buildings: Building[]; w: number }) 
       {pts.map(([x, y], i) => (
         <circle key={i} cx={x} cy={y} r={sw * (i === 0 || i === pts.length - 1 ? 2.4 : 1.5)} fill={i === pts.length - 1 ? "var(--cn-accent)" : i === 0 ? "var(--cn-info)" : "var(--cn-surface)"} stroke="var(--cn-accent)" strokeWidth={sw * 0.6} />
       ))}
+    </g>
+  );
+}
+
+/** Building logo or icon tile inside a campus-picture box. */
+function BoxMark({ b, x, y, s }: { b: Building; x: number; y: number; s: number }) {
+  if (b.logoUrl) return <image href={b.logoUrl} x={x} y={y} width={s} height={s} preserveAspectRatio="xMidYMid meet" />;
+  return (
+    <g>
+      <rect x={x} y={y} width={s} height={s} rx={s * 0.18} fill={b.color ?? "var(--cn-accent)"} />
+      <svg x={x + s * 0.15} y={y + s * 0.15} width={s * 0.7} height={s * 0.7} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d={buildingIconPath(b.icon)} />
+      </svg>
     </g>
   );
 }

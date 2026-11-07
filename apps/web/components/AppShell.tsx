@@ -2,12 +2,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { lt, type CampusBundle } from "@campusnav/core";
+import { featureOn, lt, type CampusBundle } from "@campusnav/core";
 import { formatInstant } from "@campusnav/i18n";
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
 import { cx } from "./ui";
 import { Logo } from "./Logo";
+import { BrandStyle, UniversityLogo } from "./BrandStyle";
 import { Icon as IconBase } from "./Icon";
 import { I } from "./icons";
 import { CommandPalette, type PageLink } from "./CommandPalette";
@@ -25,6 +26,7 @@ const GROUPS: { key: "nav.group.explore" | "nav.group.academic" | "nav.group.you
       { href: "/map", key: "nav.map", icon: I.map },
       { href: "/nearby", key: "nav.nearby", icon: I.nearby },
       { href: "/free-rooms", key: "nav.freeRooms", icon: I.hall },
+      { href: "/buildings", key: "nav.buildings", icon: I.building },
       { href: "/scan", key: "nav.scan", icon: I.scan },
     ],
   },
@@ -45,6 +47,13 @@ const GROUPS: { key: "nav.group.explore" | "nav.group.academic" | "nav.group.you
     ],
   },
 ];
+/** Pages the university can switch off in admin Appearance. */
+function pageEnabled(settings: CampusBundle["university"]["settings"], href: string): boolean {
+  if (href === "/free-rooms") return featureOn(settings, "freeRooms");
+  if (href === "/buildings") return featureOn(settings, "buildingDirectory");
+  return true;
+}
+
 const ALL_PAGES: PageLink[] = [...GROUPS.flatMap((g) => g.items), { href: "/report", key: "nav.report", icon: I.flag }];
 
 const TABS: PageLink[] = [
@@ -82,7 +91,7 @@ function SidebarContent({ bundle, onNavigate, onOpenLocation }: { bundle: Campus
     <>
       <div className="px-5 h-16 flex items-center gap-3 border-b border-line shrink-0">
         <Link href="/" className="flex items-center gap-2.5 min-w-0" onClick={onNavigate} aria-label={t("brand.product")}>
-          <Logo />
+          <UniversityLogo branding={bundle?.university.branding} fallback={<Logo />} />
           <span className="flex flex-col leading-none min-w-0">
             <span className="mono font-semibold tracking-[0.12em] truncate text-[13px]">{bundle?.university.branding.productName ?? t("brand.product")}</span>
             <span className="text-[11px] text-muted truncate mt-1">{bundle ? lt(bundle.university.name, prefs.locale) : t("brand.studio")}</span>
@@ -97,7 +106,7 @@ function SidebarContent({ bundle, onNavigate, onOpenLocation }: { bundle: Campus
           <div key={g.key} className="cn-side-group">
             <div className="cn-side-label">{t(g.key)}</div>
             <ul className="space-y-0.5">
-              {g.items.map((n) => (
+              {g.items.filter((n) => !bundle || pageEnabled(bundle.university.settings, n.href)).map((n) => (
                 <li key={n.href}>
                   <Link href={n.href} onClick={onNavigate} aria-current={isActive(n.href) ? "page" : undefined} className="cn-navitem">
                     <IconBase d={n.icon} />
@@ -162,6 +171,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="cn-app">
+      <BrandStyle branding={bundle?.university.branding} />
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 bg-accent text-accent-fg px-3 py-2 z-50">
         Skip to content
       </a>
@@ -176,7 +186,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <IconBase d={I.menu} />
             </button>
             <Link href="/" className="lg:hidden flex items-center gap-2 me-1" aria-label={t("brand.product")}>
-              <Logo />
+              <UniversityLogo branding={bundle?.university.branding} fallback={<Logo />} />
               <span className="hidden sm:inline mono font-semibold tracking-[0.12em] text-[13px]">{bundle?.university.branding.productName ?? t("brand.product")}</span>
             </Link>
             <button type="button" className={cx("cn-searchtrigger max-w-xl min-w-0 flex-1", fullBleed && "!hidden")} onClick={() => setPalette(true)} aria-haspopup="dialog">

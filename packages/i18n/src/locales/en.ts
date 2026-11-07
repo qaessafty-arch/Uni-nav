@@ -465,6 +465,21 @@ export const en = {
   "navigate.outsideReal": "Real walking path on the campus map.",
   "navigate.outsideSchematic": "Schematic: straight lines between buildings. The real walking path hasn't been drawn on the map yet.",
   "navigate.outsidePartial": "Part of this outdoor route has no drawn path yet; only the drawn parts are shown.",
+  // ── buildings: identity & hours ──
+  "hours.title": "Opening hours",
+  "hours.open": "Open · closes {time}",
+  "hours.closingSoon": "Closing soon · {time}",
+  "hours.opensToday": "Closed · opens {time}",
+  "hours.opensDay": "Closed · opens {day} {time}",
+  "hours.closed": "Closed",
+  "hours.closedDay": "Closed",
+  "nav.buildings": "Buildings",
+  "buildings.title": "Campus buildings",
+  "buildings.subtitle": "Faculties, the library, the cafeteria and other buildings — with opening hours where the university publishes them.",
+  "buildings.openNow": "Open now",
+  "buildings.inside": "Inside",
+  "buildings.none": "No buildings match.",
+  "navigate.destClosed": "{building} is closed now.",
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -2,6 +2,7 @@
 import { useParams } from "next/navigation";
 import { lt } from "@campusnav/core";
 import { Gate } from "@/components/Gate";
+import { BuildingMark, HoursTable, OpenStatusLine } from "@/components/BuildingMark";
 import { Badge, ButtonLink, EmptyState, ErrorState, PageTitle, Row, Section } from "@/components/ui";
 import { useApp } from "@/lib/store";
 import { floorsOf } from "@/lib/lookup";
@@ -18,10 +19,21 @@ export default function BuildingPage() {
         const floors = floorsOf(bundle, b.id);
         return (
           <div>
-            <PageTitle eyebrow={<span className="mono">{b.code}</span>} actions={b.dataStatus === "demo" ? <Badge tone="warn">{t("data.demo")}</Badge> : null}>
-              {lt(b.name, loc)}
-            </PageTitle>
+            <div className="flex items-start gap-4 mb-6">
+              <BuildingMark building={b} size="lg" />
+              <div className="min-w-0 flex-1">
+                <PageTitle eyebrow={<span className="mono">{b.code}</span>} actions={b.dataStatus === "demo" ? <Badge tone="warn">{t("data.demo")}</Badge> : null}>
+                  {lt(b.name, loc)}
+                </PageTitle>
+                <div className="-mt-6"><OpenStatusLine hours={b.hours} timeZone={bundle.university.settings.timezone} /></div>
+              </div>
+            </div>
             {b.description ? <p className="text-muted -mt-2 mb-4">{lt(b.description, loc)}</p> : null}
+            {b.hours && Object.keys(b.hours).length ? (
+              <Section title={t("hours.title")}>
+                <div className="max-w-sm"><HoursTable hours={b.hours} /></div>
+              </Section>
+            ) : null}
             <Section title={t("map.floors")}>
               {floors.length === 0 ? (
                 <EmptyState title={t("map.noFloors")} />

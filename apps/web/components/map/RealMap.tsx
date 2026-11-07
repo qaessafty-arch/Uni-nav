@@ -8,6 +8,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "../Icon";
+import { buildingIconPath } from "@campusnav/tokens";
 import { lt, type Building, type CampusGeo, type LngLat, type Locale } from "@campusnav/core";
 
 export const MAP_STYLE_URL = process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://tiles.openfreemap.org/styles/positron";
@@ -22,6 +23,29 @@ function ensureRtlPlugin() {
   } catch {
     /* already set */
   }
+}
+
+/** Building logo or icon for a map marker, built as DOM (markers live outside React). */
+function markNode(b: Building): HTMLElement {
+  if (b.logoUrl) {
+    const img = document.createElement("img");
+    img.src = b.logoUrl;
+    img.alt = "";
+    img.className = "cn-maplabel-logo";
+    return img;
+  }
+  const span = document.createElement("span");
+  span.className = "cn-maplabel-mark";
+  span.style.background = b.color ?? "var(--cn-accent)";
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS(ns, "path");
+  path.setAttribute("d", buildingIconPath(b.icon));
+  svg.appendChild(path);
+  span.appendChild(svg);
+  return span;
 }
 
 function css(name: string, fallback: string) {
@@ -137,7 +161,8 @@ export default function RealMap({ geo, buildings, walkways = [], selectedId, loc
       const el = document.createElement("button");
       el.type = "button";
       el.className = `cn-maplabel${b.id === selectedId ? " is-selected" : ""}`;
-      el.textContent = b.code;
+      el.appendChild(markNode(b));
+      el.appendChild(document.createTextNode(b.code));
       el.title = lt(b.name, locale);
       el.setAttribute("aria-label", lt(b.name, locale));
       el.addEventListener("click", () => selectRef.current(b.id));

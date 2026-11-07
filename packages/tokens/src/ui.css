@@ -1240,6 +1240,37 @@ html[dir="rtl"] .cn-btn {
     cursor: pointer;
     white-space: nowrap;
   }
+  .cn-maplabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding-inline-start: 3px;
+  }
+  .cn-maplabel-mark,
+  .cn-maplabel-logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    flex: none;
+  }
+  .cn-maplabel-mark {
+    display: grid;
+    place-items: center;
+    color: #fff;
+  }
+  .cn-maplabel-mark svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .cn-maplabel-logo {
+    object-fit: contain;
+    background: #fff;
+  }
   .cn-maplabel.is-selected {
     background: var(--cn-accent);
     color: var(--cn-accent-text);
