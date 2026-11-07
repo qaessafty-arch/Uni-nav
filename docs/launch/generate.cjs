@@ -73,6 +73,24 @@ const foot = (s, url = "uni-nav.online", stack = false) => `<div class="foot" st
       <div class="ku" style="font-size:42px;font-weight:700;align-self:stretch">ئەپێک بۆ زانکۆکان</div>
     </div>
     <div class="foot" style="font-size:30px;position:relative"><span class="url">uni-nav.online</span><span>Swipe →</span></div>`), 1080, 1350, "post-0-cover.png");
+  // 3D preview slides (screens from the app's demo campus: schematic 3D, labelled as such)
+  const img = (f) => "data:image/png;base64," + fs.readFileSync(path.join(OUT, "assets", f)).toString("base64");
+  const shots3d = [
+    { file: "post-4-3d-campus.png", src: "campus3d.png", kicker: "04 · 3D", en: "Your campus in 3D.", ku: "کەمپەسەکەت بە سێ ڕەهەند" },
+    { file: "post-5-3d-floors.png", src: "floors3d.png", kicker: "05 · Inside", en: "See inside every floor.", ku: "هەموو نهۆمێک، هەموو ژوورێک" },
+  ];
+  for (const x of shots3d) {
+    await shot(page(1080, 1350, `${brand(44)}
+      <div style="position:relative">
+        <div class="chip" style="font-size:28px;margin-bottom:28px">${x.kicker}</div>
+        <div style="font-size:84px;font-weight:800;line-height:1.02;letter-spacing:-.02em">${x.en}</div>
+        <div class="ku" style="font-size:42px;font-weight:700;margin-top:18px">${x.ku}</div>
+        <div style="margin-top:36px;border:2px solid #2A2D35;border-radius:28px;overflow:hidden;height:600px;background:#0B0C0F">
+          <img src="${img(x.src)}" style="width:100%;height:100%;object-fit:contain;object-position:center"/>
+        </div>
+        <div style="font-size:24px;color:#7D8390;margin-top:14px">Demo campus shown · schematic 3D from map data</div>
+      </div>${foot(30)}`), 1080, 1350, x.file);
+  }
   // A4 QR poster (print as PDF)
   const qr = await QR.toString("https://uni-nav.online/?ref=poster", { type: "svg", margin: 1, color: { dark: "#0E0F12", light: "#FFFFFF" }, errorCorrectionLevel: "M" }).then((x) => x.replace("<svg ", '<svg width="100%" height="100%" '));
   const poster = `<!doctype html><html><head><meta charset="utf-8"><style>${css}
