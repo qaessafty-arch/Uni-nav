@@ -531,3 +531,121 @@ describe("students: verified major and year", () => {
     await as("lecturerA", async (q) => expect((await groupsSeen(q)).size).toBeGreaterThan(4));
   });
 });
+
+describe("class reps, lecture materials and class announcements", () => {
+  const CS_Y1 = did("group-DEMO-CS-Y1-A");
+  const CS_Y2 = did("group-DEMO-CS-Y2-A");
+  const CS101 = did("course-DEMO-CS101"); // CS stage 1, taught by lecturer A
+  const CS201 = did("course-DEMO-CS201"); // CS stage 2 only
+  const CE110 = did("course-DEMO-CE110"); // taught to CS stage 1 too, by lecturer C
+  const rep = "10000000-0000-4000-8000-0000000000c1";
+  const ce1 = "10000000-0000-4000-8000-0000000000c2";
+  const path = (course: string) => `${A}/${course}/${"00000000-0000-4000-8000-00000000f00d"}.pdf`;
+  const asUser = async <T,>(id: string, fn: (q: (sql: string, params?: unknown[]) => Promise<pg.QueryResult>) => Promise<T>) =>
+    as("newbie", async (q) => {
+      await q("select set_config('request.jwt.claim.sub', $1, true)", [id]);
+      return fn(q);
+    });
+  const insertMaterial = (q: (sql: string, params?: unknown[]) => Promise<pg.QueryResult>, course: string, group: string | null, title = "Week 1 slides") =>
+    q("insert into public.course_materials (university_id, course_id, group_id, section, title, kind, url) values ($1, $2, $3, 'Week 1', $4, 'link', 'https://example.org/slides') returning uploaded_by", [A, course, group, title]);
+
+  beforeAll(async () => {
+    const su = (sql: string, params?: unknown[]) => pool.query(sql, params);
+    await su("insert into auth.users (id, email, email_confirmed_at) values ($1, 'rep1@students.demo.example', now()), ($2, 'ce1@students.demo.example', now())", [rep, ce1]);
+    await su("insert into public.student_enrollments (user_id, university_id, email, department_id, year, status, method) values ($1, $2, 'rep1@students.demo.example', $3, 1, 'verified', 'roster'), ($4, $2, 'ce1@students.demo.example', $5, 1, 'verified', 'roster')", [rep, A, CS, ce1, CE]);
+  });
+
+  it("only group managers appoint reps, and only verified students of that major and year", async () => {
+    await asUser(rep, (q) => expectDenied(q("select * from public.appoint_group_rep($1, $2)", [CS_Y1, rep])));
+    await as("deptAdminA", async (q) => {
+      const r = await q("select group_id, user_id, email from public.appoint_group_rep($1, $2)", [CS_Y1, rep]);
+      expect(r.rows[0]).toMatchObject({ group_id: CS_Y1, user_id: rep, email: "rep1@students.demo.example" });
+      await expect(q("select * from public.appoint_group_rep($1, $2)", [CS_Y1, ce1])).rejects.toThrow(/not_verified_for_group/);
+      await expect(q("select * from public.appoint_group_rep($1, $2)", [CS_Y2, rep])).rejects.toThrow(/not_verified_for_group/);
+    });
+    await asUser(rep, (q) => expectDenied(q("insert into public.group_reps (university_id, group_id, user_id) values ($1, $2, $3)", [A, CS_Y1, rep])));
+  });
+
+  describe("as an appointed rep", () => {
+    beforeAll(async () => {
+      await pool.query("insert into public.group_reps (university_id, group_id, user_id, email) values ($1, $2, $3, 'rep1@students.demo.example')", [A, CS_Y1, rep]);
+    });
+
+    it("uploads materials only for their own class's courses", async () => {
+      await asUser(rep, async (q) => {
+        const r = await insertMaterial(q, CS101, CS_Y1);
+        expect(r.rows[0].uploaded_by).toBe(rep); // stamped, cannot be spoofed
+        await insertMaterial(q, CE110, CS_Y1); // CS stage 1 takes CE110 too
+        await expectDenied(insertMaterial(q, CS101, null)); // reps must name their class
+        await expectDenied(insertMaterial(q, CS201, CS_Y1)); // not taken by their class
+        await expectDenied(insertMaterial(q, CS201, CS_Y2)); // not their class
+      });
+    });
+
+    it("cannot upload when the course turns rep uploads off", async () => {
+      await asUser(rep, async (q) => {
+        await q("select set_config('request.jwt.claim.sub', $1, true)", [users.adminA]);
+        await q("update public.courses set reps_can_upload = false where id = $1", [CS101]);
+        await q("select set_config('request.jwt.claim.sub', $1, true)", [rep]);
+        await expectDenied(insertMaterial(q, CS101, CS_Y1));
+      });
+    });
+
+    it("posts announcements to their own class only", async () => {
+      await asUser(rep, async (q) => {
+        const ins = (group: string | null) =>
+          q(`insert into public.announcements (university_id, group_id, title, body) values ($1, $2, '{"en":"Quiz moved"}', '{"en":"To Thursday"}') returning author_id`, [A, group]);
+        expect((await ins(CS_Y1)).rows[0].author_id).toBe(rep);
+        await expectDenied(ins(CS_Y2));
+        await expectDenied(ins(null)); // university-wide needs announcement.manage
+      });
+    });
+
+    it("loses rep powers when their verification is revoked", async () => {
+      await asUser(rep, async (q) => {
+        await q("select set_config('request.jwt.claim.sub', $1, true)", [users.deptAdminA]);
+        const e = await q("select id from public.student_enrollments where user_id = $1", [rep]);
+        await q("select * from public.admin_review_enrollment($1, 'revoked')", [e.rows[0].id]);
+        await q("select set_config('request.jwt.claim.sub', $1, true)", [rep]);
+        await expectDenied(insertMaterial(q, CS101, CS_Y1));
+      });
+    });
+  });
+
+  it("linked lecturers upload for the courses they teach, not others", async () => {
+    await as("lecturerA", async (q) => {
+      await insertMaterial(q, CS101, null, "Syllabus");
+      await expectDenied(insertMaterial(q, CE110, CS_Y1)); // taught by lecturer C
+    });
+  });
+
+  describe("reading", () => {
+    beforeAll(async () => {
+      await pool.query("insert into public.course_materials (university_id, course_id, group_id, title, kind, storage_path, mime, size_bytes) values ($1, $2, $3, 'Lecture 1', 'file', $4, 'application/pdf', 1000)", [A, CS101, CS_Y1, path(CS101)]);
+      await pool.query(`insert into public.announcements (university_id, group_id, title, body) values ($1, $2, '{"en":"CS1 class notice"}', '{"en":"Bring calculators"}')`, [A, CS_Y1]);
+    });
+
+    it("materials and class posts are visible to verified students of that major and year only", async () => {
+      await asUser(rep, async (q) => {
+        expect((await q("select title from public.course_materials where course_id = $1", [CS101])).rows.map((r) => r.title)).toContain("Lecture 1");
+        expect((await q("select 1 from public.announcements where group_id = $1", [CS_Y1])).rowCount).toBe(1);
+      });
+      await asUser(ce1, async (q) => {
+        expect((await q("select 1 from public.course_materials where course_id = $1", [CS101])).rowCount).toBe(0);
+        expect((await q("select 1 from public.announcements where group_id = $1", [CS_Y1])).rowCount).toBe(0);
+      });
+      await as("studentA", async (q) => expect((await q("select 1 from public.course_materials")).rowCount).toBe(0)); // unverified
+      await as(null, async (q) => {
+        await expectDenied(q("select 1 from public.course_materials"));
+        expect((await q("select 1 from public.announcements where group_id is not null")).rowCount).toBe(0);
+        expect((await q("select 1 from public.announcements where university_id = $1", [A])).rowCount).toBeGreaterThan(0); // university-wide still public
+      });
+      await as("lecturerA", async (q) => expect((await q("select 1 from public.course_materials where course_id = $1", [CS101])).rowCount).toBe(1));
+    });
+
+    it("file paths must sit under the material's own university and course", async () => {
+      await as("adminA", (q) =>
+        expectDenied(q("insert into public.course_materials (university_id, course_id, title, kind, storage_path) values ($1, $2, 'x', 'file', $3)", [A, CS201, path(CS101)]), /violates|check/));
+    });
+  });
+});

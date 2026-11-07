@@ -1,5 +1,6 @@
 import { evaluateCheckpoint, parseCheckpointPayload, problemReportInputSchema, type CampusBundle, type CheckpointResolution, type ProblemReportInput, type UniversitySummary } from "@campusnav/core";
-import type { CampusDataSource, StudentAuth } from "../types";
+import type { CampusDataSource, ClassTools, StudentAuth } from "../types";
+import { DemoClassTools } from "./classes";
 import { DemoStudentAuth, type SyncKV } from "./student";
 import { demoBundle, demoCheckpoints, demoUniversity } from "./dataset";
 
@@ -11,8 +12,12 @@ import { demoBundle, demoCheckpoints, demoUniversity } from "./dataset";
 export class DemoDataSource implements CampusDataSource {
   readonly kind = "demo" as const;
   readonly student: StudentAuth;
+  readonly classes: ClassTools;
+  private readonly classTools: DemoClassTools;
   constructor(private readonly overlay?: () => CampusBundle | null, kv: SyncKV | null = null) {
     this.student = new DemoStudentAuth(kv);
+    this.classTools = new DemoClassTools(kv);
+    this.classes = this.classTools;
   }
 
   async listUniversities(): Promise<UniversitySummary[]> {
@@ -23,7 +28,8 @@ export class DemoDataSource implements CampusDataSource {
   async getBundle(universityId: string): Promise<CampusBundle> {
     const b = this.overlay?.() ?? demoBundle();
     if (universityId !== b.university.id) throw new Error("UNKNOWN_UNIVERSITY");
-    return b;
+    const st = await this.student.status(universityId);
+    return this.classTools.apply(b, st.access.kind === "student" ? (st.email ?? null) : null);
   }
 
   async resolveCheckpoint(token: string, activeUniversityId?: string): Promise<CheckpointResolution> {

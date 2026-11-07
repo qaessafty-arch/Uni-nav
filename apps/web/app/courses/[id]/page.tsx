@@ -7,6 +7,7 @@ import { Gate } from "@/components/Gate";
 import { Badge, ButtonLink, ErrorState, PageTitle, Section } from "@/components/ui";
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
+import { CourseMaterials } from "@/components/CourseMaterials";
 
 export default function CoursePage() {
   const { id } = useParams<{ id: string }>();
@@ -50,6 +51,7 @@ export default function CoursePage() {
                 })}
               </ul>
             </Section>
+            <CourseMaterials bundle={bundle} course={c} />
             <Section title={t("course.lecturers")}>
               {lecturerIds.map((lid) => (
                 <Link key={lid} href={`/lecturers/${lid}`} className="block py-2 hover:underline">

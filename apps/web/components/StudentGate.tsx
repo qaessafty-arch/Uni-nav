@@ -13,7 +13,9 @@ export function useStudentLabel(): string | null {
   const a = student.access;
   if (a.kind !== "student") return null;
   const dept = bundle?.departments.find((d) => d.id === a.departmentId);
-  return t("access.studentOf", { major: dept ? lt(dept.name, prefs.locale) : "—", year: a.year });
+  const base = t("access.studentOf", { major: dept ? lt(dept.name, prefs.locale) : "—", year: a.year });
+  const repOf = bundle?.classRoles?.repGroupIds.map((id) => bundle.groups.find((g) => g.id === id)?.code).filter(Boolean) ?? [];
+  return repOf.length ? `${base} · ${t("class.rep", { group: repOf.join(", ") })}` : base;
 }
 
 /**

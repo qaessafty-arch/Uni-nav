@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { lt, programYears, type Department, type LocalizedText } from "@campusnav/core";
-import type { EnrollmentRow, RosterInput, RosterRow } from "@campusnav/data";
+import type { EnrollmentRow, GroupRepRow, RosterInput, RosterRow } from "@campusnav/data";
+import type { StudentGroup } from "@campusnav/core";
 import { errorMessage, getAdminSource, useAdmin, useTable } from "@/lib/admin";
 import { inputCls } from "@/components/Form";
 import { Badge, Button, ErrorState, Notice, PageTitle, Spinner } from "@/components/ui";
@@ -33,6 +34,11 @@ function parseRoster(text: string, depts: Department[]): { rows: RosterInput[]; 
 export default function StudentsPage() {
   const { universityId, version, bump, toast, role } = useAdmin();
   const { rows: depts } = useTable<Department>("departments");
+  const { rows: groups } = useTable<StudentGroup>("student_groups");
+  const [reps, setReps] = useState<GroupRepRow[] | null>(null);
+  const [repGroup, setRepGroup] = useState("");
+  const [repUser, setRepUser] = useState("");
+  const [repError, setRepError] = useState<string | null>(null);
   const [enrollments, setEnrollments] = useState<EnrollmentRow[] | null>(null);
   const [roster, setRoster] = useState<RosterRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -49,10 +55,11 @@ export default function StudentsPage() {
   useEffect(() => {
     if (!universityId) return;
     const src = getAdminSource();
-    Promise.all([src.listEnrollments(universityId), src.listRoster(universityId)])
-      .then(([e, r]) => {
+    Promise.all([src.listEnrollments(universityId), src.listRoster(universityId), src.listReps(universityId)])
+      .then(([e, r, rp]) => {
         setEnrollments(e);
         setRoster(r);
+        setReps(rp);
       })
       .catch((e) => setError(errorMessage(e)));
   }, [universityId, version]);
@@ -60,7 +67,7 @@ export default function StudentsPage() {
   const deptById = useMemo(() => new Map((depts ?? []).map((d) => [d.id, d])), [depts]);
   if (!role) return null;
   if (error) return <ErrorState title="Could not load students" body={error} />;
-  if (!enrollments || !roster || !depts) return <Spinner label="Loading…" />;
+  if (!enrollments || !roster || !depts || !reps || !groups) return <Spinner label="Loading…" />;
 
   const review = async (id: string, status: "verified" | "rejected" | "revoked") => {
     try {
@@ -109,6 +116,32 @@ export default function StudentsPage() {
     byCollege.set(c, [...(byCollege.get(c) ?? []), d]);
   }
   const oneYears = oneDept ? Array.from({ length: programYears(deptById.get(oneDept)) }, (_, i) => i + 1) : [];
+
+  const groupById = new Map(groups.map((g) => [g.id, g]));
+  const repGroupObj = groupById.get(repGroup);
+  // Only verified students of the class's major and year can represent it.
+  const repCandidates = repGroupObj ? enrollments.filter((e) => e.status === "verified" && e.departmentId === repGroupObj.departmentId && e.year === repGroupObj.stage) : [];
+  const appoint = async () => {
+    setRepError(null);
+    if (!repGroup || !repUser) return setRepError("Choose the class and the student.");
+    try {
+      await getAdminSource().appointRep(repGroup, repUser);
+      toast("Class rep appointed");
+      setRepUser("");
+      bump();
+    } catch (e) {
+      setRepError(errorMessage(e));
+    }
+  };
+  const removeRep = async (id: string) => {
+    try {
+      await getAdminSource().removeRep(id);
+      toast("Class rep removed");
+      bump();
+    } catch (e) {
+      toast(errorMessage(e));
+    }
+  };
 
   const pending = enrollments.filter((e) => e.status === "pending");
   const decided = enrollments.filter((e) => e.status !== "pending");
@@ -202,6 +235,40 @@ export default function StudentsPage() {
           {shownRoster.length === 0 ? <li className="p-3 text-sm text-muted">No students on the roster yet.</li> : null}
         </ul>
         {shownRoster.length > 300 ? <p className="text-xs text-muted mt-1">Showing the first 300 — use the filter.</p> : null}
+      </section>
+
+      <section aria-labelledby="reps">
+        <h2 id="reps" className="label-caps mb-2">Class representatives ({reps.length})</h2>
+        <p className="text-sm text-muted mb-2">
+          A class rep is a verified student who can post announcements to their class and upload lecture materials for their class&apos;s courses
+          (unless a course turns that off). They lose these rights automatically if their verification is revoked.
+        </p>
+        <form className="border border-line p-4 grid gap-3 sm:grid-cols-[1.2fr_1.4fr_auto] items-end" onSubmit={(e) => { e.preventDefault(); void appoint(); }} data-testid="appoint-rep">
+          <label className="text-sm">Class
+            <select className={inputCls} value={repGroup} onChange={(e) => { setRepGroup(e.target.value); setRepUser(""); }} aria-label="Class">
+              <option value="">Choose…</option>
+              {[...groups].sort((a, b) => a.code.localeCompare(b.code)).map((g) => <option key={g.id} value={g.id}>{g.code} — {lt(g.name as LocalizedText, "en")}</option>)}
+            </select>
+          </label>
+          <label className="text-sm">Verified student
+            <select className={inputCls} value={repUser} disabled={!repGroup} onChange={(e) => setRepUser(e.target.value)} aria-label="Student">
+              <option value="">{repGroup && repCandidates.length === 0 ? "No verified students for this major and year yet" : "Choose…"}</option>
+              {repCandidates.map((e) => <option key={e.userId} value={e.userId}>{e.email}</option>)}
+            </select>
+          </label>
+          <Button type="submit" variant="primary">Appoint</Button>
+          {repError ? <p role="alert" className="text-danger text-sm sm:col-span-3">{repError}</p> : null}
+        </form>
+        <ul className="border border-line divide-y divide-line mt-2" data-testid="rep-list">
+          {reps.map((r) => (
+            <li key={r.id} className="p-2.5 flex flex-wrap items-center gap-3 text-sm">
+              <Badge tone="accent">{groupById.get(r.groupId)?.code ?? "?"}</Badge>
+              <span className="mono" dir="ltr">{r.email ?? r.userId}</span>
+              <Button className="ms-auto" onClick={() => void removeRep(r.id)} aria-label={`Remove rep ${r.email ?? ""}`}>Remove</Button>
+            </li>
+          ))}
+          {reps.length === 0 ? <li className="p-3 text-sm text-muted">No class reps yet.</li> : null}
+        </ul>
       </section>
 
       <section aria-labelledby="decided">

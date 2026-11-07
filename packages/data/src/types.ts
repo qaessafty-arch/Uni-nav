@@ -1,5 +1,5 @@
 import type { Access } from "@campusnav/core";
-import type { CampusBundle, CheckpointResolution, EntityTable, ProblemReportInput, ProblemStatus, Role, UniversitySummary } from "@campusnav/core";
+import type { CampusBundle, CourseMaterial, CheckpointResolution, EntityTable, ProblemReportInput, ProblemStatus, Role, UniversitySummary } from "@campusnav/core";
 
 /** What the current person may see, plus their verification state. */
 export interface StudentStatus {
@@ -38,10 +38,61 @@ export interface StudentAuth {
   signOut(): Promise<void>;
 }
 
+/** A file or link to add to a course page. */
+export interface MaterialInput {
+  courseId: string;
+  /** Null = every class of the course (lecturers and staff only). */
+  groupId: string | null;
+  section?: string | null;
+  title: string;
+  /** Either a file (PDF, PPTX, DOCX, PNG, JPEG; max 20 MB) or an http(s) link. */
+  file?: Blob | null;
+  fileName?: string | null;
+  url?: string | null;
+}
+
+export const MATERIAL_MAX_BYTES = 20 * 1024 * 1024;
+export const MATERIAL_TYPES: Record<string, string> = {
+  pdf: "application/pdf",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+};
+
+/** Checks a material before sending it. Returns an error key or null. */
+export function materialProblem(input: MaterialInput): "title" | "file_or_link" | "file_type" | "file_size" | "link" | null {
+  if (!input.title.trim() || input.title.length > 200) return "title";
+  if (input.file) {
+    const ext = (input.fileName ?? "").toLowerCase().split(".").pop() ?? "";
+    if (!MATERIAL_TYPES[ext]) return "file_type";
+    if (input.file.size > MATERIAL_MAX_BYTES) return "file_size";
+    return null;
+  }
+  if (input.url) return /^https?:\/\/\S+$/i.test(input.url.trim()) ? null : "link";
+  return "file_or_link";
+}
+
+/**
+ * Class tools: lecture materials and class announcements. The database decides
+ * who may do what (reps of a class, linked lecturers, staff); these calls fail
+ * with a permission error otherwise.
+ */
+export interface ClassTools {
+  addMaterial(universityId: string, input: MaterialInput): Promise<CourseMaterial>;
+  removeMaterial(material: CourseMaterial): Promise<void>;
+  /** A URL to open the material (short-lived for private files). */
+  openMaterial(material: CourseMaterial): Promise<string>;
+  postToClass(universityId: string, groupId: string, title: string, body: string): Promise<void>;
+  removeAnnouncement(id: string): Promise<void>;
+}
+
 /** Read-side data access used by the student web app and mobile app. */
 export interface CampusDataSource {
   readonly kind: "demo" | "supabase";
   readonly student?: StudentAuth;
+  readonly classes?: ClassTools;
   listUniversities(): Promise<UniversitySummary[]>;
   getBundle(universityId: string): Promise<CampusBundle>;
   /** Validates an opaque checkpoint token against the backend. */
@@ -112,6 +163,12 @@ export interface AdminDataSource {
   /** Insert or update by email. Returns the number of rows written. */
   importRoster(universityId: string, rows: RosterInput[]): Promise<number>;
   removeRoster(id: string): Promise<void>;
+  // Class reps and lecture materials
+  readonly classes: ClassTools;
+  listReps(universityId: string): Promise<GroupRepRow[]>;
+  appointRep(groupId: string, userId: string): Promise<void>;
+  removeRep(id: string): Promise<void>;
+  listMaterials(universityId: string): Promise<CourseMaterial[]>;
 }
 
 export interface EnrollmentRow {
@@ -138,4 +195,12 @@ export interface RosterInput {
 export interface RosterRow extends RosterInput {
   id: string;
   universityId: string;
+}
+
+export interface GroupRepRow {
+  id: string;
+  groupId: string;
+  userId: string;
+  email: string | null;
+  createdAt: string;
 }

@@ -253,6 +253,7 @@ export const courseSchema = z.object({
   name: localizedTextSchema,
   description: localizedTextSchema.nullish(),
   credits: z.number().min(0).max(60).nullish(),
+  repsCanUpload: z.boolean().optional(),
 });
 
 export const studentGroupSchema = z.object({
@@ -318,6 +319,7 @@ export const announcementSchema = z.object({
   publishedAt: z.string(),
   expiresAt: z.string().nullish(),
   priority: z.enum(["normal", "important"]),
+  groupId: optionalId,
 });
 
 const isoInstant = z.string().refine((s) => !Number.isNaN(Date.parse(s)), "invalid_date");

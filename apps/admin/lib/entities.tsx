@@ -207,6 +207,7 @@ export const courseConfig: EntityConfig<Course> = {
     { key: "name", label: "Name", type: "localized", required: true },
     { key: "departmentId", label: "Department", type: "relation", table: "departments", display: name, nullable: true },
     { key: "credits", label: "Credits", type: "number", step: 0.5 },
+    { key: "repsCanUpload", label: "Class reps may upload lecture materials", type: "boolean" },
     { key: "description", label: "Description", type: "localized", multiline: true },
   ],
   columns: [
@@ -216,7 +217,7 @@ export const courseConfig: EntityConfig<Course> = {
     { label: "Credits", render: (r) => r.credits ?? "—" },
   ],
   searchText: (r) => `${r.code} ${r.name.en} ${r.name.ckb ?? ""} ${r.name.ar ?? ""}`,
-  defaults: () => ({ name: { en: "" }, code: "", departmentId: null, credits: null, description: null }),
+  defaults: () => ({ name: { en: "" }, code: "", departmentId: null, credits: null, description: null, repsCanUpload: true }),
   sort: (a, b) => a.code.localeCompare(b.code),
 };
 
@@ -275,17 +276,19 @@ export const announcementConfig: EntityConfig<Announcement> = {
     { key: "title", label: "Title", type: "localized", required: true },
     { key: "body", label: "Body", type: "localized", required: true, multiline: true },
     { key: "priority", label: "Priority", type: "select", options: [{ value: "normal", label: "Normal" }, { value: "important", label: "Important" }] },
+    { key: "groupId", label: "Only for class (leave empty for everyone)", type: "relation", table: "student_groups", display: (r) => `${r.code} — ${name(r)}`, nullable: true },
     { key: "publishedAt", label: "Publish at", type: "datetime" },
     { key: "expiresAt", label: "Expires at", type: "datetime" },
   ],
   columns: [
     { label: "Title", render: (r) => <L v={r.title} /> },
     { label: "Priority", render: (r) => (r.priority === "important" ? <Badge tone="warn">important</Badge> : "normal") },
+    { label: "Audience", render: (r, rel) => (r.groupId ? <Badge tone="accent">{String(rel("student_groups", r.groupId)?.code ?? "class")}</Badge> : "everyone") },
     { label: "Published", render: (r) => <span className="mono text-xs">{r.publishedAt.slice(0, 16).replace("T", " ")}</span> },
     { label: "Expires", render: (r) => <span className="mono text-xs">{r.expiresAt ? r.expiresAt.slice(0, 16).replace("T", " ") : "—"}</span> },
   ],
   searchText: (r) => `${r.title.en} ${r.body.en}`,
-  defaults: () => ({ title: { en: "" }, body: { en: "" }, priority: "normal", publishedAt: new Date().toISOString(), expiresAt: null }),
+  defaults: () => ({ title: { en: "" }, body: { en: "" }, priority: "normal", publishedAt: new Date().toISOString(), expiresAt: null, groupId: null }),
   sort: (a, b) => b.publishedAt.localeCompare(a.publishedAt),
 };
 

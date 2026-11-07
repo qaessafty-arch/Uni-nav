@@ -1,4 +1,4 @@
-import type { CampusBundle, Department, Room, RoomType, ScheduleChange, StudentGroup, TimetableEntry } from "../model/types";
+import type { CampusBundle, CourseMaterial, Department, Room, RoomType, ScheduleChange, StudentGroup, TimetableEntry } from "../model/types";
 
 /**
  * Who is looking, and therefore what they may see.
@@ -95,6 +95,9 @@ export function bundleForAccess(bundle: CampusBundle, access: Access): CampusBun
       timetable: [],
       scheduleChanges: [],
       roomOccupancy: null,
+      announcements: bundle.announcements.filter((a) => !a.groupId),
+      materials: [],
+      classRoles: null,
     };
   }
   const groups = groupsForStudent(bundle.groups, access);
@@ -103,5 +106,46 @@ export function bundleForAccess(bundle: CampusBundle, access: Access): CampusBun
   const entryIds = new Set(timetable.map((t) => t.id));
   // Free rooms need every booking; keep them, anonymised, before narrowing the timetable.
   const roomOccupancy = bundle.roomOccupancy ?? anonymizeOccupancy(bundle.timetable, bundle.scheduleChanges);
-  return { ...bundle, groups, timetable, scheduleChanges: bundle.scheduleChanges.filter((c) => entryIds.has(c.entryId)), roomOccupancy };
+  // Materials and class posts follow the same rule: the student's own classes only.
+  const courseIds = new Set(timetable.map((t) => t.courseId));
+  const materials = (bundle.materials ?? []).filter((m) => (m.groupId ? ids.has(m.groupId) : courseIds.has(m.courseId)));
+  const announcements = bundle.announcements.filter((a) => !a.groupId || ids.has(a.groupId));
+  return { ...bundle, groups, timetable, scheduleChanges: bundle.scheduleChanges.filter((c) => entryIds.has(c.entryId)), roomOccupancy, materials, announcements };
+}
+
+/**
+ * Whether the signed-in person may upload materials to a course, and for which class.
+ * Mirrors public.can_upload_material(): linked lecturer of the course (any class, or all),
+ * or a rep of a class that takes the course when the course allows rep uploads.
+ * Returns null when they may not upload; the database checks again.
+ */
+export function uploadTargets(bundle: CampusBundle, courseId: string): { allClasses: boolean; groupIds: string[] } | null {
+  const roles = bundle.classRoles;
+  if (!roles) return null;
+  const entries = bundle.timetable.filter((t) => t.courseId === courseId && t.status !== "cancelled");
+  if (roles.lecturerId && entries.some((t) => t.lecturerId === roles.lecturerId)) {
+    return { allClasses: true, groupIds: [...new Set(entries.filter((t) => t.lecturerId === roles.lecturerId && t.groupId).map((t) => t.groupId!))] };
+  }
+  const course = bundle.courses.find((c) => c.id === courseId);
+  if (course?.repsCanUpload === false) return null;
+  const groupIds = [...new Set(entries.map((t) => t.groupId).filter((g): g is string => !!g && roles.repGroupIds.includes(g)))];
+  return groupIds.length ? { allClasses: false, groupIds } : null;
+}
+
+/** Classes the person may post announcements to (rep groups, or groups their lecturer profile teaches). */
+export function postableGroups(bundle: CampusBundle): string[] {
+  const roles = bundle.classRoles;
+  if (!roles) return [];
+  const taught = roles.lecturerId ? bundle.timetable.filter((t) => t.lecturerId === roles.lecturerId && t.groupId).map((t) => t.groupId!) : [];
+  return [...new Set([...roles.repGroupIds, ...taught])];
+}
+
+/** Group materials by section (newest first inside each section; sections by their newest item). */
+export function materialsBySection(items: readonly CourseMaterial[]): { section: string | null; items: CourseMaterial[] }[] {
+  const map = new Map<string | null, CourseMaterial[]>();
+  for (const m of [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt))) {
+    const k = m.section?.trim() || null;
+    map.set(k, [...(map.get(k) ?? []), m]);
+  }
+  return [...map.entries()].map(([section, items]) => ({ section, items }));
 }

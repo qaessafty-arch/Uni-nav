@@ -1,6 +1,7 @@
-import { canAssignRole, type CampusBundle, type EntityTable, type ProblemStatus, type Role, type UniversitySummary } from "@campusnav/core";
-import type { AdminDataSource, AdminSession, AuditEntry, EnrollmentRow, MembershipRow, RosterInput, RosterRow } from "../types";
+import { canAssignRole, type CampusBundle, type CourseMaterial, type EntityTable, type ProblemStatus, type Role, type UniversitySummary } from "@campusnav/core";
+import type { AdminDataSource, AdminSession, AuditEntry, EnrollmentRow, GroupRepRow, MembershipRow, RosterInput, RosterRow } from "../types";
 import { demoBundle, demoCheckpoints, did, DEMO_UNIVERSITY_ID } from "./dataset";
+import { DemoClassTools, demoMaterials } from "./classes";
 
 /**
  * LOCAL SANDBOX admin data source.
@@ -72,8 +73,10 @@ function initialState(): SandboxState {
 export class SandboxAdminSource implements AdminDataSource {
   readonly kind = "demo" as const;
   private state: SandboxState;
+  readonly classes: DemoClassTools;
 
   constructor(private readonly kv: KV) {
+    this.classes = new DemoClassTools(kv);
     const raw = kv.getItem(SANDBOX_KEY);
     let parsed: SandboxState | null = null;
     try {
@@ -242,6 +245,21 @@ export class SandboxAdminSource implements AdminDataSource {
     if (i >= 0) list.splice(i, 1);
     this.log("delete", "student_roster", id, null);
     this.save();
+  }
+
+  // Sandbox: no student accounts, so nobody can be appointed; materials are kept on this device.
+  async listReps(): Promise<GroupRepRow[]> {
+    return [];
+  }
+
+  async appointRep(): Promise<void> {
+    throw new Error("No student accounts in the local sandbox.");
+  }
+
+  async removeRep(): Promise<void> {}
+
+  async listMaterials(universityId: string): Promise<CourseMaterial[]> {
+    return [...this.classes.read().materials.map(({ dataUrl: _d, ...m }) => m), ...demoMaterials].filter((m) => m.universityId === universityId);
   }
 
   async removeMember(id: string): Promise<void> {

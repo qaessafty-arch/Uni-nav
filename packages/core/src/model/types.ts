@@ -323,6 +323,8 @@ export interface Course {
   name: LocalizedText;
   description?: LocalizedText | null;
   credits?: number | null;
+  /** Whether class reps may upload materials for this course (default true). */
+  repsCanUpload?: boolean;
 }
 
 export interface StudentGroup {
@@ -435,6 +437,27 @@ export interface Announcement {
   publishedAt: string;
   expiresAt?: string | null;
   priority: "normal" | "important";
+  /** Set for a class announcement (visible only to that class's major and year). */
+  groupId?: string | null;
+  authorId?: string | null;
+}
+
+/** A lecture file or link on a course page. Files are private; open them through the data source. */
+export interface CourseMaterial {
+  id: string;
+  universityId: string;
+  courseId: string;
+  /** Null = every class taking the course. */
+  groupId?: string | null;
+  section?: string | null;
+  title: string;
+  kind: "file" | "link";
+  storagePath?: string | null;
+  url?: string | null;
+  mime?: string | null;
+  sizeBytes?: number | null;
+  uploadedBy?: string | null;
+  createdAt: string;
 }
 
 /**
@@ -471,6 +494,10 @@ export interface CampusBundle {
    * majors' timetables. Absent for visitors.
    */
   roomOccupancy?: { entries: TimetableEntry[]; changes: ScheduleChange[] } | null;
+  /** Lecture materials the viewer may read (absent for visitors). */
+  materials?: CourseMaterial[];
+  /** What the signed-in person may do for classes: groups they represent, the lecturer profile linked to them. */
+  classRoles?: { userId: string; repGroupIds: string[]; lecturerId: string | null } | null;
 }
 
 export interface UniversitySummary {

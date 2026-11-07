@@ -4,6 +4,7 @@ import {
   parseCheckpointPayload,
   problemReportInputSchema,
   type CampusBundle,
+  type CourseMaterial,
   type ProblemReportInput,
   type ProblemStatus,
   type CheckpointResolution,
@@ -13,6 +14,7 @@ import {
   type UniversitySummary,
 } from "@campusnav/core";
 import { emailInDomains, VISITOR, type Access } from "@campusnav/core";
+import { MATERIAL_TYPES, materialProblem, type ClassTools, type GroupRepRow, type MaterialInput } from "../types";
 import type { AdminDataSource, AdminSession, AuditEntry, CampusDataSource, EnrollmentRow, MembershipRow, RosterInput, RosterRow, StudentAuth, StudentStatus, VerifyConfirm, VerifyStart } from "../types";
 import { domainToRow, rowToDomain } from "../mapping";
 
@@ -67,8 +69,10 @@ function check<T>(res: { data: T | null; error: { message: string; code?: string
 export class SupabaseDataSource implements CampusDataSource {
   readonly kind = "supabase" as const;
   readonly student: StudentAuth;
+  readonly classes: ClassTools;
   constructor(readonly client: SupabaseClient) {
     this.student = new SupabaseStudentAuth(client);
+    this.classes = new SupabaseClassTools(client);
   }
 
   async listUniversities(): Promise<UniversitySummary[]> {
@@ -134,6 +138,26 @@ export class SupabaseDataSource implements CampusDataSource {
       announcements: m<CampusBundle["announcements"][number]>(announcements!).filter((a) => !a.expiresAt || Date.parse(a.expiresAt) > now),
       closures: m(closures as Record<string, unknown>[]),
       roomOccupancy: await this.occupancy(universityId),
+      ...(await this.classData(universityId, m(lecturers!) as { id: string; userId?: string | null }[])),
+    };
+  }
+
+  /** Materials and class roles; only signed-in people get any (anon has no access to materials). */
+  private async classData(universityId: string, lecturers: { id: string; userId?: string | null }[]): Promise<Pick<CampusBundle, "materials" | "classRoles">> {
+    const { data } = await this.client.auth.getSession();
+    const uid = data.session?.user.id;
+    if (!uid) return { materials: [], classRoles: null };
+    const [mats, reps] = await Promise.all([
+      this.client.from("course_materials").select("*").eq("university_id", universityId).is("deleted_at", null).order("created_at", { ascending: false }).limit(5000),
+      this.client.from("group_reps").select("group_id").eq("university_id", universityId).eq("user_id", uid),
+    ]);
+    return {
+      materials: ((mats.data ?? []) as Record<string, unknown>[]).map((r) => rowToDomain<CourseMaterial>(r)),
+      classRoles: {
+        userId: uid,
+        repGroupIds: ((reps.data ?? []) as { group_id: string }[]).map((r) => r.group_id),
+        lecturerId: lecturers.find((l) => l.userId === uid)?.id ?? null,
+      },
     };
   }
 
@@ -278,9 +302,87 @@ export class SupabaseStudentAuth implements StudentAuth {
   }
 }
 
+/** Lecture materials and class announcements. The database checks every call (RLS + storage policies). */
+export class SupabaseClassTools implements ClassTools {
+  constructor(private readonly client: SupabaseClient) {}
+
+  async addMaterial(universityId: string, input: MaterialInput): Promise<CourseMaterial> {
+    const problem = materialProblem(input);
+    if (problem) throw new Error(`material_${problem}`);
+    let storagePath: string | null = null;
+    let mime: string | null = null;
+    if (input.file) {
+      const ext = (input.fileName ?? "").toLowerCase().split(".").pop()!;
+      mime = MATERIAL_TYPES[ext]!;
+      storagePath = `${universityId}/${input.courseId}/${crypto.randomUUID()}.${ext}`;
+      check(await this.client.storage.from("course-materials").upload(storagePath, input.file, { contentType: mime, upsert: false }));
+    }
+    const res = await this.client
+      .from("course_materials")
+      .insert({
+        university_id: universityId,
+        course_id: input.courseId,
+        group_id: input.groupId,
+        section: input.section?.trim() || null,
+        title: input.title.trim(),
+        kind: storagePath ? "file" : "link",
+        storage_path: storagePath,
+        url: storagePath ? null : input.url!.trim(),
+        mime,
+        size_bytes: input.file?.size ?? null,
+      })
+      .select()
+      .single();
+    if (res.error && storagePath) await this.client.storage.from("course-materials").remove([storagePath]); // don't leave orphans
+    return rowToDomain<CourseMaterial>(check(res) as unknown as Record<string, unknown>);
+  }
+
+  async removeMaterial(material: CourseMaterial): Promise<void> {
+    check(await this.client.from("course_materials").delete().eq("id", material.id));
+    if (material.storagePath) await this.client.storage.from("course-materials").remove([material.storagePath]);
+  }
+
+  async openMaterial(material: CourseMaterial): Promise<string> {
+    if (material.kind === "link") return material.url!;
+    const res = await this.client.storage.from("course-materials").createSignedUrl(material.storagePath!, 300);
+    if (res.error || !res.data) throw new Error(res.error?.message ?? "not_allowed");
+    return res.data.signedUrl;
+  }
+
+  async postToClass(universityId: string, groupId: string, title: string, body: string): Promise<void> {
+    if (!title.trim() || !body.trim()) throw new Error("announcement_empty");
+    check(await this.client.from("announcements").insert({ university_id: universityId, group_id: groupId, title: { en: title.trim() }, body: { en: body.trim() }, priority: "normal" }));
+  }
+
+  async removeAnnouncement(id: string): Promise<void> {
+    check(await this.client.from("announcements").delete().eq("id", id));
+  }
+}
+
 export class SupabaseAdminSource implements AdminDataSource {
   readonly kind = "supabase" as const;
-  constructor(readonly client: SupabaseClient) {}
+  readonly classes: ClassTools;
+  constructor(readonly client: SupabaseClient) {
+    this.classes = new SupabaseClassTools(client);
+  }
+
+  async listReps(universityId: string): Promise<GroupRepRow[]> {
+    const rows = check(await this.client.from("group_reps").select("id,group_id,user_id,email,created_at").eq("university_id", universityId).order("created_at"));
+    return (rows as Record<string, unknown>[]).map((r) => rowToDomain<GroupRepRow>(r));
+  }
+
+  async appointRep(groupId: string, userId: string): Promise<void> {
+    check(await this.client.rpc("appoint_group_rep", { p_group: groupId, p_user: userId }));
+  }
+
+  async removeRep(id: string): Promise<void> {
+    check(await this.client.rpc("remove_group_rep", { p_rep: id }));
+  }
+
+  async listMaterials(universityId: string): Promise<CourseMaterial[]> {
+    const rows = check(await this.client.from("course_materials").select("*").eq("university_id", universityId).is("deleted_at", null).order("created_at", { ascending: false }).limit(5000));
+    return (rows as Record<string, unknown>[]).map((r) => rowToDomain<CourseMaterial>(r));
+  }
 
   async session(): Promise<AdminSession | null> {
     const { data } = await this.client.auth.getUser();

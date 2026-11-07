@@ -96,6 +96,7 @@ const NAV: { group: string; items: NavItem[] }[] = [
       { href: "/timetable", label: "Timetable", icon: IC.cal, perm: "timetable.department_manage" },
       { href: "/schedule-changes", label: "Schedule changes", icon: IC.change, perm: "timetable.department_manage" },
       { href: "/announcements", label: "Announcements", icon: IC.megaphone, perm: "announcement.manage" },
+      { href: "/materials", label: "Lecture materials", icon: IC.book },
     ],
   },
   {
