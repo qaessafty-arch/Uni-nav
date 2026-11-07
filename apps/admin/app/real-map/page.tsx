@@ -15,6 +15,8 @@ export default function RealMapPage() {
   const [campusId, setCampusId] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [drawing, setDrawing] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const [height, setHeight] = useState("");
   const [draft, setDraft] = useState<LngLat[]>([]);
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
@@ -38,13 +40,14 @@ export default function RealMapPage() {
       toast(errorMessage(e), "error");
     }
   };
-  const saveOutline = async (b: Building, footprint: LngLat[] | null) => {
-    const parsed = buildingSchema.safeParse({ ...b, geo: footprint ? { footprint } : null });
+  const saveOutline = async (b: Building, footprint: LngLat[] | null, heightM: number | null = b.geo?.heightM ?? null) => {
+    const parsed = buildingSchema.safeParse({ ...b, geo: footprint ? { footprint, heightM } : null });
     if (!parsed.success) return toast(parsed.error.issues.map((i) => i.message).join("; "), "error");
     try {
       await getAdminSource().upsert("buildings", parsed.data as Building);
       toast(footprint ? `Outline saved for ${b.code}` : `Outline removed from ${b.code}`);
       setDrawing(false);
+      setPicking(false);
       setDraft([]);
       bump();
     } catch (e) {
@@ -81,8 +84,30 @@ export default function RealMapPage() {
                 <Button className="!min-h-9" onClick={() => { setDrawing(false); setDraft([]); }}>Cancel</Button>
               </>
             ) : null}
+            {picking ? (
+              <>
+                <Badge tone="warn">Click the real building for {sel?.code} on the map</Badge>
+                <Button className="!min-h-9" onClick={() => setPicking(false)}>Cancel</Button>
+              </>
+            ) : null}
           </div>
-          <RealMapEditor geo={campus.geo ?? null} buildings={list} selectedId={selected} drawing={drawing} draft={draft} onAddPoint={(p) => setDraft((d) => [...d, p])} onSelect={setSelected} onReady={(h) => (handle.current = h)} />
+          <RealMapEditor
+            geo={campus.geo ?? null}
+            buildings={list}
+            selectedId={selected}
+            drawing={drawing}
+            draft={draft}
+            onAddPoint={(p) => setDraft((d) => [...d, p])}
+            onSelect={setSelected}
+            onReady={(h) => (handle.current = h)}
+            picking={picking}
+            onPick={(outline) => {
+              if (!sel) return;
+              if (!outline) return toast("No building there on the base map — zoom in and click inside a building shape, or draw the outline.", "error");
+              void saveOutline(sel, outline);
+            }}
+          />
+          <p className="text-xs text-muted">Tip: “Pick from map” copies the outline of a building that OpenStreetMap already has (highlighted in blue while picking). Check it on site; if a building is split across map tiles, draw it instead. Students see placed buildings in 3D on the real map.</p>
         </div>
 
         <aside className="space-y-4">
@@ -119,11 +144,22 @@ export default function RealMapPage() {
             </ul>
             {sel && editable ? (
               <div className="mt-3 flex flex-wrap gap-2">
-                <Button variant="primary" className="!min-h-9 text-sm" disabled={!campus.geo || drawing} onClick={() => { setDrawing(true); setDraft([]); }}>
+                <Button variant="primary" className="!min-h-9 text-sm" disabled={!campus.geo || drawing || picking} onClick={() => { setPicking(true); setDrawing(false); setDraft([]); }} data-testid="pick-outline">
+                  Pick from map
+                </Button>
+                <Button className="!min-h-9 text-sm" disabled={!campus.geo || drawing || picking} onClick={() => { setDrawing(true); setPicking(false); setDraft([]); }}>
                   {sel.geo ? "Redraw outline" : "Draw outline"}
                 </Button>
                 {sel.geo ? <Button variant="danger" className="!min-h-9 text-sm" onClick={() => void saveOutline(sel, null)}>Remove outline</Button> : null}
               </div>
+            ) : null}
+            {sel && editable && sel.geo ? (
+              <form className="mt-3 flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); const h = height.trim() ? Number(height) : null; if (h !== null && !(h >= 2 && h <= 300)) return toast("Height must be 2–300 m.", "error"); void saveOutline(sel, sel.geo!.footprint, h); }}>
+                <label className="text-xs flex-1">3D height (m) — empty = from floors
+                  <input className="cn-input w-full mt-1" inputMode="decimal" value={height} onChange={(e) => setHeight(e.target.value)} placeholder={sel.geo.heightM ? String(sel.geo.heightM) : "auto"} aria-label="3D height in metres" />
+                </label>
+                <Button type="submit" className="!min-h-9 text-sm">Save height</Button>
+              </form>
             ) : null}
             {!campus.geo ? <p className="text-xs text-muted mt-2">Set the campus location first.</p> : null}
           </section>

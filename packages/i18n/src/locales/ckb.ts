@@ -96,6 +96,8 @@ export const ckb: Record<MessageKey, string> = {
   "map.zoomIn": "گەورەکردن",
   "map.zoomOut": "بچووککردنەوە",
   "map.reset": "ڕێکخستنەوەی دیمەن",
+  "map.tilt3d": "پیشاندانی بیناکان بە سێ ڕەهەندی",
+  "map.flat2d": "نەخشەی ڕووتەخت",
   "map.youAreHere": "تۆ لێرەیت",
   "map.destination": "مەبەست",
   "map.checkpoint": "خاڵی پشکنینی QR",

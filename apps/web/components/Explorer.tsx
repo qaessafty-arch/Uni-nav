@@ -11,7 +11,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { currentAndNext, featureOn, isClosureActive, lt, nearestNode, relevantClosures, type Building, type CampusBundle, type Floor, type SearchIndex, type SearchResult } from "@campusnav/core";
+import { buildingHeightM, currentAndNext, featureOn, isClosureActive, lt, nearestNode, relevantClosures, type Building, type CampusBundle, type Floor, type SearchIndex, type SearchResult } from "@campusnav/core";
 import { FloorMap } from "@campusnav/map-web";
 import { useApp } from "@/lib/store";
 import { lookup, floorsOf } from "@/lib/lookup";
@@ -38,6 +38,17 @@ const RealMap = dynamic(() => import("./map/RealMap"), { ssr: false, loading: ()
 const Scene3D = dynamic(() => import("./three/Scene3D"), { ssr: false, loading: () => <div className="absolute inset-0 grid place-items-center"><Spinner label="3D" /></div> });
 
 type View = "map" | "3d" | "2d";
+
+/** Building heights for the 3D real map, cached per bundle so the map isn't redrawn every render. */
+const heightCache = new WeakMap<CampusBundle, Record<string, number>>();
+function heightsFor(bundle: CampusBundle): Record<string, number> {
+  let h = heightCache.get(bundle);
+  if (!h) {
+    h = Object.fromEntries(bundle.buildings.map((b) => [b.id, buildingHeightM(b.geo, bundle.floors.filter((f) => f.buildingId === b.id).map((f) => f.level))]));
+    heightCache.set(bundle, h);
+  }
+  return h;
+}
 
 function floorShort(f: Floor): string {
   return f.level === 0 ? "G" : f.level < 0 ? `B${-f.level}` : String(f.level);
@@ -173,6 +184,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
 
   // ── Map area ──────────────────────────────────────────────────────────
   let mapArea: React.ReactNode;
+  const heights3d = heightsFor(bundle);
   const walkways = bundle.navEdges.filter((e) => e.kind === "outdoor" && e.geometry && e.geometry.length >= 2).map((e) => e.geometry!);
   if (!inside && view === "map" && campus?.geo) {
     mapArea = (
@@ -185,7 +197,8 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
         onSelect={(id) => set({ b: id, f: null, r: null, inside: false })}
         onUnavailable={() => setNoMap(true)}
         padding={insets}
-        labels={{ tilesFailed: t("explore.tilesFailed"), zoomIn: t("map.zoomIn"), zoomOut: t("map.zoomOut"), reset: t("map.reset") }}
+        heights={heights3d}
+        labels={{ tilesFailed: t("explore.tilesFailed"), zoomIn: t("map.zoomIn"), zoomOut: t("map.zoomOut"), reset: t("map.reset"), tilt3d: t("map.tilt3d"), flat2d: t("map.flat2d") }}
       />
     );
   } else if ((inside ? indoorView : view) === "3d" && spec) {

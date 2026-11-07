@@ -96,6 +96,8 @@ export const ar: Record<MessageKey, string> = {
   "map.zoomIn": "تكبير",
   "map.zoomOut": "تصغير",
   "map.reset": "إعادة ضبط العرض",
+  "map.tilt3d": "عرض المباني ثلاثية الأبعاد",
+  "map.flat2d": "خريطة مسطحة",
   "map.youAreHere": "أنت هنا",
   "map.destination": "الوجهة",
   "map.checkpoint": "نقطة تفتيش QR",

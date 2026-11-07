@@ -86,3 +86,22 @@ describe("routing between buildings on real paths", () => {
     expect(routeOutdoorGeometry(r.route.legs)).toEqual({ parts: [], missing: 1 });
   });
 });
+
+import { buildingHeightM, outlineFromGeoJSON, STOREY_HEIGHT_M } from "../src";
+
+describe("3D real map helpers", () => {
+  it("estimates height from above-ground floors, or uses the staff-entered height", () => {
+    expect(buildingHeightM(null, [0, 1, 2])).toBeCloseTo(3 * STOREY_HEIGHT_M + 1);
+    expect(buildingHeightM(null, [-1, 0])).toBeCloseTo(STOREY_HEIGHT_M + 1); // basements don't add height
+    expect(buildingHeightM({ heightM: 22 }, [0])).toBe(22);
+    expect(buildingHeightM(null, [])).toBeCloseTo(STOREY_HEIGHT_M + 1);
+  });
+  it("takes a clicked map building's outer ring as an outline", () => {
+    const sq = [[44, 36], [44.001, 36], [44.001, 36.001], [44, 36.001], [44, 36]];
+    expect(outlineFromGeoJSON({ type: "Polygon", coordinates: [sq, [[44.0002, 36.0002], [44.0003, 36.0002], [44.0003, 36.0003], [44.0002, 36.0002]]] })).toEqual([[44, 36], [44.001, 36], [44.001, 36.001], [44, 36.001]]);
+    const small = [[45, 36], [45.0001, 36], [45.0001, 36.0001], [45, 36]];
+    expect(outlineFromGeoJSON({ type: "MultiPolygon", coordinates: [[small], [sq]] })).toHaveLength(4); // the largest part wins
+    expect(outlineFromGeoJSON({ type: "LineString", coordinates: sq })).toBeNull();
+    expect(outlineFromGeoJSON({ type: "Polygon", coordinates: [[[44, 36], [44.1, 36], [44, 36]]] })).toBeNull();
+  });
+});

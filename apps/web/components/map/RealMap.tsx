@@ -3,6 +3,8 @@
  * Real-world campus map (MapLibre GL + OpenStreetMap-based vector tiles).
  * Loaded lazily with next/dynamic. Shows building outlines that staff drew on
  * the real map (building.geo); nothing is placed where no outline exists.
+ * In 3D the university's buildings rise to their height (from their floors),
+ * in their own colours, among the surrounding OpenStreetMap buildings in grey.
  */
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
@@ -71,10 +73,15 @@ export interface RealMapProps {
   onSelect: (id: string) => void;
   onUnavailable: () => void;
   padding: { start: number; bottom: number };
-  labels: { tilesFailed: string; zoomIn: string; zoomOut: string; reset: string };
+  /** Building height in metres for 3D, by building id. */
+  heights?: Record<string, number>;
+  labels: { tilesFailed: string; zoomIn: string; zoomOut: string; reset: string; tilt3d: string; flat2d: string };
 }
 
-export default function RealMap({ geo, buildings, walkways = [], selectedId, locale, onSelect, onUnavailable, padding, labels }: RealMapProps) {
+const KEY_3D = "campusnav.realmap3d";
+const LAYERS_3D = ["osm-3d", "buildings-3d"];
+
+export default function RealMap({ geo, buildings, walkways = [], selectedId, locale, onSelect, onUnavailable, padding, heights = {}, labels }: RealMapProps) {
   const host = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
@@ -82,6 +89,13 @@ export default function RealMap({ geo, buildings, walkways = [], selectedId, loc
   selectRef.current = onSelect;
   const [loaded, setLoaded] = useState(false);
   const [tilesFailed, setTilesFailed] = useState(false);
+  const [tilted, setTilted] = useState(() => {
+    try {
+      return window.localStorage.getItem(KEY_3D) === "1";
+    } catch {
+      return false;
+    }
+  });
   const placed = buildings.filter((b) => b.geo && b.geo.footprint.length >= 3);
 
   useEffect(() => {
@@ -97,7 +111,8 @@ export default function RealMap({ geo, buildings, walkways = [], selectedId, loc
         bearing: geo.bearing ?? 0,
         attributionControl: { compact: true },
         dragRotate: true,
-        pitchWithRotate: false,
+        pitchWithRotate: true,
+        maxPitch: 70,
       });
     } catch {
       onUnavailable();
@@ -117,12 +132,48 @@ export default function RealMap({ geo, buildings, walkways = [], selectedId, loc
       m.addSource("buildings", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       m.addLayer({ id: "buildings-fill", type: "fill", source: "buildings", paint: { "fill-color": ["get", "fill"], "fill-opacity": ["get", "opacity"] } });
       m.addLayer({ id: "buildings-line", type: "line", source: "buildings", paint: { "line-color": ["get", "stroke"], "line-width": ["get", "width"] } });
-      m.on("click", "buildings-fill", (ev) => {
-        const id = ev.features?.[0]?.properties?.id;
-        if (typeof id === "string") selectRef.current(id);
-      });
-      m.on("mouseenter", "buildings-fill", () => (m.getCanvas().style.cursor = "pointer"));
-      m.on("mouseleave", "buildings-fill", () => (m.getCanvas().style.cursor = ""));
+      // 3D: surrounding real buildings (OpenStreetMap, from the base map's own tiles) in grey,
+      // under the labels, and the university's buildings at their height in their colours.
+      const style = m.getStyle();
+      const firstSymbol = style.layers.find((l) => l.type === "symbol")?.id;
+      const osm = style.layers.find((l) => (l as { "source-layer"?: string })["source-layer"] === "building") as { source?: string } | undefined;
+      if (osm?.source) {
+        m.addLayer(
+          {
+            id: "osm-3d",
+            type: "fill-extrusion",
+            source: osm.source,
+            "source-layer": "building",
+            minzoom: 14,
+            layout: { visibility: "none" },
+            paint: {
+              "fill-extrusion-color": css("--cn-surface-2", "#d8dbe0") || "#d8dbe0",
+              "fill-extrusion-height": ["coalesce", ["get", "render_height"], 6],
+              "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
+              "fill-extrusion-opacity": 0.7,
+            },
+          },
+          firstSymbol,
+        );
+      }
+      m.addLayer(
+        {
+          id: "buildings-3d",
+          type: "fill-extrusion",
+          source: "buildings",
+          layout: { visibility: "none" },
+          paint: { "fill-extrusion-color": ["get", "color3d"], "fill-extrusion-height": ["get", "h"], "fill-extrusion-base": 0, "fill-extrusion-opacity": 0.92 },
+        },
+        firstSymbol,
+      );
+      for (const layer of ["buildings-fill", "buildings-3d"]) {
+        m.on("click", layer, (ev) => {
+          const id = ev.features?.[0]?.properties?.id;
+          if (typeof id === "string") selectRef.current(id);
+        });
+        m.on("mouseenter", layer, () => (m.getCanvas().style.cursor = "pointer"));
+        m.on("mouseleave", layer, () => (m.getCanvas().style.cursor = ""));
+      }
       setLoaded(true);
     });
     m.getCanvas().addEventListener("webglcontextlost", () => onUnavailable());
@@ -151,7 +202,16 @@ export default function RealMap({ geo, buildings, walkways = [], selectedId, loc
         const sel = b.id === selectedId;
         return {
           type: "Feature",
-          properties: { id: b.id, fill: sel ? accent : neutral, opacity: sel ? 0.35 : 0.12, stroke: sel ? accent : neutral, width: sel ? 3 : 1.5 },
+          properties: {
+            id: b.id,
+            fill: sel ? accent : neutral,
+            opacity: sel ? 0.35 : 0.12,
+            stroke: sel ? accent : neutral,
+            width: sel ? 3 : 1.5,
+            // Slightly taller than the grey OSM copy of the same building so ours shows on top.
+            h: (heights[b.id] ?? 8) + 0.6,
+            color3d: sel ? accent : (b.color ?? "#64748B"),
+          },
           geometry: { type: "Polygon", coordinates: [[...b.geo!.footprint, b.geo!.footprint[0]!]] },
         };
       }),
@@ -170,7 +230,22 @@ export default function RealMap({ geo, buildings, walkways = [], selectedId, loc
       return new maplibregl.Marker({ element: el }).setLngLat([(x0 + x1) / 2, (y0 + y1) / 2]).addTo(m);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, selectedId, locale, buildings, walkways.length]);
+  }, [loaded, selectedId, locale, buildings, walkways.length, heights]);
+
+  // 2D ⇄ 3D: tilt the camera and raise the buildings.
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !loaded) return;
+    for (const id of LAYERS_3D) if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", tilted ? "visible" : "none");
+    m.setPaintProperty("buildings-fill", "fill-opacity", tilted ? 0 : ["get", "opacity"]);
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    m.easeTo({ pitch: tilted ? 55 : 0, bearing: tilted && Math.abs(m.getBearing()) < 1 ? -20 : m.getBearing(), zoom: tilted ? Math.max(m.getZoom(), 16.2) : m.getZoom(), duration: reduce ? 0 : 700 });
+    try {
+      window.localStorage.setItem(KEY_3D, tilted ? "1" : "0");
+    } catch {
+      /* storage unavailable */
+    }
+  }, [tilted, loaded]);
 
   // Camera: fit the selected building, keeping it clear of the panel/sheet
   useEffect(() => {
@@ -198,7 +273,10 @@ export default function RealMap({ geo, buildings, walkways = [], selectedId, loc
       <div className="cn3d-controls">
         <button type="button" className={btn} onClick={() => map.current?.zoomIn()} aria-label={labels.zoomIn} title={labels.zoomIn}><Icon name="plus" /></button>
         <button type="button" className={btn} onClick={() => map.current?.zoomOut()} aria-label={labels.zoomOut} title={labels.zoomOut}><Icon name="minus" /></button>
-        <button type="button" className={btn} onClick={() => map.current?.easeTo({ center: geo.center, zoom: geo.zoom, bearing: geo.bearing ?? 0 })} aria-label={labels.reset} title={labels.reset}><Icon name="reset" /></button>
+        <button type="button" className={btn} onClick={() => map.current?.easeTo({ center: geo.center, zoom: geo.zoom, bearing: geo.bearing ?? 0, pitch: tilted ? 55 : 0 })} aria-label={labels.reset} title={labels.reset}><Icon name="reset" /></button>
+        <button type="button" className={btn} aria-pressed={tilted} onClick={() => setTilted((v) => !v)} aria-label={tilted ? labels.flat2d : labels.tilt3d} title={tilted ? labels.flat2d : labels.tilt3d} data-testid="realmap-3d">
+          <span className="mono text-[11px] font-semibold">{tilted ? "2D" : "3D"}</span>
+        </button>
       </div>
     </div>
   );

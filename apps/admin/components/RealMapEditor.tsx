@@ -3,7 +3,7 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
-import type { Building, CampusGeo, LngLat } from "@campusnav/core";
+import { outlineFromGeoJSON, type Building, type CampusGeo, type LngLat } from "@campusnav/core";
 
 const STYLE = process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://tiles.openfreemap.org/styles/positron";
 let rtl = false;
@@ -24,6 +24,8 @@ export function RealMapEditor({
   lines = [],
   draftMode = "polygon",
   onSelectLine,
+  picking = false,
+  onPick,
 }: {
   geo: CampusGeo | null;
   buildings: Building[];
@@ -38,13 +40,17 @@ export function RealMapEditor({
   /** "polygon" closes the draft (building outlines); "line" keeps it open (walkways). */
   draftMode?: "polygon" | "line";
   onSelectLine?: (id: string) => void;
+  /** Pick mode: clicking a building on the base map hands its outline to onPick. */
+  picking?: boolean;
+  onPick?: (outline: LngLat[] | null) => void;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
-  const cb = useRef({ onAddPoint, onSelect, drawing, onSelectLine });
-  cb.current = { onAddPoint, onSelect, drawing, onSelectLine };
+  const cb = useRef({ onAddPoint, onSelect, drawing, onSelectLine, picking, onPick });
+  cb.current = { onAddPoint, onSelect, drawing, onSelectLine, picking, onPick };
+  const osmLayers = useRef<string[]>([]);
 
   useEffect(() => {
     if (!host.current) return;
@@ -67,7 +73,21 @@ export function RealMapEditor({
       m.addLayer({ id: "l-line", type: "line", source: "lines", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": ["case", ["get", "sel"], "#1D4ED8", ["get", "steps"], "#B45309", "#2563EB"], "line-width": ["case", ["get", "sel"], 5, 3], "line-opacity": ["case", ["get", "sel"], 1, 0.7] } });
       m.addLayer({ id: "d-line", type: "line", source: "draft", paint: { "line-color": "#B45309", "line-width": 2.5, "line-dasharray": [2, 1] } });
       m.addLayer({ id: "d-pt", type: "circle", source: "draft", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": 5, "circle-color": "#B45309", "circle-stroke-color": "#fff", "circle-stroke-width": 2 } });
+      // The base map's own building shapes (OpenStreetMap): outlined while picking.
+      const style = m.getStyle();
+      const osm = style.layers.filter((l) => (l as { "source-layer"?: string })["source-layer"] === "building");
+      osmLayers.current = osm.map((l) => l.id);
+      const src = (osm[0] as { source?: string } | undefined)?.source;
+      if (src) {
+        m.addLayer({ id: "osm-pick", type: "line", source: src, "source-layer": "building", minzoom: 15, layout: { visibility: "none" }, paint: { "line-color": "#1D4ED8", "line-width": 1.5, "line-opacity": 0.8 } });
+        osmLayers.current.push("osm-pick");
+      }
       m.on("click", (e) => {
+        if (cb.current.picking) {
+          const hit = m.queryRenderedFeatures(e.point, { layers: osmLayers.current.filter((id) => m.getLayer(id)) })[0];
+          cb.current.onPick?.(hit ? outlineFromGeoJSON(hit.geometry as { type: string; coordinates: unknown }) : null);
+          return;
+        }
         if (cb.current.drawing) {
           cb.current.onAddPoint([Number(e.lngLat.lng.toFixed(7)), Number(e.lngLat.lat.toFixed(7))]);
           return;
@@ -117,8 +137,9 @@ export function RealMapEditor({
       type: "FeatureCollection",
       features: lines.filter((l) => l.coords.length >= 2).map((l) => ({ type: "Feature" as const, properties: { id: l.id, sel: !!l.selected, steps: !!l.steps }, geometry: { type: "LineString" as const, coordinates: l.coords } })),
     });
-    m.getCanvas().style.cursor = drawing ? "crosshair" : "";
-  }, [loaded, buildings, selectedId, draft, drawing, lines, draftMode]);
+    m.getCanvas().style.cursor = drawing || picking ? "crosshair" : "";
+    if (m.getLayer("osm-pick")) m.setLayoutProperty("osm-pick", "visibility", picking ? "visible" : "none");
+  }, [loaded, buildings, selectedId, draft, drawing, lines, draftMode, picking]);
 
   useEffect(() => {
     const m = map.current;

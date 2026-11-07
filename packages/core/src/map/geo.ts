@@ -191,3 +191,59 @@ export function routeOutdoorGeometry(legs: { edge: NavEdge; from: { id: string }
   flush();
   return { parts, missing };
 }
+
+
+// ───────────────────────── 3D real map ─────────────────────────
+
+/** Typical storey height used to estimate a building's height from its floors. */
+export const STOREY_HEIGHT_M = 3.6;
+
+/**
+ * Height for the 3D real map: the staff-entered height, else above-ground
+ * floors × storey height plus a parapet. Basements don't add height.
+ */
+export function buildingHeightM(geo: { heightM?: number | null } | null | undefined, floorLevels: readonly number[]): number {
+  if (geo?.heightM && geo.heightM > 0) return geo.heightM;
+  const above = floorLevels.filter((l) => l >= 0).length;
+  return Math.max(1, above) * STOREY_HEIGHT_M + 1;
+}
+
+function ringArea(r: readonly LngLat[]): number {
+  let a = 0;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) a += (r[j]![0] + r[i]![0]) * (r[j]![1] - r[i]![1]);
+  return Math.abs(a / 2);
+}
+
+/**
+ * Building outline from a map feature (GeoJSON Polygon/MultiPolygon, e.g. an
+ * OpenStreetMap building clicked on the base map): the outer ring of the
+ * largest part, without the closing point, rounded to ~1 cm, at most 500
+ * points. Null when it isn't a usable polygon.
+ */
+export function outlineFromGeoJSON(geom: { type: string; coordinates: unknown } | null | undefined): LngLat[] | null {
+  if (!geom) return null;
+  let rings: number[][][] = [];
+  if (geom.type === "Polygon") rings = [(geom.coordinates as number[][][])[0] ?? []];
+  else if (geom.type === "MultiPolygon") rings = (geom.coordinates as number[][][][]).map((p) => p[0] ?? []);
+  else return null;
+  const clean = rings
+    .map((ring) => {
+      const pts: LngLat[] = [];
+      for (const c of ring) {
+        if (!Array.isArray(c) || !Number.isFinite(c[0]) || !Number.isFinite(c[1])) continue;
+        const p: LngLat = [Number(c[0]!.toFixed(7)), Number(c[1]!.toFixed(7))];
+        const last = pts[pts.length - 1];
+        if (!last || last[0] !== p[0] || last[1] !== p[1]) pts.push(p);
+      }
+      if (pts.length > 1 && pts[0]![0] === pts[pts.length - 1]![0] && pts[0]![1] === pts[pts.length - 1]![1]) pts.pop();
+      return pts;
+    })
+    .filter((r) => r.length >= 3);
+  if (!clean.length) return null;
+  let best = clean.reduce((a, b) => (ringArea(b) > ringArea(a) ? b : a));
+  if (best.length > 500) {
+    const step = Math.ceil(best.length / 500);
+    best = best.filter((_, i) => i % step === 0);
+  }
+  return best.length >= 3 ? best : null;
+}

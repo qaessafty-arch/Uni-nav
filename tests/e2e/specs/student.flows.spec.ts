@@ -254,3 +254,16 @@ test("the real map opens by default when the campus is placed on it; the view ch
   await expect(page).toHaveURL(/v=3d/);
   await expect(page.locator(".cn3d canvas")).toBeVisible();
 });
+
+test("the real map tilts to 3D and remembers the choice", async ({ page }) => {
+  await enterDemo(page, {}, "visitor");
+  await page.goto(BASE);
+  await expect(page.getByTestId("real-map")).toBeVisible();
+  const btn = page.getByTestId("realmap-3d");
+  await expect(btn).toHaveAttribute("aria-pressed", "false");
+  await btn.click();
+  await expect(btn).toHaveAttribute("aria-pressed", "true");
+  await expect(btn).toHaveAccessibleName("Flat map");
+  await page.reload();
+  await expect(page.getByTestId("realmap-3d")).toHaveAttribute("aria-pressed", "true");
+});

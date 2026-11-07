@@ -101,6 +101,8 @@ export const en = {
   "map.zoomIn": "Zoom in",
   "map.zoomOut": "Zoom out",
   "map.reset": "Reset view",
+  "map.tilt3d": "Show buildings in 3D",
+  "map.flat2d": "Flat map",
   "map.youAreHere": "You are here",
   "map.destination": "Destination",
   "map.checkpoint": "QR checkpoint",

@@ -16,7 +16,10 @@ export const campusGeoSchema = z.object({
   bearing: z.number().min(-360).max(360).optional(),
   source: z.string().trim().max(120).nullish(),
 });
-export const buildingGeoSchema = z.object({ footprint: z.array(lngLatSchema).min(3, "footprint_needs_3_points").max(500) });
+export const buildingGeoSchema = z.object({
+  footprint: z.array(lngLatSchema).min(3, "footprint_needs_3_points").max(500),
+  heightM: z.number().min(2).max(300).nullish(),
+});
 
 export const localizedTextSchema = z.object({
   en: text(300).min(1, "required"),

@@ -93,6 +93,8 @@ export interface CampusGeo {
 /** A building outline on the real map (closed ring, first point not repeated). */
 export interface BuildingGeo {
   footprint: LngLat[];
+  /** Height in metres for the 3D real map. Unset = estimated from the number of floors. */
+  heightM?: number | null;
 }
 
 export interface Campus {
