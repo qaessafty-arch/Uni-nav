@@ -126,3 +126,13 @@ describe("picking a building from the base map", () => {
     expect(sameOutline([[0, 0], [1, 0], [1, 1]], [[0, 0], [1, 0], [2, 1]])).toBe(false);
   });
 });
+
+describe("a campus block mapped as one multi-part building", () => {
+  it("picks the part under the pointer, not the largest part", () => {
+    const part = (x: number, y: number, w: number, h: number) => [[[x, y], [x + w, y], [x + w, y + h], [x, y + h], [x, y]]];
+    const block = { type: "MultiPolygon", coordinates: [part(44.0, 36.0, 0.004, 0.0005), part(44.0, 36.002, 0.001, 0.001), part(44.003, 36.002, 0.0008, 0.0008)] };
+    expect(pickOutlineAt([block], [44.0005, 36.0025])![0]).toEqual([44.0, 36.002]);
+    expect(pickOutlineAt([block], [44.0034, 36.0024])![0]).toEqual([44.003, 36.002]);
+    expect(pickOutlineAt([block], [44.002, 36.0002])![0]).toEqual([44.0, 36.0]); // the long one, only when pointing at it
+  });
+});

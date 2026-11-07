@@ -266,7 +266,13 @@ export function pointInRing(p: LngLat, ring: readonly LngLat[]): boolean {
  * smallest shape if none strictly contains it (click on an edge).
  */
 export function pickOutlineAt(geoms: readonly ({ type: string; coordinates: unknown } | null | undefined)[], at: LngLat): LngLat[] | null {
-  const outlines = geoms.map((g) => outlineFromGeoJSON(g)).filter((o): o is LngLat[] => !!o);
+  // A MultiPolygon is several buildings in one map object (OpenStreetMap often maps a
+  // whole campus block like that): treat each part as its own candidate, so the part
+  // under the pointer wins — not the largest part.
+  const parts = geoms.flatMap((g) =>
+    g && g.type === "MultiPolygon" ? (g.coordinates as unknown[]).map((c) => ({ type: "Polygon", coordinates: c })) : [g],
+  );
+  const outlines = parts.map((g) => outlineFromGeoJSON(g)).filter((o): o is LngLat[] => !!o);
   if (!outlines.length) return null;
   const containing = outlines.filter((o) => pointInRing(at, o));
   const pool = containing.length ? containing : outlines;

@@ -15,8 +15,19 @@ async function stubBuildings(page: Page) {
           type: "FeatureCollection",
           features: [
             { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: sq(C[0]!, C[1]!, 0.004) } },
-            { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: sq(C[0]! - 0.0015, C[1]!, 0.0003) } },
-            { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: sq(C[0]! + 0.0015, C[1]!, 0.0003) } },
+            // Like the real campus: several buildings (incl. a long one) stored as ONE multi-part object
+            {
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "MultiPolygon",
+                coordinates: [
+                  [[[C[0]! - 0.002, C[1]! + 0.0012], [C[0]! + 0.002, C[1]! + 0.0012], [C[0]! + 0.002, C[1]! + 0.0016], [C[0]! - 0.002, C[1]! + 0.0016], [C[0]! - 0.002, C[1]! + 0.0012]]],
+                  sq(C[0]! - 0.0015, C[1]!, 0.0003),
+                  sq(C[0]! + 0.0015, C[1]!, 0.0003),
+                ],
+              },
+            },
           ],
         },
       },
