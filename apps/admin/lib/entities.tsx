@@ -1,4 +1,5 @@
 "use client";
+import { BuildingMark } from "@/components/BuildingIdentity";
 import {
   announcementSchema,
   buildingSchema,
@@ -66,17 +67,21 @@ export const buildingConfig: EntityConfig<Building> = {
     { key: "code", label: "Code", type: "text", required: true, hint: "Short unique code, e.g. ENG" },
     { key: "name", label: "Name", type: "localized", required: true },
     { key: "description", label: "Description", type: "localized", multiline: true },
+    { key: "icon", label: "Logo, icon and colour", type: "identity" },
+    { key: "hours", label: "Opening hours", type: "hours" },
     { key: "overview", label: "Location on campus map", type: "rect" },
     status,
   ],
   columns: [
+    { label: "", render: (r) => <BuildingMark b={r} size={32} /> },
     { label: "Code", render: (r) => <Code>{r.code}</Code> },
     { label: "Name", render: (r) => <L v={r.name} /> },
     { label: "Campus", render: (r, rel) => <L v={rel("campuses", r.campusId)?.name} /> },
+    { label: "Hours", render: (r) => (r.hours && Object.keys(r.hours).length ? `${Object.keys(r.hours).length} days` : "—") },
     { label: "Status", render: (r) => <StatusBadge status={r.dataStatus} /> },
   ],
   searchText: (r) => `${r.code} ${r.name.en} ${r.name.ckb ?? ""} ${r.name.ar ?? ""}`,
-  defaults: () => ({ name: { en: "" }, code: "", dataStatus: "unverified", overview: null }),
+  defaults: () => ({ name: { en: "" }, code: "", dataStatus: "unverified", overview: null, icon: "building", color: "#1D4ED8", logoUrl: null, hours: null }),
   sort: (a, b) => a.code.localeCompare(b.code),
 };
 

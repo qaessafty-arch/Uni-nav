@@ -75,7 +75,7 @@ export const universitySchema = z.object({
   published: z.boolean(),
   branding: z.object({
     primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "invalid_color").optional(),
-    logoUrl: z.string().url().nullish(),
+    logoUrl: z.string().regex(/^(https?:\/\/|data:image\/(png|jpeg|webp);base64,)/, "logo_must_be_image_url").max(400_000).nullish(),
     productName: text(40).optional(),
   }),
   settings: universitySettingsSchema,

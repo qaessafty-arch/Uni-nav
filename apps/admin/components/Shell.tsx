@@ -30,6 +30,7 @@ const IC = {
   users: "M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0zM4 21a8 8 0 0 1 16 0",
   shield: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z",
   pulse: "M3 12h4l3-7 4 14 3-7h4",
+  palette: "M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-1.2-1-1.5-1-2.5 0-1 .8-1.9 1.9-1.9H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8zM7.5 11h.01M10 7.5h.01M15 7.5h.01",
   route: "M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM6 15V9a4 4 0 0 1 4-4h6M18 9v6a4 4 0 0 1-4 4H8",
   swap: "M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4",
   list: "M8 6h13M8 12h13M8 18h13M3 6h.5M3 12h.5M3 18h.5",
@@ -58,18 +59,27 @@ const NAV: { group: string; items: NavItem[] }[] = [
     ],
   },
   {
-    group: "Campus & maps",
+    group: "Campus & buildings",
     items: [
-      { href: "/university", label: "University", icon: IC.uni, perm: "university.update" },
       { href: "/campuses", label: "Campuses", icon: IC.campus, perm: "campus.manage" },
-      { href: "/real-map", label: "Real map", icon: IC.map, perm: "building.manage" },
-      { href: "/walkways", label: "Walkways", icon: IC.route, perm: "map.edit" },
-      { href: "/campus-map", label: "Campus picture", icon: IC.layers, perm: "building.manage" },
       { href: "/buildings", label: "Buildings", icon: IC.building, perm: "building.manage" },
       { href: "/floors", label: "Floors", icon: IC.layers, perm: "floor.manage" },
-      { href: "/map-editor", label: "Map editor", icon: IC.pen, perm: "map.edit" },
       { href: "/rooms", label: "Rooms", icon: IC.door, perm: "room.manage" },
+    ],
+  },
+  {
+    group: "Maps & routes",
+    items: [
+      { href: "/real-map", label: "Real map", icon: IC.map, perm: "building.manage" },
+      { href: "/walkways", label: "Walkways", icon: IC.route, perm: "map.edit" },
+      { href: "/map-editor", label: "Floor map editor", icon: IC.pen, perm: "map.edit" },
+      { href: "/campus-map", label: "Campus picture", icon: IC.layers, perm: "building.manage" },
       { href: "/checkpoints", label: "QR checkpoints", icon: IC.qr, perm: "checkpoint.manage" },
+    ],
+  },
+  {
+    group: "Quality",
+    items: [
       { href: "/health", label: "Data health", icon: IC.pulse, perm: "map.edit" },
       { href: "/verification", label: "Verification & publishing", icon: IC.shield, perm: "building.manage" },
     ],
@@ -88,13 +98,20 @@ const NAV: { group: string; items: NavItem[] }[] = [
     ],
   },
   {
+    group: "Customize",
+    items: [
+      { href: "/appearance", label: "Appearance & home", icon: IC.palette, perm: "university.settings" },
+      { href: "/university", label: "University profile", icon: IC.uni, perm: "university.update" },
+      { href: "/settings", label: "Settings", icon: IC.gear, perm: "university.settings" },
+    ],
+  },
+  {
     group: "Administration",
     items: [
       { href: "/users", label: "Users", icon: IC.users, perm: "member.invite" },
       { href: "/roles", label: "Roles & permissions", icon: IC.shield },
       { href: "/import-export", label: "Import / export", icon: IC.swap, perm: "data.export" },
       { href: "/audit", label: "Audit log", icon: IC.list, perm: "audit.read" },
-      { href: "/settings", label: "Settings", icon: IC.gear, perm: "university.settings" },
     ],
   },
 ];
@@ -106,6 +123,7 @@ const QUICK: { href: string; label: string; perm: Permission }[] = [
   { href: "/campus-map", label: "Place buildings on the campus map", perm: "building.manage" },
   { href: "/checkpoints", label: "Create a QR checkpoint", perm: "checkpoint.manage" },
   { href: "/health", label: "Check campus data health", perm: "map.edit" },
+  { href: "/appearance", label: "Change logo, colours and home screen", perm: "university.settings" },
   { href: "/announcements", label: "Post an announcement", perm: "announcement.manage" },
 ];
 

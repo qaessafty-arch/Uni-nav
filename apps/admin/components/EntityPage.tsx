@@ -1,11 +1,12 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import type { ZodType } from "zod";
-import { lt, normalizeSearch, type Building, type Campus, type EntityTable, type LocalizedText, type Permission } from "@campusnav/core";
+import { lt, normalizeSearch, type Building, type Campus, type EntityTable, type LocalizedText, type OpeningHours, type Permission } from "@campusnav/core";
 import { errorMessage, getAdminSource, newId, useAdmin, useTable } from "@/lib/admin";
 import { Badge, Button, EmptyState, ErrorState, PageTitle, Spinner } from "./ui";
 import { Field, LocalizedInput, OfficeHoursInput, inputCls } from "./Form";
 import { CampusCanvas, type Rect } from "./CampusCanvas";
+import { HoursInput, IdentityInput } from "./BuildingIdentity";
 
 export type FieldDef =
   | { key: string; label: string; type: "text" | "email" | "url"; required?: boolean; hint?: string }
@@ -16,7 +17,9 @@ export type FieldDef =
   | { key: string; label: string; type: "relation"; table: EntityTable; display: (row: Record<string, unknown>) => string; nullable?: boolean; filter?: (row: Record<string, unknown>, form: Record<string, unknown>) => boolean }
   | { key: string; label: string; type: "date" | "time" | "datetime" }
   | { key: string; label: string; type: "officeHours" }
-  | { key: string; label: string; type: "rect" };
+  | { key: string; label: string; type: "rect" }
+  | { key: string; label: string; type: "identity" }
+  | { key: string; label: string; type: "hours" };
 
 export interface EntityConfig<T extends { id: string }> {
   table: EntityTable;
@@ -282,6 +285,18 @@ function FieldInput({ f, form, set, error }: { f: FieldDef; form: Record<string,
       return (
         <Field label={f.label} error={error}>
           <OfficeHoursInput value={(v as never) ?? []} onChange={(x) => set(f.key, x)} />
+        </Field>
+      );
+    case "identity":
+      return (
+        <Field label={f.label} error={error}>
+          <IdentityInput form={form} set={set} />
+        </Field>
+      );
+    case "hours":
+      return (
+        <Field label={f.label} error={error}>
+          <HoursInput value={(v as OpeningHours | null) ?? null} onChange={(x) => set(f.key, x)} />
         </Field>
       );
     case "rect":
