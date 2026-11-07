@@ -59,6 +59,8 @@ export interface Prefs {
   keepHistory: boolean;
   onboarded: boolean;
   reminders: boolean;
+  /** Toilets/prayer rooms to show first in Nearby: men's, women's, or all (null). */
+  facilityGender?: "male" | "female" | null;
 }
 
 export interface Start {
@@ -84,6 +86,7 @@ const DEFAULT_PREFS: Prefs = {
   keepHistory: false,
   onboarded: false,
   reminders: false,
+  facilityGender: null,
 };
 
 type BundleState =

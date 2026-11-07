@@ -196,7 +196,13 @@ export interface Room {
   entranceNodeId?: string | null;
   accessible: boolean;
   dataStatus: DataStatus;
+  /** Toilets and prayer rooms: for men, women, or everyone. Null/absent = not set. */
+  gender?: RoomGender | null;
 }
+
+export type RoomGender = "male" | "female" | "all";
+/** Room types that are usually separate for men and women. */
+export const GENDERED_ROOM_TYPES: readonly RoomType[] = ["toilet", "prayer_room"];
 
 export type Shape =
   | { type: "rect"; x: number; y: number; w: number; h: number }

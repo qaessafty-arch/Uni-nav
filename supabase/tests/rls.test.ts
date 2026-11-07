@@ -371,6 +371,13 @@ describe("data integrity and audit", () => {
       await expectDenied(q("delete from public.audit_logs"));
     });
   });
+  it("only toilets and prayer rooms can be marked for men, women or everyone", async () => {
+    await as("adminA", async (q) => {
+      expect((await q("select count(*)::int as n from public.rooms where type = 'toilet' and gender in ('male','female')")).rows[0].n).toBeGreaterThan(3);
+      await expectDenied(q("update public.rooms set gender = 'female' where id = $1", [ROOM_204]), /rooms_gender_type_check|violates/); // a classroom
+      await expectDenied(q("update public.rooms set gender = 'boys' where type = 'toilet'"), /violates|check/);
+    });
+  });
   it("soft-deleted rows disappear from public reads", async () => {
     await as("adminA", async (q) => {
       await q("update public.rooms set deleted_at = now() where id = $1", [ROOM_204]);

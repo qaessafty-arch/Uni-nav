@@ -157,7 +157,8 @@ export const roomSchema = z.object({
   entranceNodeId: optionalId,
   accessible: z.boolean(),
   dataStatus: dataStatusSchema,
-});
+  gender: z.enum(["male", "female", "all"]).nullish(),
+}).refine((r) => !r.gender || r.type === "toilet" || r.type === "prayer_room", { message: "gender_only_for_toilets_and_prayer_rooms", path: ["gender"] });
 
 export const shapeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("rect"), x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() }),

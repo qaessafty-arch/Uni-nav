@@ -141,6 +141,11 @@ export const en = {
   "roomType.service": "Student service",
   "roomType.storage": "Storage",
   "roomType.other": "Other",
+  "gender.male": "Men",
+  "gender.female": "Women",
+  "gender.all": "Everyone",
+  "nearby.forWho": "For",
+  "nearby.anyGender": "All",
 
   // Navigation
   "navigate.title": "Navigation",

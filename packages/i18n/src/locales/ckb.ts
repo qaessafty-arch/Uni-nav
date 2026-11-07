@@ -135,6 +135,11 @@ export const ckb: Record<MessageKey, string> = {
   "roomType.service": "خزمەتگوزاریی قوتابیان",
   "roomType.storage": "کۆگا",
   "roomType.other": "هیتر",
+  "gender.male": "پیاوان",
+  "gender.female": "ئافرەتان",
+  "gender.all": "هەمووان",
+  "nearby.forWho": "بۆ",
+  "nearby.anyGender": "هەموو",
 
   "navigate.title": "ڕێنمایی",
   "navigate.from": "لە",

@@ -40,3 +40,17 @@ test("building page shows the weekly hours", async ({ page }) => {
   await expect(table).toContainText("07:30–12:00, 12:30–16:00");
   await expect(table.locator("tr", { hasText: "Friday" })).toContainText("Closed");
 });
+
+test("nearest toilets can be filtered to men's or women's, and the choice is remembered", async ({ page }) => {
+  await enterDemo(page, {}, "visitor");
+  await page.goto("http://localhost:3000/q/DEMOengMainEntrance01");
+  await expect(page.getByText(/Location set/).first()).toBeVisible();
+  await page.goto("http://localhost:3000/nearby?type=toilet");
+  const filter = page.getByTestId("gender-filter");
+  await filter.getByRole("button", { name: "Women" }).click();
+  const list = page.locator("ol.cn-panel");
+  await expect(list.locator("li").first()).toContainText("Women");
+  await expect(list.locator("li").filter({ has: page.getByText("Men", { exact: true }) })).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByTestId("gender-filter").getByRole("button", { name: "Women" })).toHaveAttribute("aria-pressed", "true");
+});

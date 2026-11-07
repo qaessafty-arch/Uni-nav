@@ -267,7 +267,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
           <span className="rtl:rotate-180 inline-block">←</span> {building.code} · {lt(f?.name, loc)}
         </button>
         <div>
-          <div className="label-caps">{t(`roomType.${room.type}`)}</div>
+          <div className="label-caps">{t(`roomType.${room.type}`)}{room.gender && (room.type === "toilet" || room.type === "prayer_room") ? ` · ${t(`gender.${room.gender}`)}` : ""}</div>
           <h2 className="cn-figure text-3xl mt-1">{room.code}</h2>
           <p className="text-lg mt-1">{lt(room.name, loc)}</p>
           <p className="text-sm text-muted">{lt(building.name, loc)} · {lt(f?.name, loc)}</p>

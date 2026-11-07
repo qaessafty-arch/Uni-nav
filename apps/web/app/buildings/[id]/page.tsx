@@ -61,7 +61,7 @@ export default function BuildingPage() {
                 <Section key={f.id} title={`${t("building.rooms")} · ${lt(f.name, loc)}`}>
                   <div className="grid md:grid-cols-2 gap-x-8">
                     {rooms.map((r) => (
-                      <Row key={r.id} href={`/rooms/${r.id}`} title={<span><span className="mono me-2">{r.code}</span>{lt(r.name, loc)}</span>} meta={t(`roomType.${r.type}`)} />
+                      <Row key={r.id} href={`/rooms/${r.id}`} title={<span><span className="mono me-2">{r.code}</span>{lt(r.name, loc)}</span>} meta={r.gender && (r.type === "toilet" || r.type === "prayer_room") ? `${t(`roomType.${r.type}`)} · ${t(`gender.${r.gender}`)}` : t(`roomType.${r.type}`)} />
                     ))}
                   </div>
                 </Section>

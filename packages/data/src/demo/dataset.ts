@@ -412,6 +412,10 @@ edge(sciEntrance, libEntrance, "outdoor", { distanceM: 60, accessible: false });
 const office110Door = nodes.find((n) => n.id === did(`${did("eng-room-110")}-door`))!;
 edge(office110Door, eng1.stairs, "corridor", { restriction: "staff_only", distanceM: 4 });
 
+// Fictional: toilets alternate men's/women's; prayer rooms one men's, one women's, one shared.
+rooms.filter((r) => r.type === "toilet").forEach((r, i) => (r.gender = i % 2 === 0 ? "male" : "female"));
+rooms.filter((r) => r.type === "prayer_room").forEach((r, i) => (r.gender = (["male", "female", "all"] as const)[i % 3]));
+
 export const demoFloors = floors;
 export const demoRooms = rooms;
 export const demoMapElements = elements;

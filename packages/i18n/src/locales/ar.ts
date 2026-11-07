@@ -135,6 +135,11 @@ export const ar: Record<MessageKey, string> = {
   "roomType.service": "خدمات الطلبة",
   "roomType.storage": "مخزن",
   "roomType.other": "أخرى",
+  "gender.male": "رجال",
+  "gender.female": "نساء",
+  "gender.all": "للجميع",
+  "nearby.forWho": "لـ",
+  "nearby.anyGender": "الكل",
 
   "navigate.title": "الإرشاد",
   "navigate.from": "من",

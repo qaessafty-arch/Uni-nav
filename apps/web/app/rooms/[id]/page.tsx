@@ -7,6 +7,7 @@ import { Gate } from "@/components/Gate";
 import { LectureCard } from "@/components/LectureCard";
 import { mapLabels } from "@/components/MapLabels";
 import { Badge, Button, ButtonLink, ErrorState, Notice, Section } from "@/components/ui";
+import { GenderBadge } from "@/components/GenderBadge";
 import { useApp } from "@/lib/store";
 import { lookup } from "@/lib/lookup";
 import { Icon } from "@/components/Icon";
@@ -51,6 +52,7 @@ export default function RoomPage() {
               <p className="text-xl mt-3">{lt(room.name, loc)}</p>
               <div className="flex flex-wrap gap-2 mt-3">
                 <Badge>{t(`roomType.${room.type}`)}</Badge>
+                <GenderBadge room={room} />
                 {room.dataStatus === "demo" ? <Badge tone="warn">{t("data.demo")}</Badge> : room.dataStatus === "verified" ? <Badge tone="accent">{t("data.verified")}</Badge> : <Badge>{t("data.unverified")}</Badge>}
                 {room.accessible ? <Badge tone="info">{t("room.accessible")}</Badge> : null}
               </div>

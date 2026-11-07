@@ -7,6 +7,7 @@ import { FloorMap } from "@campusnav/map-web";
 import { Gate } from "@/components/Gate";
 import { Badge, ButtonLink, ErrorState, Notice, cx } from "@/components/ui";
 import { mapLabels } from "@/components/MapLabels";
+import { GenderBadge } from "@/components/GenderBadge";
 import { useApp } from "@/lib/store";
 import { floorsOf, lookup } from "@/lib/lookup";
 
@@ -77,6 +78,7 @@ function FloorInner() {
                     <div className="flex items-center gap-2">
                       <span className="mono text-lg font-semibold">{room.code}</span>
                       <Badge>{t(`roomType.${room.type}`)}</Badge>
+                      <GenderBadge room={room} />
                     </div>
                     <p className="text-muted text-sm">{lt(room.name, loc)}</p>
                   </div>

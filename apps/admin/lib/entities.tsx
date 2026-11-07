@@ -128,6 +128,7 @@ export const roomConfig: EntityConfig<Room> = {
     { key: "departmentId", label: "Department", type: "relation", table: "departments", display: name, nullable: true },
     { key: "capacity", label: "Capacity", type: "number" },
     { key: "entranceNodeId", label: "Entrance node", type: "relation", table: "navigation_nodes", nullable: true, display: (r) => `${(r.kind as string).replace("_", " ")} @ ${Math.round(r.x as number)},${Math.round(r.y as number)} ${lt(r.label as LocalizedText, "en")}`, filter: (r, f) => r.floorId === f.floorId && (r.kind === "room_entrance" || r.kind === "corridor") },
+    { key: "gender", label: "For (toilets and prayer rooms)", type: "select", nullable: true, options: [{ value: "male", label: "Men" }, { value: "female", label: "Women" }, { value: "all", label: "Everyone (shared)" }] },
     { key: "accessible", label: "Step-free access", type: "boolean" },
     status,
   ],
@@ -135,12 +136,12 @@ export const roomConfig: EntityConfig<Room> = {
     { label: "Code", render: (r) => <Code>{r.code}</Code> },
     { label: "Name", render: (r) => <L v={r.name} /> },
     { label: "Building / floor", render: (r, rel) => <span className="mono text-xs">{String(rel("buildings", r.buildingId)?.code ?? "?")} · L{String(rel("floors", r.floorId)?.level ?? "?")}</span> },
-    { label: "Type", render: (r) => r.type.replace("_", " ") },
+    { label: "Type", render: (r) => `${r.type.replace("_", " ")}${r.gender ? ` · ${r.gender === "male" ? "men" : r.gender === "female" ? "women" : "everyone"}` : ""}` },
     { label: "Routing", render: (r) => (r.entranceNodeId ? <Badge tone="accent">entrance</Badge> : <Badge tone="danger">no entrance</Badge>) },
     { label: "Status", render: (r) => <StatusBadge status={r.dataStatus} /> },
   ],
   searchText: (r) => `${r.code} ${r.name.en} ${r.name.ckb ?? ""} ${r.name.ar ?? ""} ${r.type}`,
-  defaults: () => ({ name: { en: "" }, code: "", type: "classroom", accessible: true, dataStatus: "unverified", entranceNodeId: null, departmentId: null, capacity: null }),
+  defaults: () => ({ name: { en: "" }, code: "", type: "classroom", accessible: true, dataStatus: "unverified", entranceNodeId: null, departmentId: null, capacity: null, gender: null }),
   sort: (a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }),
 };
 

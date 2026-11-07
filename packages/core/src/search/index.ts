@@ -27,6 +27,13 @@ export interface SearchIndex {
   docs: Doc[];
 }
 
+/** Words people type for men's / women's facilities (English, Kurdish, Arabic). */
+const GENDER_WORDS: Record<NonNullable<Room["gender"]>, string> = {
+  male: "men male boys gents پیاوان کوڕان پیاو رجال ذكور",
+  female: "women female girls ladies ئافرەتان کچان ژنان نساء إناث",
+  all: "everyone shared mixed",
+};
+
 export function buildSearchIndex(bundle: CampusBundle): SearchIndex {
   const buildingById = new Map(bundle.buildings.map((b) => [b.id, b]));
   const deptById = new Map(bundle.departments.map((d) => [d.id, d]));
@@ -43,6 +50,7 @@ export function buildSearchIndex(bundle: CampusBundle): SearchIndex {
         ...lt(r.name),
         ...(r.departmentId ? lt(deptById.get(r.departmentId)?.name) : []),
         normalizeSearch(r.type.replace("_", " ")),
+        r.gender ? normalizeSearch(GENDER_WORDS[r.gender]) : "",
       ].filter(Boolean),
     });
   }
