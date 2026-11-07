@@ -21,6 +21,9 @@ export default function RealMapPage() {
   const [height, setHeight] = useState("");
   const [draft, setDraft] = useState<LngLat[]>([]);
   const [lat, setLat] = useState("");
+  const [placeQ, setPlaceQ] = useState("");
+  const [places, setPlaces] = useState<{ name: string; lat: number; lng: number }[] | null>(null);
+  const [placeBusy, setPlaceBusy] = useState(false);
   const [lng, setLng] = useState("");
   const handle = useRef<RealMapEditorHandle | null>(null);
   const campus = useMemo(() => campuses?.find((c) => c.id === campusId) ?? campuses?.[0], [campuses, campusId]);
@@ -42,6 +45,22 @@ export default function RealMapPage() {
       toast(errorMessage(e), "error");
     }
   };
+  /** Search a place by name (OpenStreetMap Nominatim, a few results, user-initiated only). */
+  const searchPlace = async () => {
+    if (!placeQ.trim()) return;
+    setPlaceBusy(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=6&q=${encodeURIComponent(placeQ.trim())}`, { headers: { "Accept-Language": "en" } });
+      const rows = (await res.json()) as { display_name: string; lat: string; lon: string }[];
+      setPlaces(rows.map((r) => ({ name: r.display_name, lat: Number(r.lat), lng: Number(r.lon) })));
+    } catch {
+      setPlaces([]);
+      toast("Place search is unavailable right now. Enter the coordinates instead.", "error");
+    } finally {
+      setPlaceBusy(false);
+    }
+  };
+
   const saveOutline = async (b: Building, footprint: LngLat[] | null, heightM: number | null = b.geo?.heightM ?? null) => {
     const parsed = buildingSchema.safeParse({ ...b, geo: footprint ? { footprint, heightM } : null });
     if (!parsed.success) return toast(parsed.error.issues.map((i) => i.message).join("; "), "error");
@@ -132,6 +151,24 @@ export default function RealMapPage() {
             ) : (
               <p className="text-sm text-warn">Not set — students see the schematic map only.</p>
             )}
+            <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); void searchPlace(); }}>
+              <input className="cn-input flex-1 min-w-0" value={placeQ} onChange={(e) => setPlaceQ(e.target.value)} placeholder="Search a place, e.g. Salahaddin University" aria-label="Search a place" disabled={!editable} />
+              <Button type="submit" className="!min-h-9 text-sm" disabled={!editable || placeBusy || !placeQ.trim()}>{placeBusy ? "…" : "Search"}</Button>
+            </form>
+            {places ? (
+              places.length ? (
+                <ul className="border border-line rounded-[8px] divide-y divide-[var(--cn-border)] max-h-56 overflow-auto" aria-label="Place results" data-testid="place-results">
+                  {places.map((p) => (
+                    <li key={`${p.lat},${p.lng}`}>
+                      <button type="button" className="w-full text-start px-3 py-2 text-sm hover:bg-[var(--cn-surface-2)]" onClick={() => { setPlaces(null); void saveCampus({ center: [Number(p.lng.toFixed(7)), Number(p.lat.toFixed(7))], zoom: 16.5, source: `OpenStreetMap — ${p.name.split(",").slice(0, 3).join(",")}. Confirm on site.` }); }}>
+                        {p.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="text-xs text-muted">No places found. Try another name, or enter the coordinates.</p>
+            ) : null}
+            <p className="text-[11px] text-muted">Search results © OpenStreetMap contributors (Nominatim).</p>
             <div className="grid grid-cols-2 gap-2">
               <label className="text-xs">Latitude<input className="cn-input w-full mt-1" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="36.14" /></label>
               <label className="text-xs">Longitude<input className="cn-input w-full mt-1" inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="44.02" /></label>

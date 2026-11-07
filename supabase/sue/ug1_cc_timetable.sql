@@ -19,7 +19,7 @@ begin
 
   -- Campus / building / floors / rooms
   select id into camp from public.campuses where university_id = u and name->>'en' = 'Main campus';
-  if camp is null then insert into public.campuses (university_id, name) values (u, '{"en":"Main campus"}') returning id into camp; end if;
+  if camp is null then insert into public.campuses (university_id, name, geo) values (u, '{"en":"Main campus"}', '{"center":[44.0249844,36.1439009],"zoom":16.5,"bearing":0,"source":"OpenStreetMap — SUE main campus (College of Law Street). Confirm with the university."}') returning id into camp; end if;
   select id into bld from public.buildings where university_id = u and code = 'ENG';
   if bld is null then
     insert into public.buildings (university_id, campus_id, code, name, data_status) values (u, camp, 'ENG', '{"en":"College of Engineering"}', 'unverified') returning id into bld;

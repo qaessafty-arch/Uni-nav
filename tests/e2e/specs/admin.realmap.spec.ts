@@ -102,3 +102,16 @@ test("students: add one student by choosing department and year", async ({ page 
   await expect(page.getByTestId("roster-list")).toContainText("new.student@students.demo.example");
   await expect(page.getByTestId("roster-list")).toContainText("Year 3");
 });
+
+test("campus location: search a place by name and use it", async ({ page }) => {
+  await openSandbox(page);
+  await page.route(/nominatim\.openstreetmap\.org\/search/, (r) =>
+    r.fulfill({ json: [{ display_name: "Salahaddin University - College of Science, Karkuk Street, Erbil, Iraq", lat: "36.1531938", lon: "44.0210416" }] }),
+  );
+  await page.goto(`${ADMIN}/real-map`);
+  await page.getByLabel("Search a place").fill("Salahaddin College of Science");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page.getByTestId("place-results").getByRole("button", { name: /College of Science/ }).click();
+  await expect(page.getByText("Campus location saved")).toBeVisible();
+  await expect(page.getByText("36.15319, 44.02104")).toBeVisible();
+});

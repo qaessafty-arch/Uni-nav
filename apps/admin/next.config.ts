@@ -6,7 +6,9 @@ const mapStyleUrl = process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://tiles.open
 const mapOrigin = new URL(mapStyleUrl).origin;
 // OpenStreetMap Overpass API: walkway suggestions on the Walkways page (only a bounding box is sent).
 const overpassOrigin = "https://overpass-api.de";
-const connectSrc = ["'self'", supabaseUrl, supabaseUrl.replace(/^http/, "ws"), mapOrigin, overpassOrigin].filter(Boolean).join(" ");
+// Place search (OpenStreetMap Nominatim) for setting a campus location by name.
+const nominatimOrigin = "https://nominatim.openstreetmap.org";
+const connectSrc = ["'self'", supabaseUrl, supabaseUrl.replace(/^http/, "ws"), mapOrigin, overpassOrigin, nominatimOrigin].filter(Boolean).join(" ");
 
 const securityHeaders = [
   {
