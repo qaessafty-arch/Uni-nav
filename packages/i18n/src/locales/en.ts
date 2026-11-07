@@ -480,6 +480,7 @@ export const en = {
   "buildings.inside": "Inside",
   "buildings.none": "No buildings match.",
   "navigate.destClosed": "{building} is closed now.",
+  "explore.floorOne": "1 floor",
 } as const;
 
 export type MessageKey = keyof typeof en;

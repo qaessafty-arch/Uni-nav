@@ -1,6 +1,7 @@
 "use client";
 import type { LocalizedText, OfficeHour, Weekday } from "@campusnav/core";
 import { cx } from "./ui";
+import { Icon } from "./Icon";
 
 export const inputCls = "cn-input w-full !min-h-10 text-sm aria-[invalid=true]:!border-danger";
 
@@ -68,7 +69,7 @@ export function OfficeHoursInput({ value, onChange }: { value: OfficeHour[]; onC
           </select>
           <input type="time" value={h.start} onChange={(e) => onChange(value.map((x, j) => (j === i ? { ...x, start: e.target.value } : x)))} className={inputCls} aria-label="Start" />
           <input type="time" value={h.end} onChange={(e) => onChange(value.map((x, j) => (j === i ? { ...x, end: e.target.value } : x)))} className={inputCls} aria-label="End" />
-          <button type="button" className="px-3 border border-line-strong text-danger" onClick={() => onChange(value.filter((_, j) => j !== i))} aria-label="Remove">×</button>
+          <button type="button" className="px-3 border border-line-strong text-danger" onClick={() => onChange(value.filter((_, j) => j !== i))} aria-label="Remove"><Icon name="close" className="size-4" /></button>
         </div>
       ))}
       <button type="button" className="text-sm underline" onClick={() => onChange([...value, { day: 0, start: "10:00", end: "11:00" }])}>+ Add office hours</button>

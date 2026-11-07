@@ -462,4 +462,5 @@ export const ckb: Record<MessageKey, string> = {
   "buildings.inside": "لە ناوەوە",
   "buildings.none": "هیچ بینایەک نەدۆزرایەوە.",
   "navigate.destClosed": "{building} ئێستا داخراوە.",
+  "explore.floorOne": "١ نهۆم",
 };

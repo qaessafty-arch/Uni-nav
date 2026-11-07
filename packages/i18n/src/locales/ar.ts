@@ -462,4 +462,5 @@ export const ar: Record<MessageKey, string> = {
   "buildings.inside": "في الداخل",
   "buildings.none": "لا توجد مبانٍ مطابقة.",
   "navigate.destClosed": "{building} مغلق الآن.",
+  "explore.floorOne": "طابق واحد",
 };

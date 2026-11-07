@@ -7,6 +7,7 @@ import { Badge, Button, EmptyState, ErrorState, PageTitle, Spinner } from "./ui"
 import { Field, LocalizedInput, OfficeHoursInput, inputCls } from "./Form";
 import { CampusCanvas, type Rect } from "./CampusCanvas";
 import { HoursInput, IdentityInput } from "./BuildingIdentity";
+import { Icon } from "./Icon";
 
 export type FieldDef =
   | { key: string; label: string; type: "text" | "email" | "url"; required?: boolean; hint?: string }
@@ -202,7 +203,7 @@ export function EntityPage<T extends { id: string; universityId: string }>({ con
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="cn-display cn-display-md">{(rows ?? []).some((r) => r.id === editing.id) ? "Edit" : "New"} {config.singular.toLowerCase()}</h2>
-              <button type="button" className="min-h-11 px-3" onClick={() => setEditing(null)} aria-label="Close">×</button>
+              <button type="button" className="min-h-11 px-3" onClick={() => setEditing(null)} aria-label="Close"><Icon name="close" /></button>
             </div>
             {config.fields.map((f) => (
               <FieldInput key={f.key} f={f} form={editing} set={set} error={errors[f.key]} />

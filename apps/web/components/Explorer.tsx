@@ -407,9 +407,8 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
                   <BuildingMark building={b} size="sm" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{lt(b.name, loc)}</span>
-                    <span className="flex items-center gap-2 text-xs text-muted"><span className="mono">{b.code}</span><OpenStatusLine hours={b.hours} timeZone={bundle.university.settings.timezone} className="!text-xs" /></span>
+                    <span className="flex items-center gap-2 text-xs text-muted whitespace-nowrap"><span className="mono">{b.code}</span><OpenStatusLine hours={b.hours} timeZone={bundle.university.settings.timezone} className="!text-xs" /></span>
                   </span>
-                  {hasRealMap ? (!b.geo ? <Badge>{t("explore.notOnRealMap")}</Badge> : null) : !b.overview ? <Badge>{t("explore.notPlaced")}</Badge> : null}
                 </button>
               </li>
             ))}

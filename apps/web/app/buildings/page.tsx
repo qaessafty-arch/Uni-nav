@@ -53,7 +53,7 @@ function Directory({ bundle }: { bundle: CampusBundle }) {
                     <span className="block mono text-xs text-muted">{b.code}</span>
                     <span className="block font-semibold leading-snug group-hover:underline">{lt(b.name, loc)}</span>
                     <span className="block text-xs text-muted mt-0.5">
-                      {t("explore.floorsCount", { n: floors.length })} · {t("explore.roomsCount", { n: rooms.length })}
+                      {floors.length === 1 ? t("explore.floorOne") : t("explore.floorsCount", { n: floors.length })} · {t("explore.roomsCount", { n: rooms.length })}
                     </span>
                   </span>
                 </Link>
