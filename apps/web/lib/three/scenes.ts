@@ -222,6 +222,8 @@ export interface BuildingSceneOptions {
   exploded: boolean;
   hideOtherFloors: boolean;
   selectedRoomId: string | null;
+  /** Live status per room id: tints rooms free (green), busy (dim) or mine (accent). */
+  roomTones?: Record<string, "free" | "busy" | "mine">;
   route: Route | null;
   startNodeId: string | null;
   destinationNodeId: string | null;
@@ -266,6 +268,9 @@ export function buildBuilding(bundle: CampusBundle, o: BuildingSceneOptions): Sc
     slab: std(c.ground.clone().offsetHSL(0, 0, 0.04)),
     room: std(c.room.clone().offsetHSL(0, 0, 0.07)),
     roomSel: std(c.accent, { emissive: c.accent, emissiveIntensity: 0.3 }),
+    roomFree: std(cssColor("--cn-map-free-stroke", "#3fb872").lerp(c.room, 0.45)),
+    roomBusy: std(c.room.clone().offsetHSL(0, 0, -0.02)),
+    roomMine: std(c.accent.clone().lerp(c.room, 0.25)),
     corridor: std(c.corridor.clone().offsetHSL(0, 0, 0.05)),
     stairs: std(c.warn.clone().lerp(c.stairs, 0.55)),
     elevator: std(c.info.clone().lerp(c.elevator, 0.5)),
@@ -316,6 +321,8 @@ export function buildBuilding(bundle: CampusBundle, o: BuildingSceneOptions): Sc
       let mat: THREE.Material =
         kind === "corridor" ? mats.corridor : kind === "stairs" ? mats.stairs : kind === "elevator" ? mats.elevator : kind === "toilet" ? mats.toilet : kind === "entrance" ? mats.entrance : kind === "emergency_exit" ? mats.exit : kind === "wall" ? mats.wall : mats.room;
       const selected = !!room && room.id === o.selectedRoomId;
+      const tone = room ? o.roomTones?.[room.id] : undefined;
+      if (tone && kind === "room") mat = tone === "free" ? mats.roomFree : tone === "mine" ? mats.roomMine : mats.roomBusy;
       if (selected) mat = mats.roomSel;
       if (!focused) mat = fade(mat);
       const geo = new THREE.ExtrudeGeometry(shapeOf(el, mpu, ox, oz), { depth: height, bevelEnabled: false });

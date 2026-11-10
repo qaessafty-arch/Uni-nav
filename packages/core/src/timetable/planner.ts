@@ -149,3 +149,30 @@ export function todaySummary(bundle: CampusBundle, now: Date, preferredGroupId?:
     lecturersAvailable: lecturersAvailableAt(bundle, now),
   };
 }
+
+// ───────────────────────── Live room status for maps ─────────────────────────
+
+export type RoomTone = "free" | "busy" | "mine";
+
+/**
+ * Colour hints for teaching rooms right now: "mine" = where the student's
+ * current/next class today is, "free" = no class in the timetable, "busy" = a
+ * class is on. Empty when room bookings are unknown (visitors), so nothing is
+ * guessed. Same caveat as free rooms: timetable data only.
+ */
+export function roomTonesAt(bundle: CampusBundle, now: Date, groupId?: string | null): Record<string, RoomTone> {
+  const out: Record<string, RoomTone> = {};
+  if (!bundle.roomOccupancy && bundle.timetable.length === 0) return out;
+  const free = new Set(freeRoomsAt(bundle, now, { minMinutes: 0 }).map((f) => f.room.id));
+  const closed = new Set((bundle.closures ?? []).filter((c) => c.targetType === "room" && isClosureActive(c, now)).map((c) => c.targetId));
+  for (const r of bundle.rooms) {
+    if (!STUDY_ROOM_TYPES.includes(r.type) || closed.has(r.id)) continue;
+    out[r.id] = free.has(r.id) ? "free" : "busy";
+  }
+  if (groupId) {
+    const z = zonedNow(now, bundle.university.settings.timezone);
+    const mine = occurrencesOn(z.date, bundle.timetable, bundle.scheduleChanges, { groupId }).find((o) => !o.cancelled && toMinutes(o.endTime) > z.minutes && o.roomId);
+    if (mine?.roomId) out[mine.roomId] = "mine";
+  }
+  return out;
+}

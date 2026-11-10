@@ -25,6 +25,9 @@
   --cn-map-elevator: #E7EEFB;
   --cn-map-toilet: #E6F3F6;
   --cn-map-selected: #D6E3FC;
+  --cn-map-free: #DDF3E4;
+  --cn-map-free-stroke: #2F9E5B;
+  --cn-map-busy: #E4E7EC;
   --cn-map-route: #1D4ED8;
   color-scheme: light;
 }
@@ -54,6 +57,9 @@
   --cn-map-elevator: #1E2836;
   --cn-map-toilet: #1D2A30;
   --cn-map-selected: #16233F;
+  --cn-map-free: #173524;
+  --cn-map-free-stroke: #3FB872;
+  --cn-map-busy: #20242B;
   --cn-map-route: #6B9BF2;
   color-scheme: dark;
 }

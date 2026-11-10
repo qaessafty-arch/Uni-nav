@@ -11,7 +11,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { buildingHeightM, currentAndNext, featureOn, isClosureActive, lt, nearestNode, relevantClosures, type Building, type CampusBundle, type Floor, type SearchIndex, type SearchResult } from "@campusnav/core";
+import { buildingHeightM, featureOn, roomTonesAt, todaySummary, isClosureActive, lt, nearestNode, relevantClosures, type Building, type CampusBundle, type Floor, type SearchIndex, type SearchResult } from "@campusnav/core";
 import { FloorMap } from "@campusnav/map-web";
 import { useApp } from "@/lib/store";
 import { lookup, floorsOf } from "@/lib/lookup";
@@ -88,12 +88,13 @@ function useExplorerState() {
 }
 
 export function Explorer({ bundle, index }: { bundle: CampusBundle; index: SearchIndex }) {
-  const { t, prefs, start, setStart, saved, history, toggleSaved } = useApp();
+  const { t, prefs, start, setStart, saved, history, toggleSaved, student } = useApp();
   const router = useRouter();
   const [s, set] = useExplorerState();
   const [no3d, setNo3d] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
   const [exploded, setExploded] = useState(false);
+  const [live, setLive] = useState(true);
   const [onlyFloor, setOnlyFloor] = useState(false);
   const [tapMode, setTapMode] = useState(false);
   useEffect(() => setNo3d((v) => v || !webglAvailable()), []);
@@ -161,6 +162,14 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
     [set, l],
   );
 
+  // Live room status (free / busy / my next class); only when bookings are known (students, staff).
+  const canLive = student.access.kind !== "visitor" && featureOn(bundle.university.settings, "freeRooms");
+  const tones = useMemo(
+    () => (canLive && live ? roomTonesAt(bundle, now, todaySummary(bundle, now, prefs.groupId).groupId) : undefined),
+    [canLive, live, bundle, now, prefs.groupId],
+  );
+  const hasTones = !!tones && Object.keys(tones).length > 0;
+
   // Memoised so the 3D scene only rebuilds when something relevant changes.
   const spec = useMemo<Scene3DSpec | null>(() => {
     if (!campus) return null;
@@ -172,6 +181,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
         exploded,
         hideOtherFloors: onlyFloor,
         selectedRoomId: room?.id ?? null,
+        roomTones: tones,
         route: null,
         startNodeId: startNode && floors.some((f) => f.id === startNode.floorId) ? startNode.id : null,
         destinationNodeId: room?.entranceNodeId ?? null,
@@ -180,7 +190,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
       };
     return { type: "campus", campusId: campus.id, selectedBuildingId: building?.id ?? null, locale: loc };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campus?.id, inside, building?.id, floor?.id, exploded, onlyFloor, room?.id, startNode?.id, loc, bundle]);
+  }, [campus?.id, inside, building?.id, floor?.id, exploded, onlyFloor, room?.id, startNode?.id, loc, bundle, tones]);
   const focusKey = inside ? `b:${building?.id}:${floor?.id ?? "all"}:${exploded}:${onlyFloor}` : `c:${building?.id ?? ""}`;
 
   const labels3d = { zoomIn: t("map.zoomIn"), zoomOut: t("map.zoomOut"), rotate: t("explore.rotate"), reset: t("map.reset"), canvas: t("explore.canvas") };
@@ -220,6 +230,7 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
         locale={loc}
         labels={mapLabels(t)}
         selectedRoomId={room?.floorId === f.id ? room.id : null}
+        roomTones={tones}
         startNode={startNode?.floorId === f.id ? startNode : null}
         destinationNode={room?.entranceNodeId && room.floorId === f.id ? l.nodes.get(room.entranceNodeId) ?? null : null}
         checkpointNodes={bundle.checkpoints.map((c) => l.nodes.get(c.nodeId)).filter((n): n is NonNullable<typeof n> => !!n && n.floorId === f.id)}
@@ -452,6 +463,18 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
           ) : <span className="cn-mapbadge hidden md:inline-flex">{t("explore.schematic")}</span>
         ) : !inside && view === "map" && !bundle.buildings.some((b) => b.geo) ? <span className="cn-mapbadge">{t("explore.noneOnRealMap")}</span> : null}
         {isDemo ? <span className="cn-mapbadge !text-warn max-md:!hidden">{t("data.demo")}</span> : null}
+        {canLive && inside ? (
+          <button type="button" className="cn-chip !min-h-8 shadow-lg" aria-pressed={live} onClick={() => setLive(!live)} data-testid="live-toggle">
+            <span className={cx("cn-dot", live ? "bg-[var(--cn-map-free-stroke)]" : "bg-[var(--cn-text-faint)]")} aria-hidden /> {t("live.toggle")}
+          </button>
+        ) : null}
+        {inside && hasTones ? (
+          <div className="cn-mapbadge flex items-center gap-3" data-testid="live-legend" role="note" title={t("free.caveat")}>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-[var(--cn-map-free-stroke)]" aria-hidden />{t("live.free")}</span>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-[var(--cn-border-strong)]" aria-hidden />{t("live.busy")}</span>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-accent" aria-hidden />{t("live.mine")}</span>
+          </div>
+        ) : null}
       </div>
 
       {/* Floor selector (inside a building) */}

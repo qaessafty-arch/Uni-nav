@@ -33,6 +33,8 @@ export interface FloorMapProps {
   locale: Locale;
   labels: FloorMapLabels;
   selectedRoomId?: string | null;
+  /** Live status colours per room id (free / busy / the viewer's next class). */
+  roomTones?: Record<string, "free" | "busy" | "mine">;
   /** Route polyline points on this floor, in order (one or more segments). */
   routeSegments?: NavNode[][];
   startNode?: NavNode | null;
@@ -50,6 +52,8 @@ export interface FloorMapProps {
   autoFit?: boolean;
   height?: number | string;
 }
+
+const TONE_FILL = { free: "var(--cn-map-free)", busy: "var(--cn-map-busy)", mine: "var(--cn-accent-soft)" } as const;
 
 const KIND_FILL: Record<string, string> = {
   room: "var(--cn-map-room)",
@@ -69,7 +73,7 @@ const KIND_FILL: Record<string, string> = {
  * selectable rooms, route overlay. Every element maps 1:1 to a database row id.
  */
 export function FloorMap(props: FloorMapProps) {
-  const { floor, elements, rooms, locale, labels, selectedRoomId, routeSegments, startNode, destinationNode, checkpointNodes, focusNode, onRoomSelect, onCanvasClick, overlay, autoFit = true } = props;
+  const { floor, elements, rooms, locale, labels, selectedRoomId, roomTones, routeSegments, startNode, destinationNode, checkpointNodes, focusNode, onRoomSelect, onCanvasClick, overlay, autoFit = true } = props;
   const base = useMemo(() => fitViewBox(floor.width, floor.height), [floor.width, floor.height]);
   const [vb, setVb] = useState<ViewBox>(base);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -196,18 +200,20 @@ export function FloorMap(props: FloorMapProps) {
             const room = el.roomId ? roomById.get(el.roomId) : undefined;
             const selected = !!room && room.id === selectedRoomId;
             const interactive = !!room && !!onRoomSelect;
-            const fill = selected ? "var(--cn-map-selected)" : KIND_FILL[el.kind] ?? "var(--cn-map-room)";
-            const stroke = selected ? "var(--cn-accent)" : "var(--cn-map-room-stroke)";
+            const tone = room ? roomTones?.[room.id] : undefined;
+            const fill = selected ? "var(--cn-map-selected)" : tone ? TONE_FILL[tone] : KIND_FILL[el.kind] ?? "var(--cn-map-room)";
+            const stroke = selected ? "var(--cn-accent)" : tone === "mine" ? "var(--cn-accent)" : tone === "free" ? "var(--cn-map-free-stroke)" : "var(--cn-map-room-stroke)";
             const c = shapeCenter(el.shape);
             const label = room ? room.code : lt(el.label, locale);
             const bw = el.shape.type === "rect" ? el.shape.w : Math.max(...el.shape.points.map((p) => p[0])) - Math.min(...el.shape.points.map((p) => p[0]));
             const fontSize = Math.min(Math.max(14, unit * 2.2), (bw * 0.9) / Math.max(1, label.length * 0.62));
-            const shapeProps = { fill, stroke, strokeWidth: selected ? unit * 0.5 : unit * 0.12, vectorEffect: "non-scaling-stroke" as const };
+            const shapeProps = { fill, stroke, strokeWidth: selected ? unit * 0.5 : tone === "mine" ? unit * 0.4 : unit * 0.12, vectorEffect: "non-scaling-stroke" as const };
             return (
               <g
                 key={el.id}
                 data-element-id={el.id}
                 data-room-id={room?.id}
+                data-tone={tone}
                 role={interactive ? "button" : undefined}
                 tabIndex={interactive ? 0 : undefined}
                 aria-label={interactive ? `${room!.code} — ${lt(room!.name, locale)}` : undefined}

@@ -114,3 +114,22 @@ test("today card: visitors get a short guide and a verify button, no timetable",
   await page.getByTestId("today-visitor").getByRole("link").click();
   await expect(page).toHaveURL(/\/verify/);
 });
+
+test("live rooms: the floor plan colours free rooms and the student's own class", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-11-01T06:00:00Z")); // Sunday 09:00, CS101 is on in 204
+  await enterDemo(page);
+  await page.goto(`${BASE}/?v=2d&b=${did("demo-building-eng")}&f=${did("eng-floor-2")}&in=1`);
+  await expect(page.getByTestId("live-legend")).toContainText("Free");
+  await expect(page.locator(`[data-room-id="${ROOM_204}"]`)).toHaveAttribute("data-tone", "mine");
+  await expect(page.locator('[data-tone="free"]').first()).toBeVisible();
+  await page.getByTestId("live-toggle").click();
+  await expect(page.locator("[data-tone]")).toHaveCount(0);
+});
+
+test("live rooms: visitors see no room status", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-11-01T06:00:00Z"));
+  await enterDemo(page, {}, "visitor");
+  await page.goto(`${BASE}/?v=2d&b=${did("demo-building-eng")}&f=${did("eng-floor-2")}&in=1`);
+  await expect(page.getByTestId("live-toggle")).toHaveCount(0);
+  await expect(page.locator("[data-tone]")).toHaveCount(0);
+});

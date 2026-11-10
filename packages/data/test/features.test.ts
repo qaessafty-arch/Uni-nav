@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auditCampus, bundleForAccess, freeRoomsAt, leaveAdvice, lecturersAvailableAt, todaySummary, type CampusBundle } from "@campusnav/core";
+import { auditCampus, bundleForAccess, freeRoomsAt, leaveAdvice, lecturersAvailableAt, roomTonesAt, todaySummary, type CampusBundle } from "@campusnav/core";
 import { demoBundle } from "../src";
 import { did } from "../src/demo/dataset";
 
@@ -179,5 +179,20 @@ describe("today at a glance", () => {
     const at = (iso: string) => lecturersAvailableAt(bundle, new Date(iso)).map((l) => l.id);
     expect(at("2026-11-01T07:30:00Z")).toContain(did("lect-a"));
     expect(at("2026-11-01T06:00:00Z")).not.toContain(did("lect-a"));
+  });
+});
+
+describe("live room status for maps", () => {
+  const CS1 = did("group-DEMO-CS-Y1-A");
+  it("marks busy, free and the student's own next room", () => {
+    const tones = roomTonesAt(bundle, SUN_0900, CS1);
+    expect(tones[room(bundle, "204").id]).toBe("mine"); // CS101 08:30-10:00, their class
+    expect(tones[room(bundle, "G01").id]).toBe("busy"); // CE110 08:30-10:00, someone else's
+    expect(tones[room(bundle, "101").id]).toBe("free");
+    expect(tones[room(bundle, "G06").id]).toBeUndefined(); // toilets are never coloured
+    expect(roomTonesAt(bundle, SUN_0900)[room(bundle, "204").id]).toBe("busy"); // no group: just busy
+  });
+  it("shows nothing to visitors, who have no booking data", () => {
+    expect(roomTonesAt(bundleForAccess(bundle, { kind: "visitor" }), SUN_0900)).toEqual({});
   });
 });
