@@ -26,13 +26,13 @@ export function LectureCard({ bundle, occ, emphasis, countdown, showDate }: { bu
 
   return (
     <article className={cx("cn-card p-4 md:p-5", emphasis && "cn-card-accent", occ.cancelled && "opacity-70")} aria-label={lt(course?.name, loc)}>
-      <div className="flex items-start gap-4">
+      <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
         <div className="mono text-sm leading-tight shrink-0 w-16">
           {showDate ? <div className="text-faint text-xs mb-1">{formatDate(loc, occ.date)}</div> : null}
           <div className={cx("cn-figure text-xl", occ.cancelled && "line-through")}>{formatClock(loc, occ.startTime)}</div>
           <div className="text-muted">{formatClock(loc, occ.endTime)}</div>
         </div>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-[11rem] flex-1">
           <div className="flex flex-wrap items-center gap-2">
             {course ? (
               <Link href={`/courses/${course.id}`} className="font-semibold hover:underline">
@@ -76,7 +76,7 @@ export function LectureCard({ bundle, occ, emphasis, countdown, showDate }: { bu
           {countdown ? <p className="mono text-accent text-sm mt-2">{countdown}</p> : null}
         </div>
         {room && !occ.cancelled ? (
-          <ButtonLink href={`/navigate?to=${room.id}`} variant={emphasis ? "primary" : "secondary"} className="shrink-0">
+          <ButtonLink href={`/navigate?to=${room.id}`} variant={emphasis ? "primary" : "secondary"} className="shrink-0 ms-auto">
             {t("common.navigate")}
           </ButtonLink>
         ) : null}

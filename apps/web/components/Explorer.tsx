@@ -22,7 +22,7 @@ import { CampusMap2D } from "./CampusMap2D";
 import { mapLabels } from "./MapLabels";
 import { FACILITIES } from "./Blocks";
 import { LectureCard } from "./LectureCard";
-import { LeaveBy } from "./LeaveBy";
+import { TodayCard } from "./TodayCard";
 import { PrayerCard } from "./PrayerCard";
 import { SafeBoundary } from "./SafeBoundary";
 import { BuildingMark, HoursTable, OpenStatusLine } from "./BuildingMark";
@@ -241,7 +241,6 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
   }
 
   // ── Panel content ─────────────────────────────────────────────────────
-  const cn = prefs.groupId ? currentAndNext(now, bundle.university.settings.timezone, bundle.timetable, bundle.scheduleChanges, { groupId: prefs.groupId }) : null;
   const settings = bundle.university.settings;
   const closures = featureOn(settings, "closures") ? relevantClosures(bundle, now) : { active: [], upcoming: [] };
   const facilityChips = settings.homeFacilities?.length
@@ -386,23 +385,10 @@ export function Explorer({ bundle, index }: { bundle: CampusBundle; index: Searc
           </div>
         ) : null}
         {featureOn(settings, "prayer") ? <SafeBoundary><PrayerCard bundle={bundle} /></SafeBoundary> : null}
-        {cn?.current || cn?.next ? (
-          <div>
-            <div className="label-caps mb-2">{cn.current ? t("home.currentLecture") : t("home.nextLecture")}</div>
-            <LectureCard bundle={bundle} occ={(cn.current ?? cn.next)!} emphasis showDate={!cn.current} />
-            {!cn.current && cn.next && featureOn(settings, "leaveBy") ? <SafeBoundary><LeaveBy bundle={bundle} occ={cn.next} /></SafeBoundary> : null}
-          </div>
+        <SafeBoundary><TodayCard bundle={bundle} /></SafeBoundary>
+        {start && featureOn(settings, "shareLocation") ? (
+          <ShareButton path={`/navigate?to=${encodeURIComponent(`node:${start.nodeId}`)}`} label={t("share.myLocation")} title={t("share.myLocationHint")} className="!min-h-10" />
         ) : null}
-        <div className="grid grid-cols-2 gap-2">
-          {featureOn(settings, "freeRooms") ? (
-            <ButtonLink href="/free-rooms" className="!min-h-10">
-              <Icon d={I.hall} className="size-4 text-accent" /> {t("free.homeLink")}
-            </ButtonLink>
-          ) : null}
-          {start && featureOn(settings, "shareLocation") ? (
-            <ShareButton path={`/navigate?to=${encodeURIComponent(`node:${start.nodeId}`)}`} label={t("share.myLocation")} title={t("share.myLocationHint")} className="!min-h-10" />
-          ) : null}
-        </div>
         {recent.length || savedRooms.length ? (
           <div>
             <div className="label-caps mb-1">{recent.length ? t("home.recent") : t("home.savedPlaces")}</div>

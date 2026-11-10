@@ -1,7 +1,7 @@
 import type { CampusBundle, ClockTime, Room, RoomType } from "../model/types";
 import { isClosureActive } from "../navigation/closures";
 import { occurrencesOn } from "./schedule";
-import { toMinutes, zonedNow } from "./time";
+import { toMinutes, weekdayOf, zonedNow } from "./time";
 
 // ───────────────────────── Free rooms ─────────────────────────
 
@@ -106,4 +106,46 @@ export function freeRoomScope(bundle: CampusBundle, groupId: string | null | und
   const buildingIds = new Set(majorBuildingIds);
   if (hereBuildingId) buildingIds.add(hereBuildingId);
   return { buildingIds, majorBuildingIds: [...majorBuildingIds], hereBuildingId };
+}
+
+// ───────────────────────── Today at a glance ─────────────────────────
+
+export interface TodaySummary {
+  date: string;
+  /** The group whose day this is (the student's own class), or null. */
+  groupId: string | null;
+  /** Every class of that group today, in order (cancelled ones included, marked). */
+  classes: import("./schedule").Occurrence[];
+  /** Classes today that have not ended yet and are not cancelled. */
+  remaining: number;
+  /** Classes today that were changed or cancelled. */
+  changed: number;
+  /** Lecturers whose office hours cover `now`. */
+  lecturersAvailable: import("../model/types").Lecturer[];
+}
+
+/** Lecturers in their office hours at `now` (university-local time). */
+export function lecturersAvailableAt(bundle: CampusBundle, now: Date): import("../model/types").Lecturer[] {
+  const z = zonedNow(now, bundle.university.settings.timezone);
+  const day = weekdayOf(z.date);
+  return bundle.lecturers.filter((l) => (l.officeHours ?? []).some((h) => h.day === day && toMinutes(h.start) <= z.minutes && z.minutes < toMinutes(h.end)));
+}
+
+/**
+ * What a student needs to know about today. `preferredGroupId` is their chosen
+ * class; without one, the first group in the bundle is used (for a verified
+ * student the bundle only contains their own major and year).
+ */
+export function todaySummary(bundle: CampusBundle, now: Date, preferredGroupId?: string | null): TodaySummary {
+  const z = zonedNow(now, bundle.university.settings.timezone);
+  const groupId = (preferredGroupId && bundle.groups.some((g) => g.id === preferredGroupId) ? preferredGroupId : null) ?? [...bundle.groups].sort((a, b) => a.code.localeCompare(b.code))[0]?.id ?? null;
+  const classes = groupId ? occurrencesOn(z.date, bundle.timetable, bundle.scheduleChanges, { groupId }) : [];
+  return {
+    date: z.date,
+    groupId,
+    classes,
+    remaining: classes.filter((o) => !o.cancelled && toMinutes(o.endTime) > z.minutes).length,
+    changed: classes.filter((o) => o.cancelled || o.changes.length > 0).length,
+    lecturersAvailable: lecturersAvailableAt(bundle, now),
+  };
 }

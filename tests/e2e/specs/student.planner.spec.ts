@@ -91,3 +91,26 @@ test("3D route view offers a fly-through that can be stopped", async ({ page }) 
   await expect(play).toHaveAttribute("aria-pressed", "false");
 });
 
+
+test("today card: a verified student sees their day without picking a group", async ({ page }) => {
+  await page.clock.setFixedTime(SUN_0812);
+  await enterDemo(page); // verified CS year 1, no group chosen
+  await page.goto(`${BASE}/?v=2d`);
+  const card = page.getByTestId("today-card");
+  await expect(card).toContainText("Today");
+  await expect(card).toContainText("DEMO-CS-Y1-A");
+  await expect(card).toContainText("2 left today");
+  await expect(card).toContainText("Demo Introduction to Programming"); // 08:30, next
+  await expect(page.getByTestId("today-later")).toContainText("Demo Physics I"); // 10:30
+  await expect(page.getByTestId("today-free")).toContainText("free");
+});
+
+test("today card: visitors get a short guide and a verify button, no timetable", async ({ page }) => {
+  await page.clock.setFixedTime(SUN_0812);
+  await enterDemo(page, {}, "visitor");
+  await page.goto(`${BASE}/?v=2d`);
+  await expect(page.getByTestId("today-visitor")).toContainText("Welcome to campus");
+  await expect(page.getByTestId("today-card")).toHaveCount(0);
+  await page.getByTestId("today-visitor").getByRole("link").click();
+  await expect(page).toHaveURL(/\/verify/);
+});

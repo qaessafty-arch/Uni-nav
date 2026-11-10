@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auditCampus, freeRoomsAt, leaveAdvice, type CampusBundle } from "@campusnav/core";
+import { auditCampus, bundleForAccess, freeRoomsAt, leaveAdvice, lecturersAvailableAt, todaySummary, type CampusBundle } from "@campusnav/core";
 import { demoBundle } from "../src";
 import { did } from "../src/demo/dataset";
 
@@ -154,5 +154,30 @@ describe("free rooms are scoped to your major's building and the building you're
     // The library has no teaching rooms, so a visitor there gets none.
     expect(freeRoomsAt(b, SUN_0900, { minMinutes: 0, buildingIds: freeRoomScope(b, null, libEntrance).buildingIds })).toEqual([]);
     expect(lib).toBeTruthy();
+  });
+});
+
+describe("today at a glance", () => {
+  const CS1 = did("group-DEMO-CS-Y1-A");
+  it("lists the student's classes today and counts what is left", () => {
+    const t = todaySummary(bundle, SUN_0900, CS1);
+    expect(t.date).toBe("2026-11-01");
+    expect(t.classes.map((c) => c.startTime)).toEqual(["08:30", "10:30"]);
+    expect(t.remaining).toBe(2); // the 08:30 class is still running at 09:00
+    expect(todaySummary(bundle, new Date("2026-11-01T08:00:00Z"), CS1).remaining).toBe(1); // 11:00
+  });
+  it("falls back to the student's own class when none was picked", () => {
+    const mine = bundleForAccess(bundle, { kind: "student", departmentId: did("demo-dept-cs"), year: 1 });
+    expect(todaySummary(mine, SUN_0900, null).groupId).toBe(CS1);
+    expect(todaySummary(mine, SUN_0900, "not-a-group").groupId).toBe(CS1);
+    expect(todaySummary(bundleForAccess(bundle, { kind: "visitor" }), SUN_0900).classes).toEqual([]);
+  });
+  it("counts changed classes and finds lecturers in office hours", () => {
+    // Demo change: the CS101 08:30 lecture moves room on Sunday 8 Nov.
+    expect(todaySummary(bundle, new Date("2026-11-08T06:00:00Z"), CS1).changed).toBe(1);
+    // Lecturer A: Sundays 10:00–12:00.
+    const at = (iso: string) => lecturersAvailableAt(bundle, new Date(iso)).map((l) => l.id);
+    expect(at("2026-11-01T07:30:00Z")).toContain(did("lect-a"));
+    expect(at("2026-11-01T06:00:00Z")).not.toContain(did("lect-a"));
   });
 });
