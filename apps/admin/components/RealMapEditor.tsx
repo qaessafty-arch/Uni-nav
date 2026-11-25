@@ -1,7 +1,7 @@
 "use client";
 /** Admin: draw building outlines on the real map (MapLibre + OpenStreetMap-based tiles). */
 import "maplibre-gl/dist/maplibre-gl.css";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { pickOutlineAt, type Building, type CampusGeo, type LngLat } from "@campusnav/core";
 

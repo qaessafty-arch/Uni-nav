@@ -7,7 +7,7 @@
  * in their own colours, among the surrounding OpenStreetMap buildings in grey.
  */
 import "maplibre-gl/dist/maplibre-gl.css";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "../Icon";
 import { buildingIconPath } from "@campusnav/tokens";
@@ -122,7 +122,7 @@ export default function RealMap({ geo, buildings, walkways = [], selectedId, loc
     let didLoad = false;
     m.on("error", (e) => {
       // Style/tile failures (offline, blocked) — keep the page usable and say so.
-      if (!didLoad || /tile|style|source/i.test(String((e as { error?: Error }).error?.message ?? ""))) setTilesFailed(true);
+      if (!didLoad || /tile|style|source/i.test(String((e as unknown as { error?: Error }).error?.message ?? ""))) setTilesFailed(true);
     });
     m.on("load", () => {
       didLoad = true;

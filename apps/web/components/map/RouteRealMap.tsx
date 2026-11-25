@@ -5,7 +5,7 @@
  * Loaded lazily (next/dynamic) like the main real map.
  */
 import "maplibre-gl/dist/maplibre-gl.css";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import type { Building, CampusGeo, LngLat } from "@campusnav/core";
 import { MAP_STYLE_URL } from "./RealMap";
