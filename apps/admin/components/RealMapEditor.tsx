@@ -2,6 +2,9 @@
 /** Admin: draw building outlines on the real map (MapLibre + OpenStreetMap-based tiles). */
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as maplibregl from "maplibre-gl";
+// Serve maplibre's worker from our own origin (public/vendor/maplibre). The worker bundled
+// inside the Next.js build fails to start, which leaves geojson and vector sources unloaded.
+maplibregl.setWorkerUrl("/vendor/maplibre/maplibre-gl-worker.mjs");
 import { useEffect, useRef, useState } from "react";
 import { pickOutlineAt, type Building, type CampusGeo, type LngLat } from "@campusnav/core";
 

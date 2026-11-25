@@ -6,6 +6,9 @@
  */
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as maplibregl from "maplibre-gl";
+// Serve maplibre's worker from our own origin (public/vendor/maplibre). The worker bundled
+// inside the Next.js build fails to start, which leaves geojson and vector sources unloaded.
+maplibregl.setWorkerUrl("/vendor/maplibre/maplibre-gl-worker.mjs");
 import { useEffect, useRef, useState } from "react";
 import type { Building, CampusGeo, LngLat } from "@campusnav/core";
 import { MAP_STYLE_URL } from "./RealMap";
